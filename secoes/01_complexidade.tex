@@ -1,0 +1,114 @@
+% ================================================================
+\section{Complexidade de algoritmos}\label{sec:complex}
+% ================================================================
+
+\subsection{Medidas de complexidade}
+Seja $A$ um algoritmo e $\{E_1,\dots,E_m\}$ todas as entradas possíveis de tamanho $n$; $T_i$ é o número de passos de $A$ sobre $E_i$.
+\begin{itemize}
+  \item \textbf{Pior caso:} $\max_i T_i$ \quad(é a medida padrão do curso).
+  \item \textbf{Caso médio:} $\sum_i p_i T_i$, onde $p_i$ é a probabilidade de $E_i$.
+  \item \textbf{Melhor caso:} $\min_i T_i$.
+  \item \textbf{Amortizada:} custo de uma \emph{sequência} de operações dividido pelo número de operações, no pior caso da sequência (§\ref{sec:amort}). Não é média probabilística!
+\end{itemize}
+
+\paragraph{Tamanho da entrada.} É o comprimento da codificação da entrada (em bits/símbolos). Isso importa com números: um algoritmo é \textbf{pseudopolinomial} se é polinomial quando os números da entrada são codificados em \emph{unário}. Exemplo do curso: o \emph{counting sort} é $O(n+k)$; se $k=\Theta(2^n)$ ele é exponencial no tamanho da entrada (um número $k$ ocupa só $\log k$ bits).
+
+\subsection{Notações assintóticas}
+Sejam $f,g$ funções (assintoticamente) não negativas.
+\begin{center}
+\begin{tabular}{@{}llll@{}}
+\toprule
+Notação & Definição & Via limite (se existir) & Leitura\\
+\midrule
+$f=O(g)$ & $\exists c>0,n_0:\ f(n)\le c\,g(n)\ \forall n\ge n_0$ & $\lim f/g<\infty$ & ``$\le$''\\
+$f=\Omega(g)$ & $\exists c>0,n_0:\ f(n)\ge c\,g(n)\ \forall n\ge n_0$ & $\lim f/g>0$ & ``$\ge$''\\
+$f=\Theta(g)$ & $f=O(g)$ e $f=\Omega(g)$ & $\lim f/g=c\in(0,\infty)$ & ``$=$''\\
+$f=o(g)$ & $\forall c>0\ \exists n_0:\ f(n)<c\,g(n)$ & $\lim f/g=0$ & ``$<$'' (não justo)\\
+$f=\omega(g)$ & $\forall c>0\ \exists n_0:\ f(n)>c\,g(n)$ & $\lim f/g=\infty$ & ``$>$'' (não justo)\\
+\bottomrule
+\end{tabular}
+\end{center}
+Exemplo dos slides: $2n^2+1$ é $O(n^3)$, $O(n^2)$, não é $O(n)$; é $\Omega(n)$, $\Omega(n^2)$, não é $\Omega(n^3)$; é $\Theta(n^2)$.
+$O(g)$ também denota o \emph{conjunto} das funções $f$ com $f=O(g)$ (escreve-se $f\in O(g)$).
+
+\paragraph{Propriedades úteis.} Transitividade; $f=O(g)\iff g=\Omega(f)$; $O(f)+O(g)=O(\max\{f,g\})$; $\log_a n=\Theta(\log_b n)$ (a base do log não importa); $\log(n!)=\Theta(n\log n)$; $(\log n)^c=o(n^\varepsilon)$ e $n^c=o(a^n)$ para $a>1$.
+\[
+1\ <\ \log\log n\ <\ \log n\ <\ \sqrt n\ <\ n\ <\ n\log n\ <\ n^2\ <\ n^3\ <\ n^{\log n}\ <\ 2^n\ <\ n!\ <\ n^n .
+\]
+
+\subsection{Complexidade de problemas $\times$ de algoritmos}
+\begin{defi}\leavevmode
+\begin{itemize}
+  \item Um \textbf{limite superior} para o problema $\Pi$ é uma função $f(n)$ tal que \emph{existe} algum algoritmo que resolve $\Pi$ com no máximo $f(n)$ passos no pior caso. (A complexidade de pior caso de qualquer algoritmo para $\Pi$ é um limite superior para $\Pi$.)
+  \item Um \textbf{limite inferior} para $\Pi$ é uma função $f(n)$ tal que \emph{todo} algoritmo para $\Pi$ precisa de pelo menos $f(n)$ passos no pior caso.
+  \item Um algoritmo é \textbf{ótimo} se sua complexidade de pior caso é igual a um limite inferior do problema (ex.: mergesort e heapsort para ordenação por comparação).
+\end{itemize}
+\end{defi}
+As notações são só sobre funções: nada impede dizer ``o pior caso de $A$ é $\Omega(n^3)$'' ou ``o limite inferior de $\Pi$ é $O(\log n)$''.
+
+\paragraph{Polinomial $\times$ exponencial.} Consenso: um algoritmo é útil na prática se é \textbf{polinomial} ($O(n^c)$; classe $P$ = problemas com algoritmo polinomial). Exponenciais: $2^{O(n)}$, $k^n$, $n!$, $2^{n^2}$, $n^{\log n}$. Polinomiais aproveitam melhor o avanço tecnológico: com máquina $10\times$ mais rápida, o maior $n$ resolvido em um dia é \emph{multiplicado} por uma constante ($n^2$: $\times 3{,}16$), enquanto para $2^n$ só \emph{soma} uma constante ($40\to 43$).
+
+% ------------------------------------------------------------------
+\subsection{Recorrências}\label{sec:recorrencias}
+Algoritmos recursivos (D\&C) têm tempo dado por recorrências $T(n)=a\,T(n/b)+f(n)$: $a$ subproblemas de tamanho $n/b$ e custo $f(n)$ para dividir e combinar.
+
+\paragraph{Árvore de recursão.} Some o custo por nível. Ex.: $T(n)=2T(n/2)+cn$: há $\log_2 n$ níveis, cada um custando $cn$ $\Rightarrow T(n)=\Theta(n\log n)$ (mergesort, contagem de inversões, subvetor máximo).
+
+\paragraph{Substituição (indução).} Chuta-se $T(n)\le c\,g(n)$ e prova-se por indução forte (é assim que o slide prova $T(n)\le 20cn$ na BFPRT, §\ref{sec:selecao}).
+
+\begin{teo}[Teorema Mestre -- Cormen §4.5]
+Seja $T(n)=a\,T(n/b)+f(n)$ com $a\ge1$, $b>1$, e seja $E=\log_b a$ (o ``expoente crítico'').
+\begin{enumerate}
+  \item Se $f(n)=O(n^{E-\varepsilon})$ para algum $\varepsilon>0$: $T(n)=\Theta(n^{E})$ \quad(as folhas dominam).
+  \item Se $f(n)=\Theta(n^{E})$: $T(n)=\Theta(n^{E}\log n)$ \quad(todos os níveis pesam igual).
+  \item Se $f(n)=\Omega(n^{E+\varepsilon})$ e $a f(n/b)\le c f(n)$ para algum $c<1$: $T(n)=\Theta(f(n))$ \quad(a raiz domina).
+\end{enumerate}
+\end{teo}
+\begin{center}
+\small
+\begin{tabular}{@{}lll@{}}
+\toprule
+Recorrência & Exemplo & Solução\\
+\midrule
+$T(n)=T(n/2)+O(1)$ & busca binária & $\Theta(\log n)$\\
+$T(n)=2T(n/2)+O(1)$ & máximo por D\&C & $\Theta(n)$\\
+$T(n)=2T(n/2)+\Theta(n)$ & mergesort, inversões, subvetor máximo & $\Theta(n\log n)$\\
+$T(n)=8T(n/2)+\Theta(n^2)$ & produto de matrizes por blocos & $\Theta(n^3)$\\
+$T(n)=7T(n/2)+\Theta(n^2)$ & Strassen & $\Theta(n^{\log_2 7})\approx\Theta(n^{2{,}807})$\\
+$T(n)=T(n/5)+T(3n/4)+\Theta(n)$ & BFPRT & $\Theta(n)$ (pois $\tfrac15+\tfrac34<1$)\\
+$T(n)=T(n-1)+\Theta(n)$ & quicksort no pior caso & $\Theta(n^2)$\\
+$T(n)=T(9n/10)+T(n/10)+\Theta(n)$ & quicksort ``desbalanceado fixo'' & $\Theta(n\log n)$\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{teo}[D\&C $c$-balanceado -- slide de D\&C]
+Se um algoritmo divide a instância em $k$ partes de tamanho no máximo $n/c$ ($c>1$), com partes de tamanhos que diferem por constante, e gasta tempo linear para dividir e combinar, então roda em $O(n\log n)$.
+\end{teo}
+\begin{proof}[Ideia]
+Na árvore de recursão, os subproblemas de um mesmo nível são disjuntos, então cada nível custa $O(n)$; como o tamanho cai por um fator $c$ a cada nível, há $O(\log_c n)$ níveis.
+\end{proof}
+
+\paragraph{Somatórios que aparecem.} $\sum_{i=1}^n i=\frac{n(n+1)}2$; $\sum_{k\ge0}x^k=\frac1{1-x}$ ($|x|<1$); $\sum_{k\ge0}\frac{k}{2^k}=2$; $\sum_{k=0}^{\log n}\frac{n}{2^k}\le 2n$; $\sum_{i=1}^n\frac1i=\Theta(\log n)$; $\log(n!)=\sum\log i=\Theta(n\log n)$.
+
+% ------------------------------------------------------------------
+\subsection{Complexidade amortizada}\label{sec:amort}
+A análise amortizada considera uma \textbf{sequência} de operações: cada operação individual pode ser cara, mas o custo total da sequência (no pior caso) é pequeno. \textbf{Não envolve probabilidade.}
+
+\paragraph{Visão do banqueiro (créditos).} Cada operação recebe um número fixo de créditos (seu custo amortizado). Operações baratas ``poupam'' créditos, que pagam operações caras depois. Se o saldo nunca fica negativo, o custo real total $\le$ soma dos custos amortizados.
+
+\paragraph{Visão do físico (potencial).} Escolhe-se $\Phi(E)\ge0$ para cada configuração $E$. Custo amortizado: $a_i=t_i+\Phi(E_i)-\Phi(E_{i-1})$. Somando (telescópica):
+\[
+\sum_{i=1}^m t_i=\sum_{i=1}^m a_i-\Phi_m+\Phi_0\ \le\ \sum_{i=1}^m a_i\quad\text{se }\Phi_m\ge\Phi_0 .
+\]
+
+\begin{exemplo}[Pilha com multi-desempilhamento -- Szwarcfiter §8.2]
+Cada operação faz $k\ge0$ \emph{retira} e depois um \emph{insere}; no pior caso uma operação custa $\Theta(n)$. Com $\Phi=$ número de elementos na pilha: $a_i=(1+k)+(p-k+1)-p=2$. Logo $m$ operações custam $\le 2m=O(m)$.
+\end{exemplo}
+\begin{exemplo}[Contador binário]
+Incrementar um contador de $k$ bits pode trocar $k$ bits, mas $m$ incrementos a partir de $0$ trocam no total $\le 2m$ bits: com $\Phi=$ número de bits $1$, um incremento que zera $t$ bits e liga um tem $a=(t+1)+(1-t)=2$. É exatamente o argumento da \textbf{inserção em heap binomial} (§\ref{sec:binomial}): inserir $=$ somar 1 em binário.
+\end{exemplo}
+
+\begin{chave}
+``Amortizado'' $\ne$ ``caso médio''. Amortizado é \emph{garantia de pior caso para a sequência}; uma operação isolada ainda pode ser cara. Isso é decisivo na escolha entre heap binomial e de Fibonacci quando o sistema exige \textbf{previsibilidade de cada operação individual} (Teste 1, Q1).
+\end{chave}

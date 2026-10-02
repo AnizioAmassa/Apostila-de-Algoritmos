@@ -1,0 +1,91 @@
+% ================================================================
+\section{Banco de questões com respostas}\label{sec:banco}
+% ================================================================
+
+\subsection{Testes aplicados}\label{sec:testes}
+\paragraph{Teste 1 (heaps, Union-Find, AVL).}
+\begin{enumerate}
+  \item Aeroporto: filas de prioridade por setor, fusões muito frequentes, alterações raras, tempo \emph{previsível por operação}. Qual heap? $\Rightarrow$ \textbf{binomial} (§\ref{sec:escolhaheap}).
+  \item Central médica: $2\cdot10^6$ chamadas de 16 bytes, limite de 40 MB, ponteiros de 8 bytes, sem fusão, poucas alterações. $\Rightarrow$ \textbf{heap binário} (§\ref{sec:escolhaheap}, conta de memória).
+  \item Supercomputador: $5\cdot10^6$ inserções/remoções e $8\cdot10^7$ aumentos de prioridade, custo total importa. $\Rightarrow$ \textbf{Fibonacci} (§\ref{sec:escolhaheap}).
+  \item Plataforma com $10^7$ usuários: $10^5$ uniões e $10^8$ consultas; árvore vs.\ lista; estratégia de união. $\Rightarrow$ Union-Find, lista com ponteiro ao representante (\Find{} $O(1)$), união ``menor na maior'' (§\ref{sec:ufescolha}).
+  \item AVL: árvore $50(30(20(10,25),40),70(60,80))$, inserir $5,15,35,45$, identificar desregulados e rotações; ABB vs.\ AVL $\Rightarrow$ Exemplo \ref{ex:teste1q5}.
+\end{enumerate}
+\paragraph{Teste 2 (ordenação e D\&C, 2h, 3 questões).}
+\begin{enumerate}
+  \item Subvetor contíguo de soma máxima por D\&C, com posições e complexidade $\Rightarrow$ §\ref{sec:dc}.
+  \item Strassen: algoritmo recursivo com as 7 multiplicações $\Rightarrow$ §\ref{sec:dc}.
+  \item Escolher Counting/Radix/Bucket/Merge/Quick para 5 cenários $\Rightarrow$ §\ref{sec:escolhasort}.
+\end{enumerate}
+
+% ------------------------------------------------------------------
+\subsection{Lista -- heaps binários, binomiais e de Fibonacci}
+\emph{Obs.:} a numeração segue a da lista, que \textbf{pula o exercício 9} (vai do 8 ao 10).
+\begin{enumerate}
+  \item \emph{Verificar se são heaps.} (a) $33\,32\,28\,31\,26\,29\,25\,30\,27$: \textbf{não} --- posição 6 ($29$) tem pai na posição 3 ($28$) e $29>28$. (b) $33\,32\,28\,31\,29\,26\,25\,30\,27$: \textbf{sim} (todas as 8 relações pai--filho valem).
+  \item \emph{Troca com $i<j$, $s_i<s_j$ gera heap?} Falso: $[10,9,1,8,$\allowbreak$7,0,0,6]$, troca das posições 3 e 4 (§\ref{sec:heapprops}).
+  \item \emph{Idem com $s_i>s_j$.} Falso: $[10,9]$, troca das posições 1 e 2.
+  \item \emph{Número de permutações que são min-heap.} $H(n)=\binom{n-1}{L}H(L)H(n-1-L)$; valores $1,1,2,3,8,$\allowbreak$20,80,210,\dots$ (§\ref{sec:heapprops}).
+  \item \emph{Construção linear de $18\,25\,41\,34\,14\,10\,52\,50\,48$.} $[52,50,41,48,$\allowbreak$14,10,18,34,25]$ (traço em §\ref{sec:heap}).
+  \item \emph{No máximo $\ceil{n/2^j}$ nós de altura $j$.} Lema \ref{lema:alturas}.
+  \item \emph{Construir heap binomial em $O(n)$.} $n$ inserções sucessivas: o custo total é o do contador binário, $\sum_k n/2^k\le2n$ links (§\ref{sec:binomial}). Alternativa: formar pares $B_0+B_0\to B_1$, depois pares de $B_1$, etc., como uma soma binária de $n$ uns.
+  \item \emph{Alturas para o pior caso da inserção num heap com $k$ árvores.} Quando o novo $B_0$ provoca ``vai um'' em todas as posições: o heap contém \textbf{$B_0,B_1,\dots,B_{k-1}$} ($n=2^k-1$, todos os bits 1), isto é, alturas $0,1,\dots,k-1$ em arestas ($1,\dots,k$ em níveis, convenção do Szwarcfiter). São feitos $k$ links e o resultado é uma única $B_k$.
+  \item[10.] \emph{Remoção do máximo no pior caso.} A remoção custa percorrer as $k$ raízes, gerar os $h$ filhos da raiz removida e fundir $H'$ (as outras $k-1$ árvores) com $H''=\{B_0,\dots,B_{h-1}\}$. O máximo de links ocorre quando $H'$ também contém $B_0,\dots,B_{h-1}$ (cada posição gera ``vai um'') e $h$ é o maior possível: \textbf{$H=\{B_0,B_1,\dots,B_{k-1}\}$ com o máximo na raiz de $B_{k-1}$}, logo $h=k-1$ (em arestas).
+  \item[11.] \emph{$k\ge\min\{k_1,k_2\}$?} \textbf{Falso}: $H_1$ com $3=11_2$ nós ($k_1=2$), $H_2$ com $5=101_2$ ($k_2=2$); a fusão tem $8=1000_2$ nós, $k=1<2$.
+  \item[12.] \emph{$k\le k_1+k_2$?} \textbf{Verdadeiro}: a união inicial tem $k_1+k_2$ árvores e cada link transforma duas árvores em uma; logo $k=k_1+k_2-\#\text{links}\le k_1+k_2$.
+  \item[13.] \emph{Altura mínima e máxima de heap de Fibonacci em função do posto $k$.} Hipótese do exercício (Szwarcfiter §9.5): árvores de Fibonacci de posto $k$, formadas por subordinações de árvores de mesmo posto e cortes controlados por marcas em nós \emph{não raiz}. \textbf{Mínima}: pelo lema $\operatorname{grau}(y_i)\ge i-2$, a menor altura $A(k)$ satisfaz $A(k)=1+A(k-2)$, $A(0)=0$, $A(1)=1$, logo \textbf{$A(k)=\ceil{k/2}$} (atingida pelas árvores de Fibonacci mínimas). \textbf{Máxima}: \textbf{$k$}, atingida pela própria $B_k$ (por indução: subordinar duas árvores de posto $h$ e altura $\le h$ dá posto $h+1$ e altura $\le h+1$; cortes não aumentam a altura nem mudam o posto da raiz). Alturas em arestas.
+  (Observação fora do escopo do exercício: numa implementação geral, em que a raiz pode perder filhos livremente, a altura não é limitada por uma função do posto --- o que é sempre $O(\log n)$ é o posto/grau.)
+  \item[14--15.] \emph{Algoritmos dos heaps binomiais e de Fibonacci.} §\ref{sec:binomial} e §\ref{sec:fib}.
+  \item[16.] \emph{Heap binário sem recursão.}
+\end{enumerate}
+\begin{pseudo}{Subir e descer iterativos (ex.\ 16; Szwarcfiter ex.\ 6.7--6.8)}
+\begin{algorithmic}
+\Procedure{subir}{$i$}
+  \While{$i>1$ \textbf{e} $T[i].chave>T[\floor{i/2}].chave$}
+    \State $T[i]\Leftrightarrow T[\floor{i/2}]$;\ $i:=\floor{i/2}$
+  \EndWhile
+\EndProcedure
+\Procedure{descer}{$i,n$}
+  \While{$2i\le n$}
+    \State $j:=2i$
+    \If{$j<n$ \textbf{e} $T[j+1].chave>T[j].chave$} \State $j:=j+1$ \EndIf
+    \If{$T[i].chave<T[j].chave$} \State $T[i]\Leftrightarrow T[j]$;\ $i:=j$
+    \Else \State \textbf{pare}
+    \EndIf
+  \EndWhile
+\EndProcedure
+\end{algorithmic}
+\end{pseudo}
+Inserção, remoção, alteração e construção usam exatamente os mesmos esquemas da §\ref{sec:heap} com essas versões.
+
+% ------------------------------------------------------------------
+\subsection{Lista -- Union-Find e AVL}
+\begin{enumerate}
+  \item União por rank sem compressão: altura $\le\floor{\log n}$ e sequência que atinge $\Theta(\log n)$ $\Rightarrow$ Teo.~\ref{teo:ufaltura} e exemplos da §\ref{sec:uf}.
+  \item Só compressão: sequência que gera árvore alta e custo $O(m\log n)$ $\Rightarrow$ §\ref{sec:uf}.
+  \item Remoção em AVL com rotação em todos os ancestrais $\Rightarrow$ árvore de Fibonacci $T_7$, remover a folha 33 (§\ref{sec:avl}).
+  \item Fusão de duas AVL $\Rightarrow$ junção pela espinha direita $O(\log n)$, ou intercalação dos percursos em ordem $O(n+m)$ (§\ref{sec:avl}).
+  \item AVL como conjuntos disjuntos: \Find{} $O(\log n)$, \Union{} $O(k\log n)$ $\Rightarrow$ §\ref{sec:avl}.
+\end{enumerate}
+
+% ------------------------------------------------------------------
+\subsection{Monitoria de revisão: respostas curtas}
+\begin{itemize}
+  \item \textbf{UF-1.} Objetivo: manter partição em conjuntos disjuntos com consultas ``mesmo conjunto?'' e uniões. \MakeSet{} cria $\{x\}$ ($pai[x]=x$); \Find{} sobe até a raiz; \Union{} liga uma raiz na outra. Cada elemento armazena o \textbf{pai} (e a raiz, o rank). União por rank: liga o de menor rank sob o de maior; altura $\le\log n$.
+  \item \textbf{AVL-1.} Balanceada: altura $O(\log n)$ em toda subárvore. AVL: $|h_D-h_E|\le1$ em todo nó. Toda AVL é balanceada (Teo.~\ref{teo:avlaltura}), nem toda balanceada é AVL. Fator de balanço $\bal(v)=h_D(v)-h_E(v)$.
+  \item \textbf{AVL-2} (inserção à esquerda de $p$): $\bal=1\to0$, altura não muda, para; $\bal=0\to-1$, altura aumenta, continua; $\bal=-1\to-2$, rotação e para.
+  \item \textbf{AVL-3.} $\bal(p)=-2$, $\bal(u)=-1$: simples à direita. $\bal(p)=-2$, $\bal(u)=+1$: dupla à direita (esquerda em $u$, direita em $p$). Diferença: no primeiro o excesso está ``em linha'' (esquerda-esquerda) e uma rotação resolve; no segundo está em ``zigue-zague'' (esquerda-direita) e é preciso primeiro alinhar.
+  \item \textbf{Heap-1.} Definição $s_i\le s_{\floor{i/2}}$; seleção $O(1)$ porque o máximo está na posição 1 (Prop.~\ref{prop:ancestral}); custos: $O(1)$, $O(\log n)$, $O(\log n)$, $O(\log n)$, $O(n)$.
+  \item \textbf{Binomial (Q6--Q8, Q11).} $B_k$: duas $B_{k-1}$ ligadas; $2^k$ nós; grau da raiz $k$; o heap é a lista de raízes com ordens distintas (bits de $n$). Link de duas $B_2$ de raízes 10 e 15 (min-heap): raiz 10, a de 15 vira sua filha; resultado $B_3$ com 8 nós e grau 3. Mínimo: percorre as $O(\log n)$ raízes (ou ponteiro). União $O(\log n)$: só percorre as listas de raízes (não os $n$ nós), fazendo links como numa soma binária.
+  \item \textbf{Fibonacci (Q9, Q10, Q12).} Diferença estrutural: permite várias árvores de mesma ordem (preguiçoso), listas circulares duplas, marcas. $O(1)$\am: inserção, união, aumento de prioridade (\emph{decrease-key} no min-heap), seleção. Remoção do extremo: $O(\log n)$\am. Aumentar prioridade pode violar a ordem com o pai; corta-se $x$ e o leva à lista de raízes; cortes em cascata sobem pelos pais marcados; custo $O(1)$\am\ porque cada corte em cascata é pago pela operação que marcou o nó (potencial $t+2m$).
+\end{itemize}
+
+\begin{chave}[Checklist final para a AV1]
+\begin{enumerate}
+  \item \textbf{AVL}: inserir/remover desenhando a árvore e os balanços a cada passo; rotacionar no desregulado \emph{mais profundo}; saber os 4 casos e o pseudocódigo (papel de $h$ e de $pt$).
+  \item \textbf{Union-Find}: tabela de implementações e cenários (listar membros, rollback, offline, Kruskal); provar altura $\le\log n$ com rank.
+  \item \textbf{Heap}: provas por caminho/transitividade, índices e indução; construção $O(n)$; contraexemplos pequenos.
+  \item \textbf{Escolha}: identificar a operação dominante e o tipo da chave; justificar com complexidade, memória, previsibilidade (pior caso vs.\ amortizado), estabilidade.
+  \item \textbf{D\&C}: caso base, divisão, duas chamadas, combinação do ``cruzamento'', recorrência resolvida.
+\end{enumerate}
+\end{chave}

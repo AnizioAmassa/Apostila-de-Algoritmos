@@ -1,0 +1,67 @@
+% ================================================================
+\section{Seleção: o algoritmo BFPRT (mediana das medianas)}\label{sec:selecao}
+% ================================================================
+\textbf{Problema da seleção:} dado um conjunto $A$ de $n$ números e $k$, achar o $k$-ésimo menor. Casos: mínimo ($k=1$), máximo ($k=n$), mediana inferior $\floor{(n+1)/2}$, superior $\ceil{(n+1)/2}$.
+
+\paragraph{Possibilidades.} (1) Ordenar: $O(n\log n)$. (2) Retirar o mínimo $k$ vezes: $O(kn)$ ($O(n^2)$ para a mediana). (3) \textbf{Quickselect} (pivoteamento como no quicksort, mas recursão em \emph{um} lado só): $O(n)$ esperado, $O(n^2)$ no pior caso. (4) \textbf{BFPRT} (Blum, Floyd, Pratt, Rivest, Tarjan): $O(n)$ no \textbf{pior caso}.
+
+\begin{pseudo}{Quickselect (exercício do slide: tempo esperado $O(n)$, mais simples)}
+\begin{algorithmic}
+\Function{QuickSelect}{$S,k$}
+  \State escolha um pivô $m$ \textbf{aleatório} em $S$
+  \State $S_1:=\{s<m\}$;\ $S_2:=\{s=m\}$;\ $S_3:=\{s>m\}$
+  \If{$|S_1|\ge k$} \State \Return \Call{QuickSelect}{$S_1,k$}
+  \ElsIf{$|S_1|+|S_2|\ge k$} \State \Return $m$
+  \Else \State \Return \Call{QuickSelect}{$S_3,\,k-|S_1|-|S_2|$}
+  \EndIf
+\EndFunction
+\end{algorithmic}
+\end{pseudo}
+Esperado: com probabilidade $\ge1/2$ o pivô cai no ``meio'' (entre os quartis) e o lado mantido tem $\le 3n/4$. Agrupe as chamadas em \emph{fases}: a fase termina quando o tamanho cai para $\le3n/4$. O número de chamadas numa fase é dominado por uma geométrica de parâmetro $1/2$, logo tem esperança $\le2$, e cada chamada custa $\le cn$. Assim $E[T(n)]\le E[T(3n/4)]+2cn$, e somando a série geométrica, $E[T(n)]\le 2cn\sum_{t\ge0}(3/4)^t=8cn=O(n)$.
+
+\subsection{O algoritmo}
+A ideia é garantir um pivô \emph{sempre} bom: a \textbf{mediana das medianas} de grupos de 5.
+\begin{pseudo}{Seleção$(S,k)$ -- BFPRT (slides)}
+\begin{algorithmic}
+\Function{Seleção}{$S,k$}
+  \If{$|S|\le49$} \State ordene $S$ (mergesort) e \Return o $k$-ésimo menor \EndIf
+  \State divida $S$ em $\ceil{|S|/5}$ grupos de (até) 5 elementos
+  \State determine a mediana de cada grupo (ordenar 5 elementos: $O(1)$ cada)
+  \State $M:=$ conjunto das medianas;\quad $m:=$ \Call{Seleção}{$M,\ceil{|M|/2}$} \Comment{recursão 1: tamanho $n/5$}
+  \State $S_1:=\{s\in S: s<m\}$;\ $S_2:=\{s\in S: s=m\}$;\ $S_3:=\{s\in S: s>m\}$
+  \If{$|S_1|\ge k$} \State \Return \Call{Seleção}{$S_1,k$} \Comment{recursão 2: tamanho $\le3n/4$}
+  \ElsIf{$|S_1|+|S_2|\ge k$} \State \Return $m$
+  \Else \State \Return \Call{Seleção}{$S_3,\ k-|S_1|-|S_2|$}
+  \EndIf
+\EndFunction
+\end{algorithmic}
+\end{pseudo}
+\begin{cuidado}
+Num dos slides o teste aparece como ``se $|S_1|=k$ então o $k$-ésimo está em $S_1$''; o correto é \textbf{$|S_1|\ge k$} (como no pseudocódigo da página seguinte). E, ao ir para $S_3$, o índice muda para $k-|S_1|-|S_2|$.
+\end{cuidado}
+
+\subsection{Análise}
+\begin{lema}
+$|S_1|\le n-3\floor{n/10}$ e $|S_3|\le n-3\floor{n/10}$; para $n\ge50$, isso é $\le 3n/4$.
+\end{lema}
+\begin{proof}
+Das $\floor{n/5}$ medianas, pelo menos metade, $\floor{\floor{n/5}/2}=\floor{n/10}$, são $\ge m$. Cada uma dessas vem de um grupo que tem mais 2 elementos $\ge$ ela (logo $\ge m$). Assim, pelo menos $3\floor{n/10}$ elementos são $\ge m$, ou seja, $|S_2|+|S_3|\ge3\floor{n/10}$ e $|S_1|\le n-3\floor{n/10}$. Simetricamente para $S_3$.
+Para $n-3\floor{n/10}\le3n/4$ basta $12\floor{n/10}\ge n$, isto é, $2\floor{n/10}\ge n-10\floor{n/10}$; como o lado direito é $\le9$, basta $\floor{n/10}\ge5$, ou seja, $n\ge50$ (por isso o caso base é $n\le49$).
+\end{proof}
+
+\begin{teo}
+$T(n)\le 20cn$, logo a BFPRT é $O(n)$ no pior caso.
+\end{teo}
+\begin{proof}
+$T(n)=O(1)$ para $n\le49$ e $T(n)\le T(n/5)+T(3n/4)+cn$ para $n>49$ (a partição e as medianas dos grupos são lineares). Por indução forte (com a base ajustada, p.ex.\ $T(n)\le6n\le20cn$ pelo mergesort para $n<50$):
+\[
+T(n)\le 20c\,\frac n5+20c\,\frac{3n}{4}+cn=4cn+15cn+cn=20cn.\qedhere
+\]
+\end{proof}
+\paragraph{Por que grupos de 5?} Para linearidade, a soma dos tamanhos dos subproblemas precisa ser uma fração $<1$ de $n$: $\frac n5+\frac{3n}4=\frac{19n}{20}<n$. Com grupos de 3: pivô garante só $\approx n/3$ de cada lado, $T(n)=T(n/3)+T(2n/3)+cn$ e $\frac13+\frac23=1\Rightarrow\Theta(n\log n)$. Grupos de 7, 9, \dots\ também funcionam (constantes diferentes).
+
+\paragraph{Aplicação.} Quicksort com a mediana (BFPRT) como pivô: $T(n)=2T(n/2)+O(n)=O(n\log n)$ no \textbf{pior} caso; na prática é mais lento que o quicksort aleatório por causa das constantes.
+
+\begin{chave}
+Seleção em $O(n)$: grupos de 5, mediana das medianas como pivô, $\ge3\floor{n/10}$ de cada lado, $T(n)\le T(n/5)+T(3n/4)+cn\le20cn$. Não é preciso ordenar para achar o $k$-ésimo!
+\end{chave}

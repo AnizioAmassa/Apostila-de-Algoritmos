@@ -1,0 +1,189 @@
+% ================================================================
+\section{Ordenação}\label{sec:ordenacao}
+% ================================================================
+\textbf{Problema:} dado $S$, obter uma permutação $s_1,\dots,s_n$ com $s_i\le s_{i+1}$.
+\begin{itemize}
+  \item \textbf{Estável:} elementos de chaves iguais aparecem na saída na mesma ordem relativa da entrada (essencial para o radix sort e para ordenar por várias chaves).
+  \item \textbf{In-place:} memória adicional independente de $n$ (ou $O(\log n)$ de pilha). Quicksort e heapsort são in-place; mergesort e counting sort não.
+\end{itemize}
+
+\subsection{Ordenação por comparação}\label{sec:sortcomp}
+\subsubsection*{Mergesort (intercalação)}
+\begin{pseudo}{MergeSort e Intercalação}
+\begin{algorithmic}
+\Procedure{MergeSort}{$V, ini, fim$}
+  \If{$ini<fim$}
+    \State $meio:=\floor{(ini+fim)/2}$
+    \State \Call{MergeSort}{$V,ini,meio$};\ \Call{MergeSort}{$V,meio+1,fim$}
+    \State \Call{Intercala}{$V,ini,meio,fim$}
+  \EndIf
+\EndProcedure
+\Procedure{Intercala}{$V,ini,meio,fim$}
+  \State $i:=ini$;\ $j:=meio+1$;\ $k:=1$ \Comment{$W$ = vetor auxiliar}
+  \While{$i\le meio$ \textbf{e} $j\le fim$}
+    \If{$V[i]\le V[j]$} \State $W[k]:=V[i]$;\ $i:=i+1$ \Comment{``$\le$'' mantém a estabilidade}
+    \Else \State $W[k]:=V[j]$;\ $j:=j+1$
+    \EndIf
+    \State $k:=k+1$
+  \EndWhile
+  \State copie o que sobrou de $V[i..meio]$ ou de $V[j..fim]$ para o fim de $W$
+  \State copie $W[1..fim-ini+1]$ de volta para $V[ini..fim]$
+\EndProcedure
+\end{algorithmic}
+\end{pseudo}
+$T(n)=2T(n/2)+\Theta(n)\Rightarrow\Theta(n\log n)$ em todos os casos. \textbf{Estável} (com ``$\le$''), \textbf{não in-place} ($\Theta(n)$ extra). Versão iterativa (\emph{bottom-up}): intercale blocos de tamanho $1,2,4,\dots$ ao longo do vetor.
+
+\subsubsection*{Quicksort}
+Se $n\le1$, pronto; escolha um \textbf{pivô} $x$; particione em $S_1=\{w<x\}$ e $S_2=\{w\ge x\}$; ordene recursivamente e concatene.
+\begin{pseudo}{Quicksort com partição de Lomuto}
+\begin{algorithmic}
+\Procedure{QuickSort}{$V,ini,fim$}
+  \If{$ini<fim$}
+    \State $q:=$ \Call{Particiona}{$V,ini,fim$}
+    \State \Call{QuickSort}{$V,ini,q-1$};\ \Call{QuickSort}{$V,q+1,fim$}
+  \EndIf
+\EndProcedure
+\Function{Particiona}{$V,ini,fim$}
+  \State $x:=V[fim]$;\ $i:=ini-1$ \Comment{pivô no fim (troque antes se escolher outro)}
+  \For{$j:=ini$ \textbf{até} $fim-1$}
+    \If{$V[j]<x$} \State $i:=i+1$;\ $V[i]\Leftrightarrow V[j]$ \EndIf
+  \EndFor
+  \State $V[i+1]\Leftrightarrow V[fim]$;\ \Return $i+1$
+\EndFunction
+\end{algorithmic}
+\end{pseudo}
+\begin{itemize}
+  \item \textbf{Pior caso} $\Theta(n^2)$: partições sempre $0$ e $n-1$ (ex.: pivô $=$ primeiro elemento e vetor já ordenado ou invertido): $T(n)=T(n-1)+\Theta(n)$.
+  \item \textbf{Melhor/médio} $\Theta(n\log n)$. Argumento do slide: com pivô ``aleatório'', em metade dos casos a parte maior tem tamanho $\le 3n/4$; se isso sempre ocorresse, no nível $t$ os subproblemas teriam tamanho $\le(3/4)^tn$, $O(\log n)$ níveis de custo $O(n)$; como ocorre com probabilidade $1/2$, em média a cada 2 níveis o tamanho cai por $3/4$: ainda $O(n\log n)$ esperado.
+  \item \textbf{Escolha do pivô:} primeiro elemento (ruim se já ordenado), aleatório, \textbf{mediana de três} (primeiro, meio, último). Usando a \textbf{mediana exata via BFPRT} (§\ref{sec:selecao}) obtém-se $O(n\log n)$ no \emph{pior} caso, mas a constante é alta --- na prática não compensa (resposta a um exercício dos slides).
+  \item \textbf{In-place} (partição por trocas; recursão $O(\log n)$ de pilha se recursar primeiro na parte menor). \textbf{Não estável} (a troca de longa distância embaralha iguais); dá para torná-lo estável com partição estável usando $O(n)$ de memória extra.
+\end{itemize}
+
+\subsubsection*{Heapsort} Ver §\ref{sec:heap}: $\Theta(n\log n)$ sempre, in-place, não estável.
+
+\subsubsection*{Algoritmos quadráticos (para referência)}
+\textbf{Inserção}: insere $V[i]$ na parte já ordenada $V[1..i-1]$ deslocando os maiores; $\Theta(n^2)$ pior, $\Theta(n)$ se já ordenado, estável, in-place, ótimo para $n$ pequeno ou quase ordenado (usado dentro do bucket sort). \textbf{Bolha}: $\Theta(n^2)$, estável.
+
+\subsection{Limite inferior $\Omega(n\log n)$ para ordenação por comparação}
+\begin{teo}
+Todo algoritmo de ordenação baseado em comparações faz $\Omega(n\log n)$ comparações no pior caso.
+\end{teo}
+\begin{proof}
+Modela-se o algoritmo (para cada $n$) por uma \textbf{árvore de decisão}: cada nó interno é uma comparação $a_i\le a_j$?, com dois filhos (os dois resultados); cada folha é um estado final (uma permutação que ordena a entrada). A altura $h$ é o número de comparações no pior caso. Como qualquer uma das $n!$ permutações pode ser a resposta, há pelo menos $n!$ folhas; uma árvore binária de altura $h$ tem no máximo $2^h$ folhas. Logo
+\[
+2^h\ge n!\ge n(n-1)\cdots\bigl(\tfrac n2\bigr)\ge\bigl(\tfrac n2\bigr)^{n/2}
+\ \Rightarrow\ h\ge\tfrac n2\log_2\tfrac n2=\tfrac n2\log n-\tfrac n2=\Omega(n\log n).\qedhere
+\]
+\end{proof}
+\begin{cor}
+Heapsort e mergesort são \textbf{ótimos} entre os algoritmos por comparação (supondo comparação $O(1)$). Para ordenar em $o(n\log n)$ é preciso \emph{não} se basear em comparações: usar a estrutura das chaves (inteiros pequenos, dígitos, distribuição).
+\end{cor}
+
+% ------------------------------------------------------------------
+\subsection{Ordenação em tempo linear}\label{sec:sortlin}
+\textbf{Resposta ao desafio ``dá para ordenar em tempo linear?'':} depende da natureza dos elementos.
+
+\subsubsection*{Counting sort (inteiros em $[0,k]$)}
+\begin{pseudo}{COUNTING-SORT$(A,n,k)$ (slides)}
+\begin{algorithmic}
+\For{$i:=0$ \textbf{até} $k$} \State $C[i]:=0$ \EndFor
+\For{$j:=1$ \textbf{até} $n$} \State $C[A[j]]:=C[A[j]]+1$ \EndFor \Comment{$C[i]=\#\{j: A[j]=i\}$}
+\For{$i:=1$ \textbf{até} $k$} \State $C[i]:=C[i]+C[i-1]$ \EndFor \Comment{$C[i]=\#\{j: A[j]\le i\}$}
+\For{$j:=n$ \textbf{decrescendo até} $1$} \Comment{de trás para frente $\Rightarrow$ estável}
+  \State $B[C[A[j]]]:=A[j]$;\ $C[A[j]]:=C[A[j]]-1$
+\EndFor
+\State \Return $B$
+\end{algorithmic}
+\end{pseudo}
+\begin{itemize}
+  \item Tempo e espaço $\Theta(n+k)$; \textbf{linear se $k=O(n)$}. Se $k=\Theta(2^n)$ fica exponencial: é \textbf{pseudopolinomial}.
+  \item \textbf{Estável}: a última ocorrência de cada valor vai para a última posição do seu bloco. \textbf{Não in-place} (vetores $B$ e $C$). Não faz nenhuma comparação entre elementos.
+\end{itemize}
+
+\subsubsection*{Radix sort (inteiros com $d$ dígitos na base $b$)}
+Ordena \textbf{dígito a dígito, do menos significativo (LSD) para o mais significativo}, usando em cada passada um método \textbf{estável}.
+\begin{pseudo}{Radix sort com filas (slides)}
+\begin{algorithmic}
+\For{$i:=1$ \textbf{até} $d$}
+  \For{$j:=1$ \textbf{até} $n$}
+    \State $k:=$ $i$-ésimo dígito menos significativo de $L[j]$ na base $b$;\ insere $L[j]$ no fim da fila $F[k]$
+  \EndFor
+  \State $j:=1$
+  \For{$k:=0$ \textbf{até} $b-1$}
+    \While{$F[k]$ não vazia} \State remove o início de $F[k]$ e põe em $L[j]$;\ $j:=j+1$ \EndWhile
+  \EndFor
+\EndFor
+\end{algorithmic}
+\end{pseudo}
+\begin{itemize}
+  \item \textbf{Por que precisa ser estável?} Depois de ordenar pelo dígito $i$, elementos com o mesmo dígito $i$ devem manter a ordem obtida pelos dígitos $1..i-1$; é o que garante (por indução) que após a passada $i$ a lista está ordenada pelos $i$ últimos dígitos. As filas preservam a ordem naturalmente (alternativa: counting sort por dígito).
+  \item Tempo $\Theta(d(n+b))$; com $b$ e $d$ constantes, $\Theta(n)$. Truque: inteiros até $n^c$ na base $b=n$ têm $d=c$ dígitos $\Rightarrow\Theta(cn)$.
+  \item \textbf{Exemplo da aula (conferido):} $102,313,690,131,222,670,690,130,079,102$.\\
+  Unidades: $690\ 670\ 690\ 130\ 131\ 102\ 222\ 102\ 313\ 079$;\\
+  dezenas: $102\ 102\ 313\ 222\ 130\ 131\ 670\ 079\ 690\ 690$;\\
+  centenas: $079\ 102\ 102\ 130\ 131\ 222\ 313\ 670\ 690\ 690$.
+  \item Chaves de tamanhos variáveis $d_i$ (exercício): agrupe por número de dígitos (counting por tamanho) e aplique o radix de modo que cada número só participe das passadas dos seus próprios dígitos, ou use o MSD/American Flag recursivo: $O(\sum d_i)$. Para \textbf{strings}: ordenar da direita para a esquerda completando as menores com um símbolo ``menor que todos'', ou MSD (primeiro caractere) recursivo.
+\end{itemize}
+
+\subsubsection*{Bucket sort (reais uniformes em $[0,1)$)}
+Divide $[0,1)$ em $r$ baldes iguais, distribui ($A[i]$ vai para o balde $\floor{r\,A[i]}$), ordena cada balde (ex.: inserção) e concatena. Com entrada uniforme, cada balde tem em média $n/r$ elementos; com $r=\Theta(n)$ o tempo \textbf{esperado} é $\Theta(n)$ (Cormen: $E[n_i^2]=2-1/n$, então $\sum E[O(n_i^2)]=O(n)$). Pior caso: o do algoritmo usado nos baldes (tudo num balde só).
+
+\subsubsection*{American Flag sort}
+Radix \textbf{MSD in-place}: conta quantos elementos há de cada dígito (vetor $C$ de tamanho $b$), calcula onde começa cada bloco e \emph{permuta no próprio vetor} cada elemento para o seu bloco (trocas); depois recursão em cada bloco no dígito seguinte. \textbf{Memória auxiliar:} só os contadores, $O(b)$ por nível de recursão, $O(b\cdot d)$ no total (independe de $n$) $\Rightarrow$ \textbf{in-place}. \textbf{Não é estável} (as trocas mudam a ordem de iguais).
+
+% ------------------------------------------------------------------
+\subsection{Qual algoritmo de ordenação usar?}\label{sec:escolhasort}
+\begin{center}
+\small
+\begin{tabularx}{\linewidth}{@{}lX@{}}
+\toprule
+Situação & Escolha\\
+\midrule
+Inteiros num intervalo pequeno ($k=O(n)$) & \textbf{Counting sort} $\Theta(n+k)$\\
+Inteiros/IDs com poucos dígitos ($d$ fixo), $k$ enorme & \textbf{Radix sort} $\Theta(d(n+b))$\\
+Reais uniformemente distribuídos em um intervalo & \textbf{Bucket sort} $\Theta(n)$ esperado\\
+Chaves arbitrárias, precisa de garantia e/ou estabilidade & \textbf{Mergesort} $\Theta(n\log n)$ (memória $\Theta(n)$)\\
+Chaves arbitrárias, memória escassa, garantia & \textbf{Heapsort} $\Theta(n\log n)$ in-place\\
+Chaves arbitrárias, desempenho médio na prática & \textbf{Quicksort} (pivô aleatório/mediana de 3)\\
+Quase ordenado ou $n$ pequeno & \textbf{Inserção}\\
+Dados em lista encadeada / arquivos externos & \textbf{Mergesort}\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\begin{prova}[Teste 2, Exercício 3 -- respostas esperadas]
+\begin{itemize}
+  \item \textbf{A} ($10^7$ notas entre $0$ e $100$): \textbf{Counting sort}. $k=101\ll n$: $\Theta(n+k)=\Theta(n)$, vetor de contagem de 101 posições; comparação daria $\Omega(n\log n)\approx 2{,}3\cdot10^8$ comparações.
+  \item \textbf{B} ($10^6$ identificadores de 12 dígitos): \textbf{Radix sort}. Counting é inviável ($k=10^{12}$); radix com $d=12$ e $b=10$ faz $12$ passadas lineares: $\Theta(d(n+b))\approx1{,}2\cdot10^7$ (ou base $10^3$/$10^4$: 4 ou 3 passadas).
+  \item \textbf{C} ($10^5$ reais uniformes em $[0,1)$): \textbf{Bucket sort}, $n$ baldes, tempo esperado $\Theta(n)$ (radix/counting não se aplicam a reais).
+  \item \textbf{D} ($10^6$ inteiros em $[-10^9,10^9]$): \textbf{Radix sort} após somar $10^9$ (chaves em $[0,2\cdot10^9]$, $\approx31$ bits: 2 passadas na base $2^{16}$, ou 10 na base 10). Counting inviável ($k=2\cdot10^9\gg n$ de memória). Mergesort/quicksort $\Theta(n\log n)$ também seriam aceitáveis, mas o radix é linear.
+  \item \textbf{E} ($10^5$ registros, chaves arbitrárias, sem restrição de domínio): só \textbf{comparação}: \textbf{Mergesort} (garantia $\Theta(n\log n)$ e estabilidade, ideal para registros) ou Quicksort (mais rápido na média, in-place, mas $\Theta(n^2)$ no pior caso e não estável).
+\end{itemize}
+\end{prova}
+
+% ------------------------------------------------------------------
+\subsection{Q4: dado um código, qual estrutura e qual ordenação?}\label{sec:escolhageral}
+A Q4 dará um código genérico; o roteiro é: \textbf{(1)} liste as operações que o código faz repetidamente; \textbf{(2)} estime quantas vezes cada uma ocorre; \textbf{(3)} escolha a estrutura que torna barata a operação dominante; \textbf{(4)} olhe o tipo das chaves para escolher a ordenação; \textbf{(5)} justifique com complexidades (e memória/estabilidade quando relevante).
+\begin{center}
+\small
+\begin{tabularx}{\linewidth}{@{}XX@{}}
+\toprule
+O código faz repetidamente\dots & Estrutura\\
+\midrule
+pega o maior/menor, insere, (às vezes) altera prioridade & \textbf{heap binário}\\
+\dots\ e une filas com frequência (previsível) & \textbf{heap binomial}\\
+\dots\ com muitíssimos aumentos de prioridade (custo total) & \textbf{heap de Fibonacci}\\
+``$x$ e $y$ estão no mesmo grupo?'' / une grupos & \textbf{Union-Find} (rank + compressão)\\
+busca por chave, inserção, remoção, em ordem, sucessor, mínimo/máximo, intervalos & \textbf{AVL} (ou rubro-negra)\\
+só busca/inserção/remoção por chave exata, sem ordem & \textbf{tabela hash} ($O(1)$ esperado)\\
+muitas buscas, quase nenhuma atualização & \textbf{vetor ordenado} + busca binária\\
+$k$-ésimo menor / mediana uma vez & \textbf{seleção linear} (BFPRT/quickselect), sem ordenar\\
+os $k$ maiores de um fluxo & heap de mínimo de tamanho $k$: $O(n\log k)$\\
+\bottomrule
+\end{tabularx}
+\end{center}
+\textbf{Padrões a reconhecer em código:} laço que procura o máximo de uma lista e o remove (\,$\Theta(n)$ por iteração $\Rightarrow$ heap); laço que ordena a lista inteira a cada inserção ($\Rightarrow$ heap ou AVL); laço que percorre todos os elementos para saber se dois estão no mesmo grupo ($\Rightarrow$ Union-Find); ordenar para depois pegar só o $k$-ésimo ($\Rightarrow$ seleção $O(n)$); ordenar inteiros pequenos com \texttt{sort} genérico ($\Rightarrow$ counting/radix).
+
+\begin{chave}
+Comparação $\Rightarrow\Omega(n\log n)$ (árvore de decisão, $2^h\ge n!$). Merge: estável, $\Theta(n)$ extra. Quick: in-place, médio $n\log n$, pior $n^2$. Heap: in-place, sempre $n\log n$, não estável. Counting $\Theta(n+k)$ estável; Radix $\Theta(d(n+b))$ precisa de estável por dígito (LSD); Bucket $\Theta(n)$ esperado com uniforme.
+\end{chave}

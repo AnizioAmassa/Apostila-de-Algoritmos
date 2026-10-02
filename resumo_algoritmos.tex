@@ -1,0 +1,246 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[brazil]{babel}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage[margin=2.2cm]{geometry}
+\usepackage{enumitem}
+\usepackage{booktabs,tabularx,multirow,array}
+\usepackage[dvipsnames,table]{xcolor}
+\usepackage[most]{tcolorbox}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,shapes.geometric,calc,decorations.pathreplacing}
+\usepackage{forest}
+\usepackage{graphicx}
+\usepackage[noend]{algpseudocode}
+\usepackage[colorlinks=true,linkcolor=MidnightBlue,urlcolor=MidnightBlue]{hyperref}
+
+% ------------------------------------------------------------------
+% Macros
+% ------------------------------------------------------------------
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\bal}{\operatorname{bal}}
+\newcommand{\rank}{\operatorname{rank}}
+\newcommand{\Find}{\textsc{Find}}
+\newcommand{\Union}{\textsc{Union}}
+\newcommand{\MakeSet}{\textsc{Make-Set}}
+\newcommand{\lgs}{\log^{*}}
+\DeclarePairedDelimiter{\floor}{\lfloor}{\rfloor}
+\DeclarePairedDelimiter{\ceil}{\lceil}{\rceil}
+\DeclarePairedDelimiter{\abs}{\lvert}{\rvert}
+\newcommand{\am}{$^{*}$}   % marca de amortizado
+
+% ------------------------------------------------------------------
+% Pseudocódigo em português (algpseudocode)
+% ------------------------------------------------------------------
+\algrenewcommand\algorithmicif{\textbf{se}}
+\algrenewcommand\algorithmicthen{\textbf{então}}
+\algrenewcommand\algorithmicelse{\textbf{senão}}
+\algrenewcommand\algorithmicwhile{\textbf{enquanto}}
+\algrenewcommand\algorithmicdo{\textbf{faça}}
+\algrenewcommand\algorithmicfor{\textbf{para}}
+\algrenewcommand\algorithmicreturn{\textbf{retorna}}
+\algrenewcommand\algorithmicprocedure{\textbf{Procedimento}}
+\algrenewcommand\algorithmicfunction{\textbf{Função}}
+\algrenewcommand\algorithmicrepeat{\textbf{repita}}
+\algrenewcommand\algorithmicuntil{\textbf{até que}}
+\algrenewcommand{\algorithmiccomment}[1]{\hfill{\color{gray}\small\% #1}}
+\algnewcommand\algorithmicelsif{\textbf{senão se}}
+\algdef{C}[IF]{IF}{ElsIf}[1]{\algorithmicelsif\ #1\ \algorithmicthen}
+\newcommand{\ptr}{\mathbin{\uparrow}}   % pt ↑ .campo
+\newcommand{\nil}{\lambda}
+
+% ------------------------------------------------------------------
+% Ambientes
+% ------------------------------------------------------------------
+\theoremstyle{plain}
+\newtheorem{teo}{Teorema}[section]
+\newtheorem{prop}[teo]{Proposição}
+\newtheorem{lema}[teo]{Lema}
+\newtheorem{cor}[teo]{Corolário}
+\theoremstyle{definition}
+\newtheorem{defi}[teo]{Definição}
+\newtheorem{exemplo}[teo]{Exemplo}
+\theoremstyle{remark}
+\newtheorem{obs}[teo]{Observação}
+
+% Pseudocódigo em caixa (sem float)
+\newtcolorbox{pseudo}[1]{enhanced, breakable, colback=gray!3, colframe=gray!45, colbacktitle=gray!22, coltitle=black,
+  fonttitle=\bfseries\small, title={#1}, left=3pt,right=3pt,top=2pt,bottom=2pt, fontupper=\small}
+% Pontos-chave
+\newtcolorbox{chave}[1][Pontos-chave]{enhanced, breakable, colback=MidnightBlue!4,
+  colframe=MidnightBlue!70!black, fonttitle=\bfseries, title={#1}, left=4pt,right=4pt,top=3pt,bottom=3pt}
+% Como cai na prova
+\newtcolorbox{prova}[1][Como isso cai na AV1]{enhanced, breakable, colback=ForestGreen!5,
+  colframe=ForestGreen!70!black, fonttitle=\bfseries, title={#1}, left=4pt,right=4pt,top=3pt,bottom=3pt}
+% Armadilhas
+\newtcolorbox{cuidado}[1][Armadilhas comuns]{enhanced, breakable, colback=BrickRed!4,
+  colframe=BrickRed!75!black, fonttitle=\bfseries, title={#1}, left=4pt,right=4pt,top=3pt,bottom=3pt}
+% Complemento (fora das aulas)
+\newtcolorbox{complemento}[1][]{enhanced, breakable, colback=orange!4, colframe=orange!70!black,
+  fonttitle=\bfseries, title={Complemento#1}, left=4pt,right=4pt,top=3pt,bottom=3pt}
+
+% Árvores (forest): nó circular com balanço opcional
+\forestset{
+  bst/.style={for tree={circle, draw, minimum size=1.5em, inner sep=1pt, font=\small,
+      s sep=6mm, l sep=4mm, edge={thick}}},
+  bb/.style={label={[font=\scriptsize,text=BrickRed,inner sep=1pt]right:{$#1$}}},
+  vazio/.style={phantom},
+  tri/.style={draw, isosceles triangle, shape border rotate=90, isosceles triangle apex angle=60,
+      inner sep=0.5pt, minimum height=7mm, font=\scriptsize, anchor=apex, child anchor=apex},
+  novo/.style={fill=yellow!40},
+  desreg/.style={fill=BrickRed!25},
+}
+
+\setlist{itemsep=1.5pt,topsep=3pt}
+\numberwithin{equation}{section}
+\renewcommand{\arraystretch}{1.15}
+
+\title{\textbf{MC23 -- Algoritmos}\\[4pt]
+\large Resumo detalhado para a AV1\\
+(IMPA Tech, 2026.2 -- Prof.\ Uéverton Souza)}
+\author{Baseado nos slides, aulas manuscritas, monitorias, listas, Testes 1 e 2;\\
+complementado com Szwarcfiter \& Markenzon (\emph{Estruturas de Dados e seus Algoritmos})\\
+e Cormen et al.\ (\emph{Introduction to Algorithms}, 3.\ ed.)}
+\date{AV1: terça-feira, 22 de setembro de 2026}
+
+\begin{document}
+\maketitle
+
+\begin{chave}[Como usar este resumo]
+\begin{itemize}
+  \item Ele foi escrito para quem \textbf{já estudou a matéria} e quer se localizar rápido: cada seção começa com o essencial, depois vêm as demonstrações e os detalhes que costumam ser cobrados.
+  \item \textcolor{ForestGreen!70!black}{\textbf{Caixas verdes}}: como o tema cai na AV1 (o formato da prova foi anunciado em aula --- ver abaixo).
+  \item \textcolor{BrickRed!75!black}{\textbf{Caixas vermelhas}}: armadilhas e erros frequentes (inclusive erros encontrados em slides/monitorias).
+  \item \textcolor{MidnightBlue}{\textbf{Caixas azuis}}: resumo do que precisa estar na ponta da língua.
+  \item \textcolor{orange!70!black}{\textbf{Caixas laranjas}}: complementos (livros/pesquisas) que não foram o foco das aulas.
+  \item Convenção de heap do curso (Szwarcfiter): \textbf{heap de máximo, vetor indexado a partir de 1}, pai de $i$ é $\floor{i/2}$, filhos $2i$ e $2i+1$. Balanço AVL: $\bal(v)=h_D(v)-h_E(v)$.
+  \item Todos os exemplos numéricos (AVL, heaps, radix, subvetor máximo, inversões) foram \emph{conferidos por simulação}.
+\end{itemize}
+\end{chave}
+
+\begin{prova}[Formato da AV1 (anunciado na aula de revisão de 18/09)]
+\begin{center}
+\begin{tabularx}{\linewidth}{@{}lXl@{}}
+\toprule
+\textbf{Questão} & \textbf{O que será pedido} & \textbf{Onde estudar} \\
+\midrule
+Q1 & \textbf{Árvore AVL}: saber como a estrutura funciona, resolver uma tarefa nela, manipular (inserir/remover, rotações, balanços). & Seção \ref{sec:avl} \\
+Q2 & \textbf{Union-Find} (a mais fácil): diferentes formas de implementar e em que situações cada uma é melhor. & Seção \ref{sec:uf} (Tabela \ref{tab:uf}) \\
+Q3 & \textbf{Heap}: saber \emph{demonstrar} propriedades de heap. & §\ref{sec:heapprops} (provas); depois §\ref{sec:heap}, §\ref{sec:heapav} \\
+Q4 & Dado um código genérico: qual \textbf{estrutura de dados} usar e qual \textbf{ordenação} usar. & Seções \ref{sec:escolhaheap}, \ref{sec:escolhasort}, \ref{sec:escolhageral} \\
+Q5 & \textbf{Divisão e conquista}: dado um problema, escrever o \textbf{pseudocódigo}. & Seção \ref{sec:dc} \\
+\bottomrule
+\end{tabularx}
+\end{center}
+\end{prova}
+
+\tableofcontents
+\newpage
+
+% ================================================================
+\section*{Mapa: aulas e materiais $\to$ seções}
+\addcontentsline{toc}{section}{Mapa: aulas e materiais $\to$ seções}
+
+\begin{center}
+\small
+\begin{tabularx}{\linewidth}{@{}llX l@{}}
+\toprule
+\textbf{Aula} & \textbf{Data} & \textbf{Conteúdo} & \textbf{Seção}\\
+\midrule
+1 & 11/08 & Complexidade, notações assintóticas, limites superior/inferior, polinomial $\times$ exponencial & \ref{sec:complex}\\
+2 & 12/08 & Listas de prioridades e heaps (binário), heapsort & \ref{sec:heap}\\
+3 & 18/08 & Heaps binários (resumo de custos) e heaps binomiais & \ref{sec:heap}, \ref{sec:heapav}\\
+4 & 21/08 & Heaps de Fibonacci e complexidade amortizada & \ref{sec:amort}, \ref{sec:heapav}\\
+5 & 25/08 & Union-Find: listas, florestas, rank, compressão, análise $O(m\lgs n)$ & \ref{sec:uf}\\
+6 & 28/08 & Árvores binárias de busca e AVL & \ref{sec:avl}\\
+7 & 01/09 & Ordenação por comparação (heap/merge/quick), limite inferior $\Omega(n\log n)$ & \ref{sec:sortcomp}\\
+8 & 04/09 & Ordenação linear: counting, radix, bucket (e American Flag) & \ref{sec:sortlin}\\
+9 & 08/09 & Seleção: algoritmo BFPRT (mediana das medianas) & \ref{sec:selecao}\\
+10 & 11/09 & Divisão e conquista; contagem de inversões & \ref{sec:dc}\\
+11 & 15/09 & \textbf{Teste 2} (ordenação e D\&C) & \ref{sec:testes}\\
+12--13 & 16 e 18/09 & Exercícios; revisão (AVL, D\&C); formato da AV1 & ---\\
+\midrule
+Monitorias & & Heaps binomiais/Fibonacci (26/08), Union-Find, AVL (aula prática 4), Revisão Heap/UF/AVL & \ref{sec:heapav}, \ref{sec:uf}, \ref{sec:avl}, \ref{sec:banco}\\
+Pesquisas & até 19/09 & Árvores rubro-negras; Tabelas hash & \ref{sec:rn}, \ref{sec:hash}\\
+Listas & & Heaps (binário/binomial/Fibonacci); Union-Find e AVL & \ref{sec:banco}\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\noindent\emph{Obs.:} os slides de Programação Dinâmica, Gulosos, Matroides, AGM e Grafos pertencem à parte da AV2 no andamento real do curso; só PD aparece aqui, como complemento curto (§\ref{sec:pd}).
+
+\newpage
+% ================================================================
+\section*{Cola: complexidades de tudo}
+\addcontentsline{toc}{section}{Cola: complexidades de tudo}
+
+\begin{center}
+\small
+\textbf{Listas de prioridades} ($n$ elementos; \am\,= amortizado; heap de máximo)\\[2pt]
+\resizebox{\linewidth}{!}{\begin{tabular}{@{}lccccc@{}}
+\toprule
+Operação & Lista não ord. & Lista ordenada & Heap binário & Heap binomial & Heap de Fibonacci\\
+\midrule
+Seleção (máx.) & $\Theta(n)$ & $\Theta(1)$ & $O(1)$ & $O(\log n)$ ou $O(1)$ c/ ponteiro & $O(1)$\\
+Inserção & $\Theta(1)$ & $\Theta(n)$ & $O(\log n)$ & $O(\log n)$; $O(1)$ esperado/\am & $O(1)$\am\\
+Remoção do máx. & $\Theta(n)$ & $\Theta(1)$ & $O(\log n)$ & $O(\log n)$ & $O(\log n)$\am\\
+Aumentar prioridade & $\Theta(n)$ & $\Theta(n)$ & $O(\log n)$ & $O(\log n)$ & $O(1)$\am\\
+Diminuir prioridade & $\Theta(n)$ & $\Theta(n)$ & $O(\log n)$ & $O(\log n)$ & $O(\log n)$\am\\
+Construção & $\Theta(n)$ & $\Theta(n\log n)$ & $O(n)$ & $O(n)$ & $O(n)$\\
+União (fusão) & $O(1)$ encad. & $O(n)$ & $O(n)$ & $O(\log n)$ & $O(1)$\am\\
+\bottomrule
+\end{tabular}}
+
+\medskip
+\textbf{Union-Find} ($n$ elementos, $m$ operações)\\[2pt]
+\resizebox{\linewidth}{!}{\begin{tabular}{@{}lccc@{}}
+\toprule
+Implementação & \MakeSet & \Find & \Union\\
+\midrule
+Listas encadeadas c/ ponteiro ao representante (união pelo tamanho) & $O(1)$ & $O(1)$ & $O(\log n)$\am\\
+Floresta ingênua & $O(1)$ & $O(n)$ & $O(1)$ (dadas as raízes)\\
+Floresta + união por tamanho/rank & $O(1)$ & $O(\log n)$ & $O(1)$ (dadas as raízes)\\
+Floresta + rank + compressão de caminhos & $O(1)$ & \multicolumn{2}{c}{$O(m\lgs n)$ no total (justo: $O(m\,\alpha(m,n))$)}\\
+\bottomrule
+\end{tabular}}
+
+\medskip
+\textbf{Árvores de busca}\quad ABB: busca/inserção/remoção $\Theta(h)$, com $h$ entre $\floor{\log n}+1$ e $n$.\quad AVL: tudo $O(\log n)$ no pior caso; inserção faz $\le 1$ rotação (simples ou dupla); remoção pode fazer $O(\log n)$ rotações.
+
+\medskip
+\textbf{Ordenação}\\[2pt]
+\resizebox{\linewidth}{!}{\begin{tabular}{@{}lcccccc@{}}
+\toprule
+Algoritmo & Pior caso & Caso médio & Melhor caso & Memória extra & Estável? & In-place?\\
+\midrule
+Inserção / Bolha & $\Theta(n^2)$ & $\Theta(n^2)$ & $\Theta(n)$ & $O(1)$ & sim & sim\\
+Mergesort & $\Theta(n\log n)$ & $\Theta(n\log n)$ & $\Theta(n\log n)$ & $\Theta(n)$ & sim & não\\
+Heapsort & $\Theta(n\log n)$ & $\Theta(n\log n)$ & $\Theta(n\log n)$ & $O(1)$ & não & sim\\
+Quicksort & $\Theta(n^2)$ & $\Theta(n\log n)$ & $\Theta(n\log n)$ & $O(\log n)$ pilha (média) & não & sim\\
+Counting sort & $\Theta(n+k)$ & $\Theta(n+k)$ & $\Theta(n+k)$ & $\Theta(n+k)$ & sim & não\\
+Radix sort (LSD) & $\Theta(d(n+b))$ & idem & idem & $\Theta(n+b)$ & sim & não\\
+Bucket sort & $\Theta(n\log n)$ ou $\Theta(n^2)$ & $\Theta(n)$ (unif.) & $\Theta(n)$ & $\Theta(n)$ & depende & não\\
+\bottomrule
+\end{tabular}}
+
+\medskip
+\textbf{Outros}\quad Limite inferior p/ ordenação por comparação: $\Omega(n\log n)$.\quad Seleção ($k$-ésimo menor): BFPRT $O(n)$ pior caso; quickselect $O(n)$ esperado, $O(n^2)$ pior.\quad Contagem de inversões e subvetor de soma máxima (D\&C): $O(n\log n)$.\quad Strassen: $O(n^{\log_2 7})\approx O(n^{2{,}807})$.
+\end{center}
+
+\newpage
+\input{secoes/01_complexidade}
+\input{secoes/02_heaps}
+\input{secoes/03_heaps_avancados}
+\input{secoes/04_unionfind}
+\input{secoes/05_avl}
+\input{secoes/06_ordenacao}
+\input{secoes/07_selecao}
+\input{secoes/08_dc}
+\input{secoes/09_complementos}
+\input{secoes/10_questoes}
+
+\end{document}

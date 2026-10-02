@@ -1,0 +1,256 @@
+% ================================================================
+\section{Listas de prioridades e heaps binários}\label{sec:heap}
+% ================================================================
+
+\subsection{Lista de prioridades}
+Tabela em que cada dado tem uma \textbf{prioridade}; operações: (1) \emph{seleção} do de maior prioridade; (2) \emph{inserção}; (3) \emph{remoção} do de maior prioridade; (4) \emph{alteração} de prioridade; (5) \emph{construção} a partir de um conjunto inicial. (Fusão entra com os heaps avançados.)
+
+\begin{center}
+\small
+\begin{tabular}{@{}lccc@{}}
+\toprule
+Operação & Lista \textbf{não} ordenada & Lista ordenada & Heap\\
+\midrule
+seleção & $\Theta(n)$ & $\Theta(1)$ & $O(1)$\\
+inserção & $\Theta(1)$ & $\Theta(n)$ & $O(\log n)$\\
+remoção & $\Theta(n)$ & $\Theta(1)$ & $O(\log n)$\\
+alteração & $\Theta(n)$ & $\Theta(n)$ & $O(\log n)$\\
+construção & $\Theta(n)$ & $\Theta(n\log n)$ & $O(n)$\\
+\bottomrule
+\end{tabular}
+\end{center}
+As duas listas têm alguma operação de atualização $\Omega(n)$; o heap equilibra tudo em $O(\log n)$.
+
+\subsection{Definição e representação}
+\begin{defi}[Heap -- convenção do curso]
+Um \textbf{heap} (de máximo) é uma lista linear $s_1,\dots,s_n$ tal que
+\[
+s_i\le s_{\floor{i/2}}\qquad\text{para todo }1<i\le n .
+\]
+(Heap de \emph{mínimo}: $s_i\ge s_{\floor{i/2}}$.)
+\end{defi}
+Visualiza-se como uma \textbf{árvore binária completa} numerada por níveis, da esquerda para a direita: o nó $i$ tem pai $\floor{i/2}$, filho esquerdo $2i$ e direito $2i+1$ (se $\le n$). A condição diz: \emph{cada nó tem prioridade $\ge$ à dos filhos}. Não há ponteiros: é só um vetor.
+
+\begin{center}
+\begin{forest} bst
+[95,label={[font=\tiny]above:1}
+  [60,label={[font=\tiny]left:2} [39,label={[font=\tiny]left:4} [33,label={[font=\tiny]left:8}] [,vazio]] [28,label={[font=\tiny]right:5}]]
+  [78,label={[font=\tiny]right:3} [66,label={[font=\tiny]left:6}] [70,label={[font=\tiny]right:7}]]]
+\end{forest}
+\qquad
+\raisebox{3em}{\begin{tabular}{c|c|c|c|c|c|c|c}
+1&2&3&4&5&6&7&8\\\hline 95&60&78&39&28&66&70&33
+\end{tabular}}
+\end{center}
+
+\paragraph{Fatos de índice} (usados em todas as provas):
+\begin{itemize}
+  \item o nó $i$ está no nível $\floor{\log_2 i}+1$ (raiz no nível 1); a árvore tem $\floor{\log_2 n}+1$ níveis;
+  \item as \textbf{folhas} são exatamente as posições $\floor{n/2}+1,\dots,n$ (pois $i$ tem filho sse $2i\le n$); há $\ceil{n/2}$ folhas;
+  \item convenção de altura do Szwarcfiter/slides: \textbf{folhas têm altura 1}.
+\end{itemize}
+
+\subsection{Subir e descer}
+\begin{minipage}[t]{0.47\linewidth}
+\begin{pseudo}{subir$(i)$ -- após \emph{aumentar} a prioridade de $i$}
+\begin{algorithmic}
+\Procedure{subir}{$i$}
+  \State $j := \floor{i/2}$
+  \If{$j\ge1$}
+    \If{$T[i].chave > T[j].chave$}
+      \State $T[i]\Leftrightarrow T[j]$
+      \State \Call{subir}{$j$}
+    \EndIf
+  \EndIf
+\EndProcedure
+\end{algorithmic}
+\end{pseudo}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.5\linewidth}
+\begin{pseudo}{descer$(i,n)$ -- após \emph{diminuir} a prioridade de $i$}
+\begin{algorithmic}
+\Procedure{descer}{$i,n$}
+  \State $j := 2i$
+  \If{$j\le n$}
+    \If{$j<n$ \textbf{e} $T[j+1].chave > T[j].chave$}
+      \State $j := j+1$ \Comment{maior filho}
+    \EndIf
+    \If{$T[i].chave < T[j].chave$}
+      \State $T[i]\Leftrightarrow T[j]$
+      \State \Call{descer}{$j,n$}
+    \EndIf
+  \EndIf
+\EndProcedure
+\end{algorithmic}
+\end{pseudo}
+\end{minipage}
+
+\medskip
+Ambos percorrem um caminho da árvore: $O(\log n)$. \textbf{Descer escolhe o maior filho} (se trocasse com o menor, o maior filho ficaria abaixo de um valor menor).
+
+\subsection{Inserção, remoção, alteração}
+\begin{pseudo}{Inserção, remoção do máximo e alteração de prioridade}
+\begin{algorithmic}
+\Procedure{inserir}{$novo$} \Comment{$M$ = capacidade}
+  \If{$n<M$} \State $T[n+1]:=novo$;\ $n:=n+1$;\ \Call{subir}{$n$}
+  \Else\ \textbf{overflow}
+  \EndIf
+\EndProcedure
+\Procedure{remover}{}
+  \If{$n\ne0$} \State agir$(T[1])$;\ $T[1]:=T[n]$;\ $n:=n-1$;\ \Call{descer}{$1,n$}
+  \Else\ \textbf{underflow}
+  \EndIf
+\EndProcedure
+\Procedure{alterar}{$i, p$}
+  \State $antiga := T[i].chave$;\ $T[i].chave := p$
+  \If{$p > antiga$} \State \Call{subir}{$i$} \Comment{aumentou $\Rightarrow$ sobe}
+  \Else \State \Call{descer}{$i,n$} \Comment{diminuiu $\Rightarrow$ desce}
+  \EndIf
+\EndProcedure
+\end{algorithmic}
+\end{pseudo}
+
+\begin{cuidado}[Erro clássico (monitoria de revisão, Q5)]
+Um aluno escreveu: ``$H[i]:=p$; \textbf{se} $H[i]>H[\floor{i/2}]$ \textbf{então} Descer$(i)$ \textbf{senão} Subir$(i)$''. Está \textbf{invertido}: se o novo valor ficou maior que o pai, ele viola a propriedade \emph{com o pai} e precisa \textbf{subir}; se não ficou maior que o pai, a única violação possível é com os filhos, e ele precisa \textbf{descer}. Versão correta: \textbf{se} $H[i]>H[\floor{i/2}]$ (com $i>1$) \textbf{então} Subir$(i)$ \textbf{senão} Descer$(i,n)$.
+\end{cuidado}
+
+\begin{exemplo}[{Traços conferidos -- heap $H=[95,60,78,39,28,66,70,33]$}]\leavevmode
+\begin{itemize}
+  \item \textbf{Aumentar} o nó 6 de 66 para 98: sobe trocando com 78 (pos.\ 3) e com 95 (pos.\ 1): $[98,60,95,39,$\allowbreak$28,78,70,33]$.
+  \item \textbf{Remover a raiz}: coloca-se o último (33) na raiz, $[33,60,78,39,28,66,70]$; desce trocando com 78 (maior filho) e depois com 70: $[78,60,70,39,28,66,33]$.
+  \item \textbf{Diminuir} a raiz de 95 para 37: desce trocando com 78 e com 70: $[78,60,70,39,$\allowbreak$28,66,37,33]$.
+  \item \textbf{Inserir} 73: entra na pos.\ 9 (filho de 39), sobe trocando com 39 e com 60: $[95,73,78,60,$\allowbreak$28,66,70,33,39]$.
+\end{itemize}
+\end{exemplo}
+
+\subsection{Construção em tempo linear}
+\textbf{1ª tentativa} (inserções sucessivas): \textbf{para} $i:=2,\dots,n$ \textbf{faça} subir$(i)$ --- custa $O(n\log n)$ (e $\Theta(n\log n)$ no pior caso, p.ex.\ entrada crescente).
+
+\textbf{2ª tentativa} (\emph{arranjar}): as folhas ($i>\floor{n/2}$) já são heaps; corrige-se de baixo para cima.
+\begin{pseudo}{arranjar$(n)$}
+\begin{algorithmic}
+\Procedure{arranjar}{$n$}
+  \For{$i := \floor{n/2}$ \textbf{decr.\ até} $1$} \State \Call{descer}{$i,n$} \EndFor
+\EndProcedure
+\end{algorithmic}
+\end{pseudo}
+\emph{Correção:} invariante ``antes de processar $i$, as subárvores de raízes $i+1,\dots,n$ são heaps''. Ao chamar descer$(i,n)$, as duas subárvores dos filhos de $i$ já são heaps, e descer transforma a subárvore de $i$ em heap.
+
+\begin{lema}[Lista de heaps, ex.\ 6]\label{lema:alturas}
+Numa árvore binária completa com $n$ nós (folhas com altura 1), no máximo $\ceil{n/2^j}$ nós têm altura $j$.
+\end{lema}
+\begin{proof}
+Numa árvore completa o caminho mais longo a partir de $i$ é o da esquerda: $i\to 2i\to 4i\to\cdots$. Logo o nó $i$ tem altura $\ge j$ sse seu descendente $j-1$ níveis abaixo existe, isto é, sse $i\,2^{j-1}\le n$, ou seja, $i\le\floor{n/2^{j-1}}$. Assim, com $x=n/2^{j-1}$ e $m=\floor{x}$,
+\[
+\#\{\text{altura}=j\}=\floor{x}-\floor{x/2}=m-\floor{m/2}=\ceil{m/2}\le\ceil{x/2}=\ceil{n/2^j}.\qedhere
+\]
+\end{proof}
+
+\begin{teo}[Lema 6.1 do Szwarcfiter / slide]
+arranjar$(n)$ roda em $O(n)$.
+\end{teo}
+\begin{proof}
+descer$(i,n)$ num nó de altura $j$ faz no máximo $j-1$ trocas. Pelo Lema \ref{lema:alturas}, o total é
+\[
+\sum_{j=2}^{h}(j-1)\ceil*{\frac{n}{2^j}}\ \le\ \sum_{j\ge2}(j-1)\Bigl(\frac{n}{2^j}+1\Bigr)
+\ =\ n\sum_{j\ge2}\frac{j-1}{2^j}+O(\log^2 n)\ =\ n\cdot 1+O(\log^2n)=O(n),
+\]
+pois $\sum_{j\ge1}\frac{j-1}{2^j}=\sum_{j\ge1}\frac{j}{2^j}-\sum_{j\ge1}\frac1{2^j}=2-1=1$. (O slide faz a mesma conta separando $j$ par e ímpar e usando $\frac{j}{2^{j+1}}\le\frac{j-1}{2^j}$.)
+\end{proof}
+Intuição: metade dos nós (folhas) não custa nada, $1/4$ custa $\le1$, $1/8$ custa $\le2$, \ldots; só a raiz custa $\log n$.
+
+\begin{exemplo}[Traços do \emph{arranjar} (conferidos)]\leavevmode
+\begin{itemize}
+  \item Lista de heaps, ex.\ 5: $[18,25,41,34,$\allowbreak$14,10,52,50,48]$ ($n=9$, processa $i=4,3,2,1$).\\
+  $i=4$: $34\leftrightarrow50$; $i=3$: $41\leftrightarrow52$; $i=2$: $25\leftrightarrow50$, depois $25\leftrightarrow48$; $i=1$: $18\leftrightarrow52$, depois $18\leftrightarrow41$.\\
+  Resultado: $[52,50,41,48,$\allowbreak$14,10,18,34,25]$.
+  \item Monitoria (Q4): $[20,15,30,40,10,25,5]$ processa $i=3,2,1$: $i=3$ nada; $i=2$: $15\leftrightarrow40$; $i=1$: $20\leftrightarrow40$. Resultado $[40,20,30,15,10,25,5]$.
+  \item Monitoria (Q13): $[7,2,15,9,1,20,13]$: $i=3$: $15\leftrightarrow20$; $i=2$: $2\leftrightarrow9$; $i=1$: $7\leftrightarrow20$, $7\leftrightarrow15$. Resultado $[20,9,15,2,1,7,13]$ (o mesmo que por inserções sucessivas neste caso).
+\end{itemize}
+\end{exemplo}
+
+\subsection{Heapsort}
+\begin{pseudo}{Heapsort (Szwarcfiter, Alg.\ 7.6)}
+\begin{algorithmic}
+\Procedure{heapsort}{$T,n$}
+  \State \Call{arranjar}{$n$} \Comment{$O(n)$}
+  \For{$m := n$ \textbf{decrescendo até} $2$}
+    \State $T[1]\Leftrightarrow T[m]$ \Comment{o máximo vai para o fim}
+    \State \Call{descer}{$1, m-1$} \Comment{$O(\log m)$}
+  \EndFor
+\EndProcedure
+\end{algorithmic}
+\end{pseudo}
+Complexidade $O(n)+\sum_{m}O(\log m)=\Theta(n\log n)$ em \emph{todos} os casos (mesmo com a entrada ordenada). \textbf{In-place} (só troca no vetor) e \textbf{não estável} (a troca da raiz com o último embaralha iguais). É ótimo entre os algoritmos por comparação. Ex.: $[18,25,41,34,14,10,52,50,48]\to[10,14,18,25,34,41,48,50,52]$.
+
+% ------------------------------------------------------------------
+\subsection{Propriedades de heap e suas demonstrações}\label{sec:heapprops}
+\begin{prova}[Q3 da AV1: ``saber demonstrar propriedades de heap'']
+Quase toda prova de heap usa só três ferramentas: (i) a definição $s_i\le s_{\floor{i/2}}$ + \textbf{transitividade ao longo de um caminho}; (ii) os \textbf{fatos de índice} (pai, filhos, folhas, níveis); (iii) \textbf{indução} (na altura, no nível, ou no número de nós). Para ``provar ou dar contraexemplo'', teste primeiro exemplos pequenos ($n\le 8$).
+\end{prova}
+
+\begin{prop}[Ancestral domina]\label{prop:ancestral}
+Se $j$ é ancestral de $i$ num heap, então $s_i\le s_j$. Em particular: todo caminho da raiz a uma folha é não crescente, a \textbf{raiz é o máximo} e \textbf{cada subárvore é um heap}.
+\end{prop}
+\begin{proof}
+O caminho de $i$ até $j$ é $i,\floor{i/2},\floor{i/4},\dots,j$; aplicando a definição em cada aresta e a transitividade de $\le$, $s_i\le s_{\floor{i/2}}\le\cdots\le s_j$. A raiz é ancestral de todos. A condição do heap numa subárvore é a mesma condição restrita a ela.
+\end{proof}
+
+\begin{prop}[O mínimo está numa folha]
+Num heap de máximo com chaves distintas, o menor elemento está numa folha, isto é, numa posição $>\floor{n/2}$.
+\end{prop}
+\begin{proof}
+Se $i$ não é folha, tem filho $2i$ e $s_{2i}<s_i$ (distintas); logo $s_i$ não é o mínimo. (Com repetições: \emph{algum} mínimo está numa folha.)
+\end{proof}
+
+\begin{prop}[Onde está o $k$-ésimo maior]
+Com chaves distintas, o $k$-ésimo maior elemento está num nível $\le k$, isto é, numa posição $\le 2^k-1$. Em particular o 2º maior é filho da raiz (posição 2 ou 3), e o 3º maior está nas posições $2,\dots,7$.
+\end{prop}
+\begin{proof}
+Pela Prop.~\ref{prop:ancestral}, todos os ancestrais de $x$ são maiores que $x$. Se $x$ é o $k$-ésimo maior, só existem $k-1$ elementos maiores, então $x$ tem no máximo $k-1$ ancestrais, ou seja, está no nível $\le k$. As posições dos níveis $1..k$ são $1,\dots,2^k-1$.
+\end{proof}
+
+\begin{prop}[Altura]
+Um heap com $n$ elementos tem altura $\floor{\log_2 n}+1$ (em níveis) $=\Theta(\log n)$; por isso subir/descer/inserir/remover são $O(\log n)$.
+\end{prop}
+\begin{proof}
+O último nó, $n$, está no nível $\floor{\log_2n}+1$, e numa árvore completa todos os níveis anteriores estão cheios: $2^{h-1}\le n\le 2^h-1$, logo $h=\floor{\log_2n}+1$.
+\end{proof}
+
+\begin{prop}[Relação com ordenação]
+Toda lista ordenada de forma não crescente é um heap; a recíproca é falsa (ex.: $[3,1,2]$). Por isso construir um heap é mais fácil que ordenar ($O(n)$ vs.\ $\Omega(n\log n)$) --- e, como heapsort ordena usando construção + $n$ remoções, não existe heap com construção \emph{e} remoção ambas $o(\log n)$ amortizado \emph{por comparação} (senão ordenaríamos em $o(n\log n)$).
+\end{prop}
+
+\begin{prop}[Troca de dois elementos -- Lista de heaps, ex.\ 2 e 3]
+Seja $S$ um heap e $i<j$.
+\begin{enumerate}[label=(\alph*)]
+  \item Se $s_i<s_j$, trocar $s_i$ com $s_j$ \textbf{não} produz necessariamente um heap.
+  \item Se $s_i>s_j$, trocar $s_i$ com $s_j$ \textbf{não} produz necessariamente um heap.
+\end{enumerate}
+\end{prop}
+\begin{proof}[Contraexemplos (verificados)]
+(a) $S=[10,9,1,8,7,0,0,6]$ é heap; $i=3$ ($1$), $j=4$ ($8$). Após a troca, $[10,9,8,1,$\allowbreak$7,0,0,6]$: a posição 8 ($6$) tem pai na posição 4 ($1$) e $6>1$. Intuição: o valor pequeno vai para a posição $j$, cujos filhos podem ser maiores que ele.
+(b) $S=[10,9]$, $i=1$, $j=2$: após a troca $[9,10]$, filho maior que o pai. Intuição: o valor pequeno sobe para $i$ e pode ficar abaixo de um descendente maior.
+\end{proof}
+
+\begin{prop}[Número de heaps -- Lista de heaps, ex.\ 4]
+Seja $H(n)$ o número de permutações de $1,\dots,n$ que são heaps (vale o mesmo para min-heap). Então $H(0)=H(1)=1$ e
+\[
+H(n)=\binom{n-1}{L}\,H(L)\,H(n-1-L),
+\]
+onde $L$ é o número de nós da subárvore esquerda da raiz: com $h=\floor{\log_2 n}$ e $u=n-(2^h-1)$ nós no último nível, $L=(2^{h-1}-1)+\min\{u,2^{h-1}\}$. Valores: $1,1,2,3,8,20,80,210,896,3360$ para $n=1..10$ (conferido por força bruta até $n=8$).
+\end{prop}
+\begin{proof}
+A raiz é necessariamente $n$ (máximo). O formato da árvore é fixo, então $L$ é determinado por $n$. Escolhem-se quais $L$ dos $n-1$ valores restantes vão para a esquerda ($\binom{n-1}{L}$ modos); cada lado precisa ser um heap sobre seus valores, e o número de heaps só depende da quantidade de valores ($H(L)$ e $H(n-1-L)$).
+\end{proof}
+
+\begin{prop}[Correção de subir e descer]
+(a) Se $T$ era heap e a chave de $i$ \emph{aumentou}, após subir$(i)$ $T$ é heap. (b) Se as subárvores dos filhos de $i$ são heaps (em particular se $T$ era heap e a chave de $i$ \emph{diminuiu}), após descer$(i,n)$ a subárvore de $i$ é heap.
+\end{prop}
+\begin{proof}[Esboço]
+(a) Invariante: a única violação possível é entre o nó corrente e seu pai. Ao trocar com o pai $j$ (quando $s_i>s_j$), o antigo $s_j$ desce para $i$ e é $\ge$ aos filhos de $i$ (eram seus descendentes); o novo valor em $j$ é maior que o antigo, então não viola com os filhos de $j$. Repete-se para cima. (b) Invariante: a única violação é entre o nó corrente e seus filhos. Troca-se com o \emph{maior} filho: ele passa a dominar o outro filho e o valor que desceu. A violação desce um nível; termina numa folha ou quando não há violação.
+\end{proof}
+
+\begin{chave}
+Heap = vetor + ``pai $\ge$ filho''. Subir após aumento, descer após diminuição (maior filho!). Inserir = pôr no fim + subir; remover = último na raiz + descer. Construção linear pelo \emph{arranjar} (de $\floor{n/2}$ até $1$) graças a $\le\ceil{n/2^j}$ nós de altura $j$. Heapsort $\Theta(n\log n)$, in-place, não estável.
+\end{chave}
