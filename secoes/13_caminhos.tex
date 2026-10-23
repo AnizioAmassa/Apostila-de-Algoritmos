@@ -1,0 +1,164 @@
+% ================================================================
+\section{Caminhos mínimos: Dijkstra e Floyd-Warshall}\label{sec:caminhos}
+% ================================================================
+Entrada (slides): digrafo $G$ com \textbf{matriz de pesos} $W$: $W(x,x)=0$; $W(x,y)=$ peso da aresta $xy$, se houver; $W(x,y)=\infty$ se não houver. O custo de um caminho é a soma dos pesos; $\operatorname{dist}(x,y)$ é o menor custo. Grafo não direcionado: troque cada aresta $xy$ de peso $p$ por $x\to y$ e $y\to x$, ambas com peso $p$.
+\begin{center}\small
+\begin{tabular}{c|ccccc}
+$W$ & 1\,($a$) & 2\,($b$) & 3\,($c$) & 4\,($d$) & 5\,($e$)\\ \hline
+1\,($a$) & 0 & 1 & 3 & $\infty$ & 6\\
+2\,($b$) & $\infty$ & 0 & 1 & 3 & $\infty$\\
+3\,($c$) & 1 & 2 & 0 & 1 & $\infty$\\
+4\,($d$) & 3 & $\infty$ & $\infty$ & 0 & 2\\
+5\,($e$) & $\infty$ & $\infty$ & $\infty$ & 1 & 0
+\end{tabular}
+\qquad
+\begin{minipage}{0.4\linewidth}\small
+Exemplo dos slides, usado nas duas seções: os vértices são $a,\dots,e$ no Dijkstra e $1,\dots,5$ no Floyd-Warshall (mesmo digrafo).
+\end{minipage}
+\end{center}
+
+% ------------------------------------------------------------------
+\subsection{Algoritmo de Dijkstra (aula 18, 13/10; slides 313--341; Cormen §24.3)}\label{sec:dijkstra}
+\textbf{Problema:} caminhos mínimos de uma raiz $s$ a todos os vértices, com pesos \textbf{não negativos}. É a busca genérica com $D=$ \textbf{fila de prioridades} (chave $L$): sai sempre o vértice não marcado de menor rótulo $L$.
+\begin{pseudo}{Dijkstra (slides)}
+\begin{algorithmic}
+\Procedure{Dijkstra}{$G,W,s$}
+  \State para todo $w$: $L(w):=\infty$;\ $pai(w):=\nil$;\ desmarcado
+  \State $L(s):=0$;\ insira $s$ em $D$
+  \While{$D\ne\emptyset$}
+    \State $v:=$ elemento de $D$ com menor $L(v)$;\ remova $v$ de $D$;\ marque $v$ \Comment{$L(v)$ agora é definitivo}
+    \For{\textbf{cada} $w\in N_{out}(v)$ desmarcado}
+      \If{$w\notin D$} \State insira $w$ em $D$ com prioridade $L(w)$ \EndIf
+      \If{$L(v)+W(v,w)<L(w)$} \Comment{``relaxamento'' da aresta $vw$}
+        \State $L(w):=L(v)+W(v,w)$;\ reposicione $w$ em $D$;\ $pai(w):=v$
+      \EndIf
+    \EndFor
+  \EndWhile
+\EndProcedure
+\end{algorithmic}
+\end{pseudo}
+\begin{exemplo}[Raiz $a$ no digrafo acima --- conferido]\leavevmode
+\begin{center}\small
+\begin{tabular}{l|ccccc|l}
+Remove & $L(a)$ & $L(b)$ & $L(c)$ & $L(d)$ & $L(e)$ & mudanças em $pai$\\ \hline
+$a$ (0) & \textbf{0} & 1 & 3 & $\infty$ & 6 & $b,c,e\leftarrow a$\\
+$b$ (1) & & \textbf{1} & 2 & 4 & 6 & $c,d\leftarrow b$\\
+$c$ (2) & & & \textbf{2} & 3 & 6 & $d\leftarrow c$\\
+$d$ (3) & & & & \textbf{3} & 5 & $e\leftarrow d$\\
+$e$ (5) & & & & & \textbf{5} & ---
+\end{tabular}
+\end{center}
+Árvore de caminhos mínimos (os ponteiros $pai$): $a\to b\to c\to d\to e$. Ex.: o caminho mínimo de $a$ a $e$ é $a,b,c,d,e$, com custo $L(e)=5$ (a aresta direta custa 6). A linha 1 da matriz-solução do Floyd-Warshall abaixo confirma $0,1,2,3,5$.
+\end{exemplo}
+
+\begin{teo}[Correção]
+Com pesos $\ge0$, quando $v$ é removido de $D$ vale $L(v)=\operatorname{dist}(s,v)$.
+\end{teo}
+\emph{Prova.} Sempre vale $L(v)\ge\operatorname{dist}(s,v)$, pois $L(v)$ é o custo de algum caminho. Suponha que $u$ é o primeiro vértice removido com $L(u)>\operatorname{dist}(s,u)$. Num caminho mínimo de $s$ a $u$, seja $y$ o primeiro vértice ainda não marcado e $x$ o anterior (marcado, logo $L(x)=\operatorname{dist}(s,x)$). Quando $x$ foi marcado, a aresta $xy$ foi relaxada: $L(y)\le\operatorname{dist}(s,x)+W(x,y)=\operatorname{dist}(s,y)\le\operatorname{dist}(s,u)<L(u)$, onde a segunda desigualdade usa \textbf{pesos não negativos} (o trecho de $y$ a $u$ custa $\ge0$). Mas então $u$ não teria o menor $L$ em $D$. Contradição. $\square$
+
+\begin{center}\small
+\begin{tabular}{@{}lll@{}}
+\toprule
+Estrutura $D$ & Custo & Quando usar\\
+\midrule
+Vetor $L$ + varredura (matriz de adjacência) & $O(n^2)$ & grafo \textbf{denso} ($m=\Theta(n^2)$)\\
+Heap binário (de mínimo) com posição de cada vértice & $O((n+m)\log n)$ & grafo esparso (slides)\\
+Heap de Fibonacci & $O(m+n\log n)$ & teórico: \emph{decrease-key} $O(1)$\am\\
+\bottomrule
+\end{tabular}
+\end{center}
+Os custos vêm de $n$ inserções, $n$ remoções do mínimo e até $m$ reduções de prioridade (§\ref{sec:heap}, §\ref{sec:fib}). No heap binário, ``reposicionar'' é um \emph{subir} e exige um vetor $pos[w]$ com a posição de $w$ no heap.
+\begin{itemize}
+  \item \textbf{Pesos todos iguais a 1}: Dijkstra se comporta como a busca em largura, e $L(w)$ é a distância em arestas.
+  \item \textbf{Aresta negativa quebra o algoritmo}: $x\to y$ (1), $x\to z$ (2), $z\to y$ ($-2$). Dijkstra fixa $L(y)=1$, mas $x,z,y$ custa 0. (Para pesos negativos sem ciclo negativo: Bellman-Ford, $O(nm)$, fora do curso; ou Floyd-Warshall para todos os pares.)
+\end{itemize}
+
+% ------------------------------------------------------------------
+\subsection{Floyd-Warshall: PD em grafos (aula 16, 06/10; slides 342--405; Cormen §25.2)}\label{sec:fw}
+\textbf{Problema:} caminhos mínimos entre \textbf{todos os pares} ordenados $(i,j)$. Vértices numerados $1,\dots,n$.
+\[
+D^k(i,j)=\text{custo do caminho mínimo de }i\text{ a }j\text{ cujos vértices \emph{intermediários} estão em }\{1,\dots,k\}.
+\]
+$D^0=W$ e $D^n=$ matriz-solução. \textbf{Decomposição} (quadro da aula): o caminho mínimo restrito a $\{1..k\}$ ou \textbf{não usa} $k$ (custa $D^{k-1}(i,j)$), ou passa \textbf{uma vez} por $k$ e se divide em ``mínimo de $i$ a $k$'' $+$ ``mínimo de $k$ a $j$'', ambos com intermediários em $\{1..k-1\}$ (voltar a $k$ seria um ciclo, que não ajuda):
+\[
+D^k(i,j)=\begin{cases}W(i,j) & k=0\\ \min\{\,D^{k-1}(i,j),\ D^{k-1}(i,k)+D^{k-1}(k,j)\,\} & k\ge1.\end{cases}
+\]
+\textbf{Por que só ``prefixos'' $\{1..k\}$} (quadro): com um conjunto \emph{arbitrário} $S\subseteq V$ de intermediários, $D(i,j,S)=\min_{v\in S}\{D(i,v,S\setminus\{v\})+D(v,j,S\setminus\{v\})\}$ também é correto, mas há $n^2\,2^n$ subproblemas. Fixando uma ordem dos vértices e usando só os $n+1$ prefixos, sobram $O(n^3)$.
+
+\begin{pseudo}{Floyd-Warshall com matriz de predecessores $P$ -- $\Theta(n^3)$ tempo, $\Theta(n^2)$ memória}
+\begin{algorithmic}
+\Function{FloydWarshall}{$W,n$}
+  \For{$i,j:=1$ \textbf{até} $n$}
+    \State $D[i,j]:=W[i,j]$
+    \If{$i\ne j$ \textbf{e} $W[i,j]<\infty$} \State $P[i,j]:=i$ \Else \State $P[i,j]:=\nil$ \EndIf
+  \EndFor
+  \For{$k:=1$ \textbf{até} $n$} \Comment{$k$ é o laço \textbf{externo}}
+    \For{$i:=1$ \textbf{até} $n$}
+      \For{$j:=1$ \textbf{até} $n$}
+        \If{$D[i,k]+D[k,j]<D[i,j]$}
+          \State $D[i,j]:=D[i,k]+D[k,j]$;\ $P[i,j]:=P[k,j]$ \Comment{penúltimo vértice vem do trecho $k\leadsto j$}
+        \EndIf
+      \EndFor
+    \EndFor
+  \EndFor
+  \State \Return $D,P$
+\EndFunction
+\Procedure{Caminho}{$P,i,j$}
+  \If{$i=j$} \State imprima $i$
+  \ElsIf{$P[i,j]=\nil$} \State imprima ``não há caminho''
+  \Else \State \Call{Caminho}{$P,i,P[i,j]$};\ imprima $j$
+  \EndIf
+\EndProcedure
+\end{algorithmic}
+\end{pseudo}
+$P^k(i,j)$ é o \textbf{penúltimo} vértice do caminho mínimo de $i$ a $j$ (slides). Se o mínimo não muda, $P^k(i,j)=P^{k-1}(i,j)$; se muda, $P^k(i,j)=P^{k-1}(k,j)$. Uma só matriz basta (atualização ``no lugar''): na iteração $k$, a linha e a coluna $k$ não mudam, pois $D(k,k)=0$.
+
+\begin{exemplo}[Slides, matriz $W$ acima --- conferido]\leavevmode
+\begin{center}\small
+\begin{tabular}{c|l}
+$k$ & entradas que diminuem (via $k$)\\ \hline
+1 & $D(3,5)\!:\infty\to7$;\ $D(4,2)\!:\infty\to4$;\ $D(4,3)\!:\infty\to6$\\
+2 & $D(1,3)\!:3\to2$;\ $D(1,4)\!:\infty\to4$;\ $D(4,3)\!:6\to5$\\
+3 & $D(1,4)\!:4\to3$;\ $D(2,1)\!:\infty\to2$;\ $D(2,4)\!:3\to2$;\ $D(2,5)\!:\infty\to8$\\
+4 & $D(1,5)\!:6\to5$;\ $D(2,5)\!:8\to4$;\ $D(3,5)\!:7\to3$;\ $D(5,1)\!:\infty\to4$;\ $D(5,2)\!:\infty\to5$;\ $D(5,3)\!:\infty\to6$\\
+5 & nenhuma
+\end{tabular}
+\end{center}
+\begin{center}\small
+\begin{tabular}{c|ccccc}
+$D^5$ & 1 & 2 & 3 & 4 & 5\\ \hline
+1 & 0 & 1 & 2 & 3 & 5\\
+2 & 2 & 0 & 1 & 2 & 4\\
+3 & 1 & 2 & 0 & 1 & 3\\
+4 & 3 & 4 & 5 & 0 & 2\\
+5 & 4 & 5 & 6 & 1 & 0
+\end{tabular}
+\qquad
+\begin{tabular}{c|ccccc}
+$P^5$ & 1 & 2 & 3 & 4 & 5\\ \hline
+1 & -- & 1 & 2 & 3 & 4\\
+2 & 3 & -- & 2 & 3 & 4\\
+3 & 3 & 3 & -- & 3 & 4\\
+4 & 4 & 1 & 2 & -- & 4\\
+5 & 4 & 1 & 2 & 5 & --
+\end{tabular}
+\end{center}
+Caminho de 5 a 3: $P(5,3)=2$, $P(5,2)=1$, $P(5,1)=4$, $P(5,4)=5$ $\Rightarrow$ $5\to4\to1\to2\to3$, custo $1+3+1+1=6=D^5(5,3)$.
+\end{exemplo}
+\begin{itemize}
+  \item \textbf{Pesos negativos}: os slides pedem pesos positivos, mas o algoritmo funciona com arestas negativas desde que \textbf{não haja ciclo negativo}. Há ciclo negativo $\iff$ ao final algum $D(i,i)<0$.
+  \item \textbf{Floyd-Warshall $\times$ $n$ vezes Dijkstra}: $\Theta(n^3)$ simples, contra $O(n\,(n+m)\log n)$ com heap, ou $O(n^3)$ com vetor. Em grafo esparso e sem pesos negativos, $n$ Dijkstras ganham; em grafo denso ou com pesos negativos, Floyd-Warshall.
+\end{itemize}
+
+\begin{cuidado}[Armadilhas de caminhos mínimos]
+\begin{itemize}
+  \item Laço do $k$ \textbf{por dentro} ($i,j$ fora e $k$ dentro) dá resposta errada: $k$ tem de ser o laço externo.
+  \item Usar Dijkstra com aresta negativa.
+  \item Confundir com AGM: a árvore de caminhos mínimos (Dijkstra) minimiza a distância de cada vértice à raiz; a AGM (§\ref{sec:agm}) minimiza a \emph{soma} dos pesos da árvore. São, em geral, árvores diferentes.
+  \item Em Dijkstra com heap, ``reposicionar'' exige saber onde $w$ está no heap; sem $pos[\cdot]$ a busca custaria $O(n)$.
+\end{itemize}
+\end{cuidado}
+
+\begin{chave}
+Dijkstra: fila de prioridades em $L$; pesos $\ge0$; $O(n^2)$ (vetor), $O((n+m)\log n)$ (heap), $O(m+n\log n)$ (Fibonacci). Floyd-Warshall: $D^k(i,j)=\min\{D^{k-1}(i,j),D^{k-1}(i,k)+D^{k-1}(k,j)\}$, $k$ externo, $\Theta(n^3)$; $P(i,j)=$ penúltimo vértice; ciclo negativo $\iff D(i,i)<0$.
+\end{chave}

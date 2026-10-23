@@ -100,12 +100,12 @@
 \renewcommand{\arraystretch}{1.15}
 
 \title{\textbf{MC23 -- Algoritmos}\\[4pt]
-\large Resumo detalhado para a AV1\\
+\large Resumo detalhado: AV1 e conteúdo pós-AV1 (AV2)\\
 (IMPA Tech, 2026.2 -- Prof.\ Uéverton Souza)}
-\author{Baseado nos slides, aulas manuscritas, monitorias, listas, Testes 1 e 2;\\
+\author{Baseado nos slides, aulas manuscritas, monitorias, listas, pesquisas, Testes 1 e 2;\\
 complementado com Szwarcfiter \& Markenzon (\emph{Estruturas de Dados e seus Algoritmos})\\
 e Cormen et al.\ (\emph{Introduction to Algorithms}, 3.\ ed.)}
-\date{AV1: terça-feira, 22 de setembro de 2026}
+\date{Atualizado em 23 de outubro de 2026 (aulas até 20/10)\\ AV1: terça-feira, 22 de setembro de 2026}
 
 \begin{document}
 \maketitle
@@ -113,12 +113,13 @@ e Cormen et al.\ (\emph{Introduction to Algorithms}, 3.\ ed.)}
 \begin{chave}[Como usar este resumo]
 \begin{itemize}
   \item Ele foi escrito para quem \textbf{já estudou a matéria} e quer se localizar rápido: cada seção começa com o essencial, depois vêm as demonstrações e os detalhes que costumam ser cobrados.
-  \item \textcolor{ForestGreen!70!black}{\textbf{Caixas verdes}}: como o tema cai na AV1 (o formato da prova foi anunciado em aula --- ver abaixo).
+  \item \textbf{Parte I} (seções \ref{sec:complex}--\ref{sec:banco}): conteúdo da AV1, sem alterações. \textbf{Parte II} (seções \ref{sec:pd}--\ref{sec:bancoav2}): material liberado depois da AV1 --- programação dinâmica, buscas em grafos, caminhos mínimos, gulosos, matroides e AGM.
+  \item \textcolor{ForestGreen!70!black}{\textbf{Caixas verdes}}: como o tema cai na prova (na Parte I, o formato anunciado para a AV1 --- ver abaixo; na Parte II, receitas e tipos de questão prováveis, pois o formato da AV2 ainda não foi anunciado).
   \item \textcolor{BrickRed!75!black}{\textbf{Caixas vermelhas}}: armadilhas e erros frequentes (inclusive erros encontrados em slides/monitorias).
   \item \textcolor{MidnightBlue}{\textbf{Caixas azuis}}: resumo do que precisa estar na ponta da língua.
   \item \textcolor{orange!70!black}{\textbf{Caixas laranjas}}: complementos (livros/pesquisas) que não foram o foco das aulas.
   \item Convenção de heap do curso (Szwarcfiter): \textbf{heap de máximo, vetor indexado a partir de 1}, pai de $i$ é $\floor{i/2}$, filhos $2i$ e $2i+1$. Balanço AVL: $\bal(v)=h_D(v)-h_E(v)$.
-  \item Todos os exemplos numéricos (AVL, heaps, radix, subvetor máximo, inversões) foram \emph{conferidos por simulação}.
+  \item Todos os exemplos numéricos (AVL, heaps, radix, subvetor máximo, inversões; na Parte II, LCS, cadeia de matrizes, mochila, buscas, Dijkstra, Floyd-Warshall, Kruskal e Prim) foram \emph{conferidos por simulação}.
 \end{itemize}
 \end{chave}
 
@@ -164,14 +165,27 @@ Q5 & \textbf{Divisão e conquista}: dado um problema, escrever o \textbf{pseudoc
 11 & 15/09 & \textbf{Teste 2} (ordenação e D\&C) & \ref{sec:testes}\\
 12--13 & 16 e 18/09 & Exercícios; revisão (AVL, D\&C); formato da AV1 & ---\\
 \midrule
+14 & 29/09 & PD: subsequência comum máxima (Cormen §15.4) & \ref{sec:pd}, \ref{sec:lcs}\\
+15 & 02/10 & PD: multiplicação de cadeia de matrizes (Cormen §15.2) & \ref{sec:cadeia}\\
+16 & 06/10 & PD em grafos: Floyd-Warshall (slides 342--405 de grafos; Cormen §25.2) & \ref{sec:fw}\\
+17 & 09/10 & AGM: Prim e Kruskal (slides 406--461; Cormen §23.2) & \ref{sec:agm}\\
+18 & 13/10 & Busca em largura; Dijkstra (slides 274--342; Cormen §22.2, §24.3) & \ref{sec:bfs}, \ref{sec:dijkstra}\\
+19 & 16/10 & Busca em profundidade (slides 1--122; Cormen §22.3) & \ref{sec:dfs}\\
+20 & 20/10 & Busca em profundidade em digrafos; componentes fortemente conexas (slides 123--170) & \ref{sec:dfsdig}\\
+\midrule
 Monitorias & & Heaps binomiais/Fibonacci (26/08), Union-Find, AVL (aula prática 4), Revisão Heap/UF/AVL & \ref{sec:heapav}, \ref{sec:uf}, \ref{sec:avl}, \ref{sec:banco}\\
+Monitorias & & Programação dinâmica (cadeia de matrizes, mochila); LCS com reconstrução & \ref{sec:cadeia}, \ref{sec:mochila}, \ref{sec:lcs}\\
 Pesquisas & até 19/09 & Árvores rubro-negras; Tabelas hash & \ref{sec:rn}, \ref{sec:hash}\\
+Pesquisa & & Matroides, algoritmos gulosos e interseção de matroides & \ref{sec:matroides}\\
+Slides & & Matroides e algoritmos gulosos (não listados no registro de aulas) & \ref{sec:guloso}, \ref{sec:matroides}\\
 Listas & & Heaps (binário/binomial/Fibonacci); Union-Find e AVL & \ref{sec:banco}\\
+Listas & & Programação dinâmica; Árvores geradoras e métodos gulosos & \ref{sec:listapd}, \ref{sec:listaagm}\\
+Outros & & Listas extras: APA (UFF), MAC5711 lista 6 (USP), MC458 lista 7 (Unicamp) & \ref{sec:bancoav2}\\
 \bottomrule
 \end{tabularx}
 \end{center}
 
-\noindent\emph{Obs.:} os slides de Programação Dinâmica, Gulosos, Matroides, AGM e Grafos pertencem à parte da AV2 no andamento real do curso; só PD aparece aqui, como complemento curto (§\ref{sec:pd}).
+\noindent\emph{Obs.:} a Parte II cobre o material liberado depois da AV1. Os slides de grafos vão além do que foi dado até 20/10: a ordenação topológica (slides 208--273) já está incluída (§\ref{sec:topo}); emparelhamentos e fluxos em redes (slides 464--609) ainda não.
 
 \newpage
 % ================================================================
@@ -228,10 +242,29 @@ Bucket sort & $\Theta(n\log n)$ ou $\Theta(n^2)$ & $\Theta(n)$ (unif.) & $\Theta
 \end{tabular}}
 
 \medskip
-\textbf{Outros}\quad Limite inferior p/ ordenação por comparação: $\Omega(n\log n)$.\quad Seleção ($k$-ésimo menor): BFPRT $O(n)$ pior caso; quickselect $O(n)$ esperado, $O(n^2)$ pior.\quad Contagem de inversões e subvetor de soma máxima (D\&C): $O(n\log n)$.\quad Strassen: $O(n^{\log_2 7})\approx O(n^{2{,}807})$.
+\textbf{Outros (Parte I)}\quad Limite inferior p/ ordenação por comparação: $\Omega(n\log n)$.\quad Seleção ($k$-ésimo menor): BFPRT $O(n)$ pior caso; quickselect $O(n)$ esperado, $O(n^2)$ pior.\quad Contagem de inversões e subvetor de soma máxima (D\&C): $O(n\log n)$.\quad Strassen: $O(n^{\log_2 7})\approx O(n^{2{,}807})$.
+
+\medskip
+\textbf{Programação dinâmica}\quad LCS $\Theta(nm)$.\quad Cadeia de matrizes $\Theta(n^3)$ tempo e $\Theta(n^2)$ memória.\quad Mochila 0-1 $\Theta(nW)$, pseudo-polinomial (memória $O(W)$ com um vetor).\quad Maior subsequência crescente $O(n^2)$ ou $O(n\log n)$.\quad Floyd-Warshall $\Theta(n^3)$.
+
+\medskip
+\textbf{Grafos} ($n$ vértices, $m$ arestas)\\[2pt]
+\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{4.1cm}>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}p{4.3cm}@{}}
+\toprule
+Algoritmo & Complexidade & Observação\\
+\midrule
+BFS, DFS e aplicações (CFC, topológica, articulações) & $O(n+m)$ listas; $O(n^2)$ matriz & BFS: distância em nº de arestas\\
+Dijkstra (uma origem) & $O(n^2)$ vetor; $O((n+m)\log n)$ heap; $O(m+n\log n)$ Fibonacci & só pesos $\ge0$\\
+Floyd-Warshall (todos os pares) & $\Theta(n^3)$ tempo, $\Theta(n^2)$ memória & pesos negativos ok, sem ciclo negativo\\
+Kruskal & $O(m\log n)$ (a ordenação domina) & Union-Find testa ciclo\\
+Prim & $O(n^2)$ matriz/vetor; $O(m\log n)$ heap; $O(m+n\log n)$ Fibonacci & heap só compensa se esparso\\
+Guloso em matroide & $O(n\log n+n\,h)$ & $h=$ custo do oráculo\\
+\bottomrule
+\end{tabularx}
 \end{center}
 
 \newpage
+\part{Conteúdo da AV1}
 \input{secoes/01_complexidade}
 \input{secoes/02_heaps}
 \input{secoes/03_heaps_avancados}
@@ -242,5 +275,13 @@ Bucket sort & $\Theta(n\log n)$ ou $\Theta(n^2)$ & $\Theta(n)$ (unif.) & $\Theta
 \input{secoes/08_dc}
 \input{secoes/09_complementos}
 \input{secoes/10_questoes}
+
+\newpage
+\part{Conteúdo pós-AV1 (AV2)}
+\input{secoes/11_pd}
+\input{secoes/12_buscas}
+\input{secoes/13_caminhos}
+\input{secoes/14_gulosos_agm}
+\input{secoes/15_questoes_av2}
 
 \end{document}

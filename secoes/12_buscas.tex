@@ -1,0 +1,231 @@
+% ================================================================
+\section{Grafos: representação e buscas}\label{sec:buscas}
+% ================================================================
+$G=(V,E)$, $n=|V|$, $m=|E|$; $N(v)$ é a vizinhança de $v$; num \textbf{digrafo}, $N_{out}(v)$ são os vértices $w$ com aresta $v\to w$. \textbf{Busca}: processo sistemático para visitar todos os vértices e arestas, extraindo informação da estrutura do grafo.
+\begin{center}\small
+\begin{tabular}{@{}lccc@{}}
+\toprule
+Representação & Memória & ``$vw\in E$?'' & Percorrer $N(v)$\\
+\midrule
+Matriz de adjacência (ou de pesos $W$) & $\Theta(n^2)$ & $O(1)$ & $\Theta(n)$\\
+Listas de adjacência & $\Theta(n+m)$ & $O(\text{grau}(v))$ & $\Theta(\text{grau}(v))$\\
+\bottomrule
+\end{tabular}
+\end{center}
+Como cada busca percorre cada vizinhança uma vez, ela custa $\Theta(n+m)$ com listas e $\Theta(n^2)$ com matriz.
+
+% ------------------------------------------------------------------
+\subsection{Busca em profundidade em grafos (aula 19, 16/10; slides 1--122; Cormen §22.3)}\label{sec:dfs}
+``\emph{Esgotar o filho antes de esgotar o pai}'': a próxima aresta visitada parte sempre do vértice \textbf{mais recente} da busca (pilha/recursão). Cada vértice recebe $PE(v)$ (profundidade de entrada) e $PS(v)$ (de saída), com um relógio global $t$.
+\begin{pseudo}{Busca em profundidade (slides), com o cálculo de $back(v)$ e dos blocos (aplicação 6)}
+\begin{algorithmic}
+\Procedure{BuscaProfundidade}{$G$}
+  \State $t:=0$;\ para todo $v$: $PE(v):=0$;\ $PS(v):=0$;\ $pai(v):=\nil$
+  \While{existe $v$ com $PE(v)=0$} \Call{P}{$v$} \Comment{nova raiz; uma por componente}
+  \EndWhile
+\EndProcedure
+\Procedure{P}{$v$}
+  \State $t:=t+1$;\ $PE(v):=t$;\ $back(v):=PE(v)$
+  \For{\textbf{cada} $w\in N(v)$}
+    \If{$PE(w)=0$} \Comment{aresta de \textbf{árvore} (azul)}
+      \State $pai(w):=v$;\ empilhe $vw$;\ \Call{P}{$w$}
+      \If{$back(w)\ge PE(v)$} \State desempilhe e imprima as arestas até $vw$ \Comment{um bloco} \EndIf
+      \State $back(v):=\min\{back(v),\,back(w)\}$
+    \ElsIf{$PS(w)=0$ \textbf{e} $w\ne pai(v)$} \Comment{aresta de \textbf{retorno} (vermelha)}
+      \State empilhe $vw$;\ $back(v):=\min\{back(v),\,PE(w)\}$
+    \EndIf
+  \EndFor
+  \State $t:=t+1$;\ $PS(v):=t$
+\EndProcedure
+\end{algorithmic}
+\end{pseudo}
+
+\begin{center}
+\begin{tikzpicture}[v/.style={circle,draw,fill=yellow!40,inner sep=1.2pt,minimum size=5mm,font=\small},
+  arv/.style={very thick,MidnightBlue}, ret/.style={thick,dashed,BrickRed}, lab/.style={font=\scriptsize,text=gray!70!black}]
+\node[v] (a) at (0,3.6) {$a$}; \node[v] (b) at (1.9,3.6) {$b$};
+\node[v] (c) at (0,2.4) {$c$}; \node[v] (d) at (1.9,2.4) {$d$};
+\node[v] (e) at (0,1.2) {$e$}; \node[v] (f) at (1.9,1.2) {$f$};
+\node[v] (g) at (0.95,0) {$g$};
+\draw[arv] (e)--(c); \draw[arv] (c)--(a); \draw[arv] (a)--(b); \draw[arv] (b)--(d); \draw[arv] (e)--(f); \draw[arv] (f)--(g);
+\draw[ret] (b)--(c); \draw[ret] (d)--(c); \draw[ret] (d)--(e); \draw[ret] (g)--(e);
+\node[lab,left=1pt of a] {3/8}; \node[lab,right=1pt of b] {4/7}; \node[lab,left=1pt of c] {2/9}; \node[lab,right=1pt of d] {5/6};
+\node[lab,left=1pt of e] {1/14}; \node[lab,right=1pt of f] {10/13}; \node[lab,below=1pt of g] {11/12};
+\end{tikzpicture}
+\qquad
+\begin{minipage}[b]{0.52\linewidth}\small
+\textbf{Exemplo dos slides} (conferido): raiz $e$, vizinhos em ordem alfabética. Rótulos $PE/PS$. Azul grosso: árvore $e\!-\!c\!-\!a\!-\!b\!-\!d$ e $e\!-\!f\!-\!g$. Vermelho tracejado: retorno $bc$, $dc$, $de$, $ge$.
+$back(v)=1$ para todos. \textbf{Articulação}: só $e$ (raiz com 2 filhos, $c$ e $f$). \textbf{Blocos}: $\{a,b,c,d,e\}$ e $\{e,f,g\}$.\\[2pt]
+Com raiz $a$: $e$ não é raiz e tem o filho $f$ com $back(f)=5\ge PE(e)=5$: articulação pelo outro caso do teorema.
+\end{minipage}
+\end{center}
+
+\paragraph{Propriedades.}
+\begin{itemize}
+  \item Se $G$ é conexo, as arestas azuis formam uma \textbf{árvore geradora} $T$ (a árvore de profundidade). Senão, o laço externo gera uma floresta, uma árvore por componente.
+  \item Em grafo \textbf{não direcionado} só existem arestas de \textbf{árvore} e de \textbf{retorno}. Toda aresta de retorno liga $v$ a um \textbf{ancestral} em $T$ e fecha um ciclo.
+  \item \textbf{Intervalos de vida} $I(v)=[PE(v),PS(v)]$ (teorema dos parênteses): dois intervalos são disjuntos ou um contém o outro; $v$ é descendente de $w$ $\iff$ $PE(w)<PE(v)$ e $PS(v)<PS(w)$ (``entra depois e sai antes'').
+  \item Complexidade: $O(n+m)$ (listas). Cada vértice entra uma vez; cada aresta é examinada duas vezes (uma por extremo).
+\end{itemize}
+
+\paragraph{Aplicações (slides).}
+\begin{enumerate}
+  \item \textbf{Conexidade}: conte quantas vezes o laço externo chama \textsc{P}: é o número de componentes conexas; $G$ é conexo se e só se a contagem é 1.
+  \item \textbf{Caminho de $v$ a $w$} (e labirintos, modelados como grafos): rode \textsc{P}$(v)$; se $PE(w)=0$, não há caminho. Senão, suba de $w$ por $pai(\cdot)$ até $v$, colocando cada vértice à \emph{esquerda}. O caminho \textbf{não} é necessariamente o mais curto (para isso, BFS).
+  \item \textbf{Ciclo}: sem aresta de retorno, $G$ é acíclico (floresta). Com uma aresta de retorno $vw$, $w$ é ancestral de $v$: suba de $v$ por $pai$ até $w$ e feche com $v$.
+  \item \textbf{2-coloração (bipartição)}: $G$ é bipartido $\iff$ não tem ciclo ímpar. Na busca, $cor(w):=1-cor(v)$ nas arestas de árvore; uma aresta de retorno com $cor(w)=cor(v)$ fecha um ciclo ímpar.
+  \item \textbf{Articulações e blocos.} Articulação: vértice cuja remoção aumenta o número de componentes. Bloco: subgrafo maximal conexo e sem articulação (um bloco com uma aresta só é uma \textbf{ponte}). Os blocos particionam as \emph{arestas}. Um vértice em mais de um bloco é articulação.
+  $back(v)=$ menor $PE$ alcançável a partir de $v$ descendo por arestas de $T$ e usando no máximo uma aresta de retorno.
+  \begin{teo}[Articulações via $back$]
+  Seja $T$ uma árvore de profundidade de $G$. A raiz de $T$ é articulação $\iff$ tem $\ge2$ filhos em $T$. Um vértice $v$ que não é raiz é articulação $\iff$ tem um filho $w$ com $back(w)\ge PE(v)$ (nenhum descendente de $w$ ``escapa'' para cima de $v$; $w$ é um \emph{demarcador} de $v$).
+  \end{teo}
+  Os blocos saem com uma pilha de arestas: ao voltar de $w$ com $back(w)\ge PE(v)$, desempilhe até $vw$. \emph{Pontes}: arestas de árvore $vw$ com $back(w)>PE(v)$. Tudo em $O(n+m)$.
+\end{enumerate}
+
+% ------------------------------------------------------------------
+\subsection{Busca em profundidade em digrafos (aula 20, 20/10; slides 123--170)}\label{sec:dfsdig}
+Mesmo procedimento percorrendo $N_{out}(v)$, com o laço externo (a floresta de profundidade alcança todos os vértices). Agora há \textbf{quatro} tipos de aresta:
+\begin{pseudo}{Classificação das arestas $vw$ na busca em digrafos (slides)}
+\begin{algorithmic}
+\Procedure{P}{$v$}
+  \State $t:=t+1$;\ $PE(v):=t$
+  \For{\textbf{cada} $w\in N_{out}(v)$}
+    \If{$PE(w)=0$} \State $vw$ é de \textbf{árvore} (azul);\ $pai(w):=v$;\ \Call{P}{$w$}
+    \ElsIf{$PS(w)=0$} \State $vw$ é de \textbf{retorno} (vermelha) \Comment{$w$ ainda está na busca: ancestral}
+    \ElsIf{$PE(v)<PE(w)$} \State $vw$ é de \textbf{avanço} (amarela) \Comment{$w$ é descendente já terminado}
+    \Else \State $vw$ é de \textbf{cruzamento} (verde) \Comment{$w$ terminou antes de $v$ começar}
+    \EndIf
+  \EndFor
+  \State $t:=t+1$;\ $PS(v):=t$
+\EndProcedure
+\end{algorithmic}
+\end{pseudo}
+\begin{center}\small
+\begin{tabular}{@{}lll@{}}
+\toprule
+Tipo de $vw$ & Caracterização por intervalos & Observação\\
+\midrule
+Árvore & $I(v)\supset I(w)$ e $PE(w)=0$ na hora da visita & liga pai e filho\\
+Avanço & $I(v)\supset I(w)$ e $PE(w)\ne0$ na hora da visita & vai a um descendente não filho\\
+Retorno & $I(v)\subset I(w)$ & vai a um ancestral: \textbf{fecha ciclo direcionado}\\
+Cruzamento & $I(v)$ inteiro à \textbf{direita} de $I(w)$ & sempre ``para trás'' no tempo\\
+\bottomrule
+\end{tabular}
+\end{center}
+Nunca há aresta $vw$ com $I(v)$ inteiro à esquerda de $I(w)$ (quando $v$ examina $vw$, $w$ seria visitado como filho). $G$ é \textbf{acíclico} $\iff$ uma busca (qualquer uma) não produz aresta de retorno.
+
+\paragraph{Componentes fortemente conexas (CFC).} Subdigrafo maximal em que, para quaisquer $v,w$, há caminho de $v$ a $w$ \emph{e} de $w$ a $v$. As CFC particionam os \emph{vértices}; algumas arestas não ficam em nenhuma CFC (são de árvore, avanço ou cruzamento). O resultado não depende da ordem da busca, embora o tipo de cada aresta dependa.
+$old(v)=PE$ do vértice mais antigo, \textbf{na mesma CFC} que $v$, alcançável descendo por arestas de árvore e usando no máximo uma aresta de retorno ou de cruzamento. $v$ é \textbf{forte} (a ``raiz'' da sua CFC) se $old(v)=PE(v)$ quando $v$ sai da busca.
+\begin{pseudo}{CFC (slides; é o algoritmo de Tarjan) -- $O(n+m)$}
+\begin{algorithmic}
+\Procedure{P}{$v$}
+  \State $t:=t+1$;\ $PE(v):=t$;\ $old(v):=PE(v)$;\ empilhe $v$ em $Q$
+  \For{\textbf{cada} $w\in N_{out}(v)$}
+    \If{$PE(w)=0$} \State $pai(w):=v$;\ \Call{P}{$w$};\ $old(v):=\min\{old(v),\,old(w)\}$ \Comment{árvore}
+    \ElsIf{$PS(w)=0$} \State $old(v):=\min\{old(v),\,PE(w)\}$ \Comment{retorno}
+    \ElsIf{$PE(v)<PE(w)$} \State (avanço: nada a fazer)
+    \ElsIf{$w$ está em $Q$} \State $old(v):=\min\{old(v),\,PE(w)\}$ \Comment{cruzamento dentro de uma CFC ainda aberta}
+    \EndIf
+  \EndFor
+  \State $t:=t+1$;\ $PS(v):=t$
+  \If{$old(v)=PE(v)$} \State desempilhe de $Q$ todos os vértices até $v$ (inclusive): \textbf{formam uma CFC} \EndIf
+\EndProcedure
+\end{algorithmic}
+\end{pseudo}
+
+\begin{center}
+\begin{tikzpicture}[v/.style={circle,draw,fill=yellow!40,inner sep=1.2pt,minimum size=5mm,font=\small},
+  >={Stealth[length=2.2mm]}, arv/.style={->,very thick,MidnightBlue}, ret/.style={->,thick,dashed,BrickRed},
+  ava/.style={->,thick,dotted,orange!85!black}, cru/.style={->,thick,ForestGreen}, lab/.style={font=\scriptsize,text=gray!70!black}]
+\node[v] (a) at (0,1.5) {$a$}; \node[v] (b) at (1.8,1.5) {$b$}; \node[v] (c) at (3.6,1.5) {$c$}; \node[v] (d) at (5.4,1.5) {$d$};
+\node[v] (e) at (0,0) {$e$}; \node[v] (f) at (1.8,0) {$f$}; \node[v] (g) at (3.6,0) {$g$}; \node[v] (h) at (5.4,0) {$h$};
+\draw[arv] (a)--(b); \draw[arv] (b)--(c); \draw[arv] (b)--(e); \draw[arv] (c) to[bend left=18] (d); \draw[arv] (c)--(g);
+\draw[arv] (d)--(h); \draw[arv] (g) to[bend left=18] (f);
+\draw[ret] (d) to[bend left=18] (c); \draw[ret] (e)--(a); \draw[ret] (f) to[bend left=18] (g);
+\draw[ava] (b)--(f); \draw[cru] (e)--(f); \draw[cru] (g)--(h);
+\node[lab,above=1pt of a] {1/16}; \node[lab,above=1pt of b] {2/15}; \node[lab,above=1pt of c] {3/12}; \node[lab,above=1pt of d] {4/7};
+\node[lab,below=1pt of e] {13/14}; \node[lab,below=1pt of f] {9/10}; \node[lab,below=1pt of g] {8/11}; \node[lab,below=1pt of h] {5/6};
+\end{tikzpicture}
+\end{center}
+\begin{exemplo}[Digrafo do Cormen, Fig.~22.9 --- conferido]
+Busca a partir de $a$, vizinhos em ordem alfabética; rótulos $PE/PS$. Azul: árvore; vermelho tracejado: retorno ($dc$, $ea$, $fg$); laranja pontilhado: avanço ($bf$); verde: cruzamento ($ef$, $gh$).
+$old$: $a{=}1$, $b{=}1$, $e{=}1$, $c{=}3$, $d{=}3$, $g{=}8$, $f{=}8$, $h{=}5$. Vértices fortes, na ordem em que saem: $h$, $g$, $c$, $a$. CFC: $\{h\}$, $\{f,g\}$, $\{c,d\}$, $\{a,b,e\}$. Note que $ef$ é de cruzamento, mas $f$ já saiu de $Q$ (sua CFC já foi fechada), então não altera $old(e)$.
+\end{exemplo}
+
+\subsubsection{Ordenação topológica (slides 208--273)}\label{sec:topo}
+Num digrafo \textbf{acíclico} (DAG), uma ordenação $v_1,\dots,v_n$ tal que toda aresta $v_iv_j$ tem $i<j$ (escalonamento de tarefas com dependências). \textbf{Algoritmo:} rode uma busca em profundidade; se houver aresta de retorno, pare (há ciclo); senão, ordene os vértices por \textbf{$PS$ decrescente}. Implementação $O(n+m)$: ao dar $PS$ a um vértice, coloque-o imediatamente à \emph{esquerda} da lista (dispensa ordenar).
+\begin{teo}[Correção]
+Num DAG, toda aresta $vw$ tem $PS(w)<PS(v)$.
+\end{teo}
+\emph{Prova:} não há retorno. Árvore ou avanço: $w$ é descendente de $v$, então sai antes. Cruzamento: $I(w)$ está inteiro à esquerda de $I(v)$. (Visão dos slides: o vértice de menor $PS$ é um \emph{sumidouro}; tirando-o, o de menor $PS$ restante é sumidouro do que sobrou, e assim por diante.)
+\emph{Exemplo dos slides} (DAG com $a{\to}c$, $a{\to}d$, $d{\to}c$, $b{\to}c$, $e{\to}b$, $e{\to}f$, $e{\to}g$, $f{\to}g$, $h{\to}f$, $i{\to}h$, $i{\to}j$, $j{\to}h$, $j{\to}g$): com raízes em ordem alfabética, $PS$ decrescente dá $i,j,h,e,f,g,b,a,d,c$; o slide mostra $a,d,e,b,c,i,j,h,f,g$ (outra ordem de raízes: $i,c,b,e,d,a$). \textbf{As duas são válidas}: a ordenação topológica não é única.
+\emph{Alternativa} (exercício dos slides): todo DAG tem um sumidouro (o fim de um caminho máximo) e uma fonte. Retire repetidamente um sumidouro e coloque-o à esquerda (ou uma fonte, à direita). Com contadores de grau e uma fila dos graus zerados, fica $O(n+m)$ (algoritmo de Kahn).
+
+% ------------------------------------------------------------------
+\subsection{Busca em largura (aula 18, 13/10; slides 274--312; Cormen §22.2)}\label{sec:bfs}
+``\emph{Esgotar o pai antes de processar os filhos}'': a próxima aresta parte sempre do vértice \textbf{mais antigo} na busca (\textbf{fila} $F$). $L(v)$ é a ordem de chegada e $nivel(v)$ a profundidade na floresta de largura.
+\begin{pseudo}{Busca em largura (slides) com classificação das arestas}
+\begin{algorithmic}
+\Procedure{BuscaLargura}{$G$}
+  \State $t:=0$;\ $F:=\emptyset$;\ para todo $v$: $L(v):=0$;\ $pai(v):=\nil$
+  \While{existe $v$ com $L(v)=0$}
+    \State $nivel(v):=0$;\ $t:=t+1$;\ $L(v):=t$;\ insira $v$ no fim de $F$
+    \While{$F\ne\emptyset$}
+      \State $v:=$ primeiro de $F$;\ retire $v$ de $F$
+      \For{\textbf{cada} $w\in N(v)$}
+        \If{$L(w)=0$} \Comment{aresta-\textbf{pai} (azul)}
+          \State $pai(w):=v$;\ $nivel(w):=nivel(v)+1$;\ $t:=t+1$;\ $L(w):=t$;\ insira $w$ no fim de $F$
+        \ElsIf{$nivel(w)=nivel(v)$ \textbf{e} $w\in F$} \Comment{$w\in F$: não classificar duas vezes}
+          \State se $pai(w)=pai(v)$, $vw$ é aresta-\textbf{irmão} (vermelha); senão, aresta-\textbf{primo} (amarela)
+        \ElsIf{$nivel(w)=nivel(v)+1$} \State $vw$ é aresta-\textbf{tio} (verde)
+        \EndIf
+      \EndFor
+    \EndWhile
+  \EndWhile
+\EndProcedure
+\end{algorithmic}
+\end{pseudo}
+
+\begin{center}
+\begin{tikzpicture}[v/.style={circle,draw,fill=yellow!40,inner sep=1.2pt,minimum size=5mm,font=\small},
+  pai/.style={very thick,MidnightBlue}, irm/.style={thick,BrickRed}, pri/.style={thick,dotted,orange!85!black}, tio/.style={thick,dashed,ForestGreen},
+  lab/.style={font=\scriptsize,text=gray!70!black}]
+\node[v] (a) at (0.9,3.6) {$a$};
+\node[v] (b) at (0,2.4) {$b$}; \node[v] (c) at (1.8,2.4) {$c$};
+\node[v] (d) at (0,1.2) {$d$}; \node[v] (e) at (1.8,1.2) {$e$};
+\node[v] (f) at (0,0) {$f$}; \node[v] (g) at (1.4,0) {$g$}; \node[v] (h) at (2.8,0) {$h$};
+\draw[pai] (a)--(b); \draw[pai] (a)--(c); \draw[pai] (b)--(d); \draw[pai] (c)--(e); \draw[pai] (d)--(f); \draw[pai] (d)--(g); \draw[pai] (e)--(h);
+\draw[irm] (b)--(c); \draw[irm] (f)--(g); \draw[pri] (d)--(e); \draw[pri] (g)--(h); \draw[tio] (c)--(d); \draw[tio] (e)--(f);
+\node[lab,right=1pt of a] {1/0}; \node[lab,left=1pt of b] {2/1}; \node[lab,right=1pt of c] {3/1}; \node[lab,left=1pt of d] {4/2};
+\node[lab,right=1pt of e] {5/2}; \node[lab,below=1pt of f] {6/3}; \node[lab,below=1pt of g] {7/3}; \node[lab,below=1pt of h] {8/3};
+\end{tikzpicture}
+\qquad
+\begin{minipage}[b]{0.5\linewidth}\small
+\textbf{Exemplo dos slides} (conferido), raiz $a$; rótulos $L/nivel$. Azul grosso: arestas-pai. Vermelho: irmão ($bc$, $fg$). Amarelo pontilhado: primo ($de$, $gh$). Verde tracejado: tio ($cd$, $ef$).
+Distâncias de $a$: $b,c\mapsto1$; $d,e\mapsto2$; $f,g,h\mapsto3$. Não é bipartido: o triângulo $abc$ é um ciclo ímpar, e isso aparece como as arestas-irmão/primo.
+\end{minipage}
+\end{center}
+
+\begin{itemize}
+  \item \textbf{Caracterizações:} pai $\iff$ $nivel(w)=nivel(v)+1$ e $L(w)=0$ na visita; tio $\iff$ $nivel(w)=nivel(v)+1$ e $L(w)\ne0$; irmão $\iff$ mesmo nível e mesmo pai; primo $\iff$ mesmo nível e pais diferentes.
+  \item \textbf{Propriedade fundamental:} para toda aresta $vw$, $|nivel(v)-nivel(w)|\le1$. Em qualquer momento, os vértices na fila diferem em no máximo um nível.
+  \item \textbf{Aplicação 1: distâncias.} Com raiz $x$, $\operatorname{dist}(x,v)=nivel(v)$, e o caminho de $x$ a $v$ em $T$ é \textbf{mínimo} (em número de arestas). Labirinto: o menor caminho da entrada à saída.
+  \item \textbf{Aplicação 3: bipartição.} $G$ é bipartido $\iff$ a floresta de largura não tem arestas-irmão nem primo (elas fecham ciclos ímpares). A 2-coloração é dada pela paridade do nível.
+  \item \textbf{Complexidade:} $O(n+m)$ com listas.
+  \item \textbf{Pilha $\times$ fila} (exercício dos slides): no esquema ``marque a raiz e insira em $D$; enquanto $D\ne\emptyset$, seja $v$ o \emph{primeiro} de $D$; se $v$ tem vizinho $w$ desmarcado, marque $w$, $pai(w):=v$ e insira $w$ em $D$; senão remova $v$'', usar $D=$ \textbf{pilha} dá a busca em profundidade e $D=$ \textbf{fila} dá a busca em largura. Com $D=$ \textbf{fila de prioridades} chega-se a Dijkstra (§\ref{sec:dijkstra}).
+\end{itemize}
+
+\begin{cuidado}[Armadilhas das buscas]
+\begin{itemize}
+  \item Esquecer o laço externo: num grafo desconexo, \textsc{P}$(v)$ só alcança a componente de $v$.
+  \item Em grafo não direcionado, a aresta $vw$ com $w=pai(v)$ \emph{não} é de retorno (é a própria aresta de árvore vista do outro lado).
+  \item O caminho achado por DFS não é mínimo; o achado por BFS é mínimo só em \emph{número de arestas} (com pesos, Dijkstra).
+  \item Em digrafos, ``acíclico'' é sobre ciclos \emph{direcionados}: arestas de cruzamento e avanço não indicam ciclo; só as de retorno.
+  \item Regra da articulação: para a raiz vale ``$\ge2$ filhos'', não o teste com $back$ (na raiz, $back(w)\ge PE(\text{raiz})=1$ é sempre verdade).
+  \item O pseudocódigo das CFC nos slides tem \texttt{executar P(w)} repetido na mesma linha; é uma chamada só.
+\end{itemize}
+\end{cuidado}
+
+\begin{chave}
+DFS: pilha/recursão, $PE/PS$, intervalos aninhados; não direcionado tem só árvore$+$retorno; digrafo tem árvore, retorno, avanço e cruzamento. Retorno $\iff$ ciclo. Articulação: raiz com $\ge2$ filhos, ou filho $w$ com $back(w)\ge PE(v)$. CFC: $old(v)=PE(v)\Rightarrow$ desempilha. Topológica: $PS$ decrescente. BFS: fila, níveis, $|\Delta nivel|\le1$, distâncias em arestas, bipartido $\iff$ sem irmão/primo. Tudo $O(n+m)$.
+\end{chave}

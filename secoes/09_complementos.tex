@@ -16,14 +16,3 @@
 \end{itemize}
 \textbf{Complexidade:} com fator de carga $\alpha=n/m$ e hash uniforme, busca em $\Theta(1+\alpha)$ esperado com encadeamento, e $\le\frac1{1-\alpha}$ sondagens esperadas (busca sem sucesso) no endereçamento aberto; mantendo $\alpha=O(1)$ (redimensionando a tabela, custo amortizado $O(1)$), as operações são $O(1)$ esperado. \textbf{Pior caso: $\Theta(n)$} (todas as chaves no mesmo endereço). Hash não mantém ordem (sem mínimo, sucessor, intervalos --- aí usa-se AVL/rubro-negra).
 \end{complemento}
-
-\subsection{Programação dinâmica}\label{sec:pd}
-\begin{complemento}[ -- slides de PD (subsequência comum máxima); não previsto no formato da AV1]
-Na decomposição recursiva, \textbf{subproblemas idênticos} podem aparecer muitas vezes, gerando tempo exponencial mesmo com poucos subproblemas distintos (ex.: Fibonacci recursivo). \textbf{PD}: guardar a solução de cada subproblema numa tabela e resolvê-los de baixo para cima (\emph{bottom-up}) ou com memorização. D\&C é bom quando os subproblemas são disjuntos; PD quando eles se sobrepõem.
-
-\textbf{Subsequência comum máxima (LCS).} $X=x_1..x_n$, $Y=y_1..y_m$; $C(i,j)=$ tamanho da LCS de $X_i$ e $Y_j$:
-\[
-C(i,j)=\begin{cases}0 & i=0\text{ ou }j=0\\ 1+C(i-1,j-1) & x_i=y_j\\ \max\{C(i-1,j),C(i,j-1)\} & x_i\ne y_j\end{cases}
-\]
-Preenche-se a tabela linha a linha: $O(nm)$ tempo e espaço; resposta $C(n,m)$. Ex.: $X=5,2,1,3,9,10,14$, $Y=2,3,1,10$: LCS de tamanho 3 ($2,3,10$ ou $2,1,10$). Para \emph{recuperar} a subsequência, volte de $(n,m)$: se $x_i=y_j$, $x_i$ faz parte e vá a $(i-1,j-1)$; senão vá para a vizinha de maior valor.
-\end{complemento}
