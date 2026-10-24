@@ -23,6 +23,34 @@ Conhecer cada estrutura e cada algoritmo isoladamente não basta: na prática, o
 \end{enumerate}
 \end{roteiro}
 
+O passo 6 pede uma estimativa numérica, e ela é mais fácil do que parece. Um computador comum executa algo em torno de $10^8$ operações simples por segundo; com isso, basta substituir $n$ na complexidade para saber se o programa termina em milissegundos, em horas ou em séculos.
+
+\begin{center}\small
+\begin{tabular}{@{}rcccc@{}}
+\toprule
+$n$ & $\log_2n$ & $n\log_2n$ & $n^2$ & tempo de $n\log_2n$ / de $n^2$ (a $10^8$ op/s)\\
+\midrule
+$10^3$ & $\approx10$ & $\approx10^4$ & $10^6$ & instantâneo / 0,01 s\\
+$10^6$ & $\approx20$ & $\approx2\cdot10^7$ & $10^{12}$ & 0,2 s / quase 3 horas\\
+$10^9$ & $\approx30$ & $\approx3\cdot10^{10}$ & $10^{18}$ & 5 minutos / mais de 300 anos\\
+\bottomrule
+\end{tabular}
+\end{center}
+A tabela mostra por que a complexidade importa mais que qualquer detalhe de implementação: com um milhão de elementos, trocar um algoritmo quadrático por um de $O(n\log n)$ transforma horas em frações de segundo, e nenhum computador mais rápido compensa a diferença.
+
+\begin{exemplo}[O roteiro aplicado: um painel de servidores]\label{ex:painel}
+Um painel acompanha $10^4$ servidores. A cada segundo, cada servidor informa a sua carga atual, um inteiro de 0 a 100 (por cento); o painel mostra, a cada segundo, os 10 servidores mais carregados, e, uma vez por hora, gera um relatório com todos os servidores em ordem de carga.
+\begin{enumerate}
+  \item \emph{Operações}: atualizar a carga de um servidor; consultar os 10 mais carregados; ordenar todos por carga.
+  \item \emph{Frequências}: $10^4$ atualizações por segundo, uma consulta por segundo, uma ordenação por hora. A operação dominante é a atualização.
+  \item \emph{Estrutura}: um heap de máximo com vetor de posições faz cada atualização em $O(\log n)$, uma alteração de prioridade (Capítulo~\ref{cap:heap}), e os 10 maiores saem com algumas remoções e reinserções; uma AVL indexada por (carga, servidor) também faria tudo em $O(\log n)$.
+  \item \emph{Tipo das chaves}: as cargas são inteiros de 0 a 100. Isso permite algo melhor: 101 listas duplamente encadeadas, uma por valor de carga, e um vetor que diz em que nó de que lista está cada servidor. Atualizar é tirar o servidor de uma lista e pô-lo em outra, em $O(1)$; os 10 mais carregados são lidos percorrendo as listas da carga 100 para baixo, em $O(101+10)$; e o relatório ordenado é a concatenação das listas, um counting sort, em $O(n+101)$.
+  \item \emph{Restrições}: memória $O(n+101)$, nenhuma exigência de estabilidade.
+  \item \emph{Justificativa}: $10^4$ atualizações de custo $O(1)$ por segundo, contra cerca de $10^4\cdot\log_210^4\approx1{,}3\cdot10^5$ passos com o heap; as duas cabem folgadamente num segundo, mas a solução com listas é mais simples de manter e não depende de $n$.
+\end{enumerate}
+O ponto do exemplo é o passo 4: o tipo das chaves (inteiros num intervalo pequeno) abriu uma solução que nenhuma estrutura ``genérica'' daria.
+\end{exemplo}
+
 \section{Quadro comparativo}\label{sec:escolhageral}
 \begin{center}
 \small
@@ -46,6 +74,29 @@ ordenar chaves arbitrárias com garantia e estabilidade & \textbf{mergesort} (Ca
 \end{tabularx}
 \end{center}
 
+Para a ordenação, as perguntas podem ser feitas numa ordem fixa, como no fluxograma da Figura~\ref{fig:fluxosort}: as primeiras perguntas procuram uma estrutura especial nos dados que permita fugir do limite $\Omega(n\log n)$; só quando nenhuma aparece é que se escolhe entre os algoritmos por comparação.
+
+\begin{figura}[Um fluxograma para escolher o algoritmo de ordenação. Cada pergunta é feita só se as anteriores tiveram resposta ``não''.\label{fig:fluxosort}]
+\begin{tikzpicture}[x=1cm,y=1cm,
+  perg/.style={draw, thick, rounded corners=6pt, fill=azul, font=\small, align=center, text width=8.2cm, minimum height=7mm},
+  resp/.style={draw, thick, fill=feito, font=\small\bfseries, minimum width=2.6cm, minimum height=7mm},
+  rotulo/.style={font=\scriptsize, text=gray!60!black}]
+\foreach \lin/\txt/\alg in {
+  0/{$n$ pequeno, ou vetor quase ordenado?}/{inserção},
+  1/{inteiros num intervalo pequeno ($k=O(n)$)?}/{counting sort},
+  2/{inteiros com poucos dígitos?}/{radix sort},
+  3/{reais com distribuição uniforme conhecida?}/{bucket sort},
+  4/{precisa de estabilidade, ou dados em lista ou arquivo?}/{mergesort},
+  5/{pouca memória e garantia de pior caso?}/{heapsort}} {
+  \node[perg] (q\lin) at (0,-1.3*\lin) {\txt};
+  \node[resp] (r\lin) at (7,-1.3*\lin) {\alg};
+  \draw[seta] (q\lin) -- node[above, rotulo] {sim} (r\lin);}
+\foreach \lin [evaluate=\lin as \prox using int(\lin+1)] in {0,...,4} {\draw[seta] (q\lin) -- node[right, rotulo] {não} (q\prox);}
+\node[resp] (rq) at (0,-1.3*6) {quicksort};
+\draw[seta] (q5) -- node[right, rotulo] {não} (rq);
+\end{tikzpicture}
+\end{figura}
+
 \paragraph{Padrões a reconhecer em código.} Alguns padrões indicam, quase sempre, uma estrutura inadequada:
 \begin{itemize}
   \item um laço que procura o máximo de uma lista e o remove, a cada iteração ($\Theta(n)$ por iteração): use um \textbf{heap};
@@ -55,6 +106,17 @@ ordenar chaves arbitrárias com garantia e estabilidade & \textbf{mergesort} (Ca
   \item ordenar inteiros pequenos com um \texttt{sort} genérico: use \textbf{counting} ou \textbf{radix sort};
   \item procurar um elemento por varredura a cada consulta: use \textbf{hash} (sem ordem) ou \textbf{AVL} (com ordem).
 \end{itemize}
+
+\begin{exemplo}[Do código lento ao código rápido: o par mais próximo numa reta]
+Um programa recebe as posições $x_1,\dots,x_n$ de $n$ postes ao longo de uma estrada e precisa da menor distância entre dois postes. O código atual compara todos os pares:
+\begin{pseudo}{Versão quadrática}
+\begin{algorithmic}
+\State $melhor:=\infty$
+\For{$i:=1$ \textbf{até} $n$} \For{$j:=i+1$ \textbf{até} $n$} \State $melhor:=\min\{melhor,\ |x_i-x_j|\}$ \EndFor \EndFor
+\end{algorithmic}
+\end{pseudo}
+São $\binom n2$ comparações: com $n=10^6$, cerca de $5\cdot10^{11}$ operações, mais de uma hora. A observação que salva é que, \emph{depois de ordenar}, o par mais próximo é necessariamente formado por dois vizinhos: se $x_{(1)}\le x_{(2)}\le\dots\le x_{(n)}$ e $i<j-1$, então $x_{(j)}-x_{(i)}\ge x_{(i+1)}-x_{(i)}$. Basta ordenar, em $O(n\log n)$, e comparar os $n-1$ pares vizinhos, em $O(n)$: cerca de $2\cdot10^7$ operações, uma fração de segundo. Por exemplo, para as posições $17,\,3,\,42,\,25,\,9,\,40$, a ordem é $3,9,17,25,40,42$, as diferenças entre vizinhos são $6,8,8,15,2$, e a resposta é 2 (os postes em 40 e 42). Se as posições forem inteiros num intervalo pequeno, a ordenação pode até ser linear, com counting ou radix sort.
+\end{exemplo}
 
 \section{Resumo das complexidades}
 \begin{center}
@@ -90,12 +152,24 @@ Bucket sort & $\Theta(n^2)$ & $\Theta(n)$ (uniforme) & $\Theta(n)$ & depende\\
 \end{center}
 \textbf{Outras estruturas.} Union-Find com rank e compressão: $O(\lgs n)$ amortizado por operação (ou $O(\alpha)$). AVL: busca, inserção e remoção em $O(\log n)$ no pior caso. Seleção: $O(n)$ no pior caso pela mediana das medianas. Divisão e conquista: contagem de inversões e subvetor máximo em $O(n\log n)$; Strassen em $O(n^{2{,}807})$.
 
+\begin{cuidado}[Armadilhas na escolha]
+\begin{itemize}
+  \item Escolher pela operação mais \emph{lembrada}, e não pela mais \emph{frequente}: uma estrutura ótima para a consulta rara e péssima para a atualização constante é uma má escolha.
+  \item Confundir custo amortizado com custo de pior caso: o heap de Fibonacci e o vetor que dobra de tamanho são baratos \emph{no total}, mas uma operação isolada pode ser cara; se cada operação precisa de tempo previsível, isso importa.
+  \item Esquecer as operações ``escondidas'': ``inserir, se ainda não existir'' exige uma \emph{busca por chave} antes de cada inserção, e um heap não busca em menos de $\Theta(n)$.
+  \item Ignorar a memória: counting sort com $k$ enorme, ou uma matriz de adjacência para um grafo esparso, podem ser inviáveis mesmo quando o tempo é bom.
+\end{itemize}
+\end{cuidado}
+
 \section{Exemplos}
 \begin{exemplo}[Uma agenda de compromissos]
 Um aplicativo guarda compromissos com data e hora, insere e remove compromissos com frequência, mostra o próximo compromisso e lista todos os compromissos de uma semana. As operações dominantes são inserção, remoção de um compromisso específico, ``próximo compromisso'' e consulta por intervalo. Um heap daria o próximo compromisso, mas não remove um elemento qualquer pela chave nem lista um intervalo; uma tabela hash não mantém ordem. Uma \textbf{AVL} indexada por data e hora faz tudo: inserção e remoção em $O(\log n)$, mínimo em $O(\log n)$ e a semana em $O(\log n+k)$, com $k$ compromissos listados.
 \end{exemplo}
 \begin{exemplo}[Ranking de uma competição]
 São $10^6$ participantes com pontuações inteiras de 0 a 1000, e é preciso imprimir o ranking uma única vez, mantendo, entre empatados, a ordem de inscrição. As chaves são inteiros num intervalo pequeno e a estabilidade importa: \textbf{counting sort}, em $\Theta(n+k)$ com $k=1001$, estável.
+\end{exemplo}
+\begin{exemplo}[Juntando dois catálogos]
+Duas lojas que se fundiram têm catálogos com $10^6$ códigos de produto cada um, ambos já em ordem crescente, e querem um catálogo único, ordenado e sem códigos repetidos. Juntar as listas e ordenar tudo de novo custaria $\Theta(n\log n)$ e jogaria fora uma informação valiosa: as duas listas já estão ordenadas. A \textbf{intercalação} do mergesort (Capítulo~\ref{cap:sortcomp}) resolve em $\Theta(n)$: percorre as duas listas com um índice em cada, copia sempre o menor código e, quando os dois códigos apontados são iguais, copia um só e avança os dois índices. Por exemplo, $(3,8,15,21)$ e $(5,8,9,21,30)$ dão $(3,5,8,9,15,21,30)$, numa única passada pelas duas listas.
 \end{exemplo}
 
 \begin{chave}[Resumo da Parte I]
