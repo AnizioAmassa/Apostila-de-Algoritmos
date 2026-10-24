@@ -43,8 +43,46 @@ Cruzamento & $I(v)$ inteiro à \textbf{direita} de $I(w)$ & vai ``para trás'' n
 \end{center}
 Nunca há uma aresta $vw$ com $I(v)$ inteiro à esquerda de $I(w)$: quando $v$ examina a aresta $vw$, o vértice $w$ ou já foi alcançado ou será visitado como descendente de $v$. Como toda aresta de retorno fecha um ciclo direcionado, e todo ciclo contém uma aresta de retorno (a que chega ao primeiro vértice do ciclo alcançado pela busca), vale: \textbf{um digrafo é acíclico se e somente se uma busca em profundidade --- qualquer uma --- não produz arestas de retorno}.
 
+\begin{figura}[Busca a partir de $a$, com os vizinhos em ordem alfabética; os rótulos são $PE/PS$. Em azul, as arestas de árvore; em vermelho tracejado, as de retorno ($dc$, $ea$ e $fg$); em laranja pontilhado, a de avanço ($bf$); em verde, as de cruzamento ($ef$ e $gh$).\label{fig:dfsdig}]
+\begin{tikzpicture}[>={Stealth[length=2.2mm]}, arv/.style={->,very thick,MidnightBlue}, ret/.style={->,thick,dashed,BrickRed},
+  ava/.style={->,thick,dotted,orange!85!black}, cru/.style={->,thick,ForestGreen}, lab/.style={font=\scriptsize,text=gray!70!black}]
+\node[vtx] (a) at (0,1.5) {$a$}; \node[vtx] (b) at (1.8,1.5) {$b$}; \node[vtx] (c) at (3.6,1.5) {$c$}; \node[vtx] (d) at (5.4,1.5) {$d$};
+\node[vtx] (e) at (0,0) {$e$}; \node[vtx] (f) at (1.8,0) {$f$}; \node[vtx] (g) at (3.6,0) {$g$}; \node[vtx] (h) at (5.4,0) {$h$};
+\draw[arv] (a)--(b); \draw[arv] (b)--(c); \draw[arv] (b)--(e); \draw[arv] (c) to[bend left=18] (d); \draw[arv] (c)--(g);
+\draw[arv] (d)--(h); \draw[arv] (g) to[bend left=18] (f);
+\draw[ret] (d) to[bend left=18] (c); \draw[ret] (e)--(a); \draw[ret] (f) to[bend left=18] (g);
+\draw[ava] (b)--(f); \draw[cru] (e)--(f); \draw[cru] (g)--(h);
+\node[lab,above=1pt of a] {1/16}; \node[lab,above=1pt of b] {2/15}; \node[lab,above=1pt of c] {3/12}; \node[lab,above=1pt of d] {4/7};
+\node[lab,below=1pt of e] {13/14}; \node[lab,below=1pt of f] {9/10}; \node[lab,below=1pt of g] {8/11}; \node[lab,below=1pt of h] {5/6};
+\end{tikzpicture}
+\end{figura}
+
+\begin{exemplo}[Os quatro tipos de aresta]\label{ex:tipos}
+Na busca da Figura~\ref{fig:dfsdig}, a sequência é: $a$ (1), $b$ (2), $c$ (3), $d$ (4); de $d$, a aresta $dc$ vai a $c$, que está ativo: \textbf{retorno}; $h$ entra (5) e sai (6), e $d$ sai (7). De volta a $c$, entra $g$ (8), e de $g$ entra $f$ (9); a aresta $fg$ volta a $g$, ativo: retorno. $f$ sai (10). De $g$, a aresta $gh$ vai a $h$, que já terminou e começou antes de $g$: \textbf{cruzamento}. Saem $g$ (11) e $c$ (12). De volta a $b$, a aresta $be$ leva a $e$ (13), cujas arestas são $ea$ (retorno, pois $a$ está ativo) e $ef$ (cruzamento, pois $f$ terminou no instante 10, antes de $e$ começar). $e$ sai (14). Por fim, $b$ examina $bf$: $f$ já terminou, mas entrou \emph{depois} de $b$ ($PE(f)=9>PE(b)=2$), logo é um descendente de $b$ que não é filho: \textbf{avanço}. A Figura~\ref{fig:intdig} mostra os intervalos e três dessas arestas.
+\begin{figura}[Os intervalos de vida da busca da Figura~\ref{fig:dfsdig}, um vértice por barra, com a profundidade na árvore crescendo para baixo. A aresta de retorno $dc$ (vermelha) vai de um intervalo para outro que o contém; a de avanço $bf$ (laranja), para um intervalo contido; a de cruzamento $gh$ (verde), para um intervalo inteiramente à esquerda.\label{fig:intdig}]
+\begin{tikzpicture}[x=7mm,y=6mm, >={Stealth[length=2mm]}]
+\draw[gray] (0.5,0.8) -- (16.5,0.8);
+\foreach \tt in {1,...,16} {\draw[gray] (\tt,0.7) -- (\tt,0.9); \node[idx] at (\tt,1.25) {\tt};}
+\foreach \nome/\ini/\fim/\prof in {a/1/16/0,b/2/15/1,c/3/12/2,d/4/7/3,h/5/6/4,g/8/11/3,f/9/10/4,e/13/14/2} {
+  \fill[azul, draw=MidnightBlue] (\ini-0.15,-\prof-0.28) rectangle (\fim+0.15,-\prof+0.28);
+  \node[font=\small] at ({(\ini+\fim)/2},-\prof) {$\nome$};}
+\draw[->, thick, BrickRed] (3.85,-3) to[out=180, in=-90] (3.3,-2.28);
+\draw[->, thick, orange!85!black, densely dotted] (14.5,-1.28) to[out=-90, in=0] (10.15,-4);
+\draw[->, thick, ForestGreen] (8.2,-3.28) to[out=-120, in=0] (6.15,-4);
+\end{tikzpicture}
+\end{figura}
+\end{exemplo}
+
+\begin{exemplo}[Testando se há ciclo]
+O digrafo da Figura~\ref{fig:dfsdig} tem ciclos: cada aresta de retorno fecha um, por exemplo $c\to d\to c$ (com $dc$) e $a\to b\to e\to a$ (com $ea$). Já o digrafo com as arestas $1\to2$, $1\to3$, $2\to4$ e $3\to4$ é acíclico: a busca a partir de 1 encontra $1\to2$ e $2\to4$ (árvore), $1\to3$ (árvore) e $3\to4$, que vai a um vértice já terminado e não descendente de 3 (cruzamento). Nenhuma aresta de retorno: não há ciclo. Repare que, sem a direção, as quatro arestas formariam um ciclo; num digrafo, só os ciclos \emph{direcionados} contam.
+\end{exemplo}
+
 \section{Componentes fortemente conexas}
 Uma \textbf{componente fortemente conexa} (CFC) de um digrafo é um subdigrafo maximal em que, para quaisquer dois vértices $v$ e $w$, existe um caminho direcionado de $v$ para $w$ \emph{e} um de $w$ para $v$. As CFC particionam os \emph{vértices}; algumas arestas não pertencem a nenhuma CFC, e essas são, numa busca, arestas de árvore, de avanço ou de cruzamento. As componentes não dependem da ordem da busca, embora o tipo de cada aresta dependa.
+
+\begin{intuicao}
+Pense numa cidade com ruas de mão única. Uma componente fortemente conexa é um bairro em que se pode ir de qualquer esquina a qualquer outra \emph{e voltar}. Entre bairros diferentes, as ruas só permitem ir num sentido: quem sai de um bairro para outro não consegue mais voltar. Contraindo cada bairro num ponto, sobra um mapa sem ciclos --- o \emph{grafo das componentes}.
+\end{intuicao}
 
 Para calculá-las numa única busca, define-se $old(v)$ como a profundidade de entrada do vértice mais antigo, \textbf{na mesma CFC} que $v$, que pode ser alcançado a partir de $v$ descendo por arestas de árvore e usando, no máximo, uma aresta de retorno ou de cruzamento. Um vértice $v$ é \textbf{forte} --- é a ``raiz'' da sua componente na floresta --- se $old(v)=PE(v)$ no momento em que $v$ sai da busca. Os vértices são empilhados numa pilha $Q$ ao serem alcançados; ao encontrar um vértice forte, desempilham-se todos os vértices até ele, que formam uma componente.
 \begin{pseudo}{Componentes fortemente conexas: $O(n+m)$}
@@ -64,26 +102,33 @@ Para calculá-las numa única busca, define-se $old(v)$ como a profundidade de e
 \end{algorithmic}
 \end{pseudo}
 
-\begin{center}
-\begin{tikzpicture}[v/.style={circle,draw,fill=yellow!40,inner sep=1.2pt,minimum size=5mm,font=\small},
-  >={Stealth[length=2.2mm]}, arv/.style={->,very thick,MidnightBlue}, ret/.style={->,thick,dashed,BrickRed},
-  ava/.style={->,thick,dotted,orange!85!black}, cru/.style={->,thick,ForestGreen}, lab/.style={font=\scriptsize,text=gray!70!black}]
-\node[v] (a) at (0,1.5) {$a$}; \node[v] (b) at (1.8,1.5) {$b$}; \node[v] (c) at (3.6,1.5) {$c$}; \node[v] (d) at (5.4,1.5) {$d$};
-\node[v] (e) at (0,0) {$e$}; \node[v] (f) at (1.8,0) {$f$}; \node[v] (g) at (3.6,0) {$g$}; \node[v] (h) at (5.4,0) {$h$};
-\draw[arv] (a)--(b); \draw[arv] (b)--(c); \draw[arv] (b)--(e); \draw[arv] (c) to[bend left=18] (d); \draw[arv] (c)--(g);
-\draw[arv] (d)--(h); \draw[arv] (g) to[bend left=18] (f);
-\draw[ret] (d) to[bend left=18] (c); \draw[ret] (e)--(a); \draw[ret] (f) to[bend left=18] (g);
-\draw[ava] (b)--(f); \draw[cru] (e)--(f); \draw[cru] (g)--(h);
-\node[lab,above=1pt of a] {1/16}; \node[lab,above=1pt of b] {2/15}; \node[lab,above=1pt of c] {3/12}; \node[lab,above=1pt of d] {4/7};
-\node[lab,below=1pt of e] {13/14}; \node[lab,below=1pt of f] {9/10}; \node[lab,below=1pt of g] {8/11}; \node[lab,below=1pt of h] {5/6};
-\end{tikzpicture}
-\end{center}
 \begin{exemplo}[Componentes fortemente conexas]\label{ex:cfc}
-Busca a partir de $a$, com os vizinhos em ordem alfabética; os rótulos são $PE/PS$. Em azul, as arestas de árvore; em vermelho tracejado, as de retorno ($dc$, $ea$ e $fg$); em laranja pontilhado, a de avanço ($bf$); em verde, as de cruzamento ($ef$ e $gh$). Os valores de $old$ são $1$ para $a$, $b$ e $e$; $3$ para $c$ e $d$; $8$ para $g$ e $f$; e $5$ para $h$. Os vértices fortes, na ordem em que saem da busca, são $h$, $g$, $c$ e $a$, e as componentes são $\{h\}$, $\{f,g\}$, $\{c,d\}$ e $\{a,b,e\}$. A aresta $ef$ é de cruzamento, mas $f$ já saiu de $Q$ --- a sua componente já tinha sido fechada ---, e por isso ela não altera $old(e)$.
+Na busca da Figura~\ref{fig:dfsdig}, os valores de $old$ são $1$ para $a$, $b$ e $e$; $3$ para $c$ e $d$; $8$ para $g$ e $f$; e $5$ para $h$. Os vértices fortes, na ordem em que saem da busca, são $h$, $g$, $c$ e $a$, e as componentes são $\{h\}$, $\{f,g\}$, $\{c,d\}$ e $\{a,b,e\}$. A aresta $ef$ é de cruzamento, mas $f$ já saiu de $Q$ --- a sua componente já tinha sido fechada ---, e por isso ela não altera $old(e)$. A tabela mostra a pilha $Q$ nos momentos em que um vértice forte sai:
+\begin{center}\small
+\begin{tabular}{@{}cccl@{}}
+\toprule
+instante & sai & $Q$ antes (base à esquerda) & componente desempilhada\\
+\midrule
+6 & $h$ & $a,b,c,d,h$ & $\{h\}$\\
+11 & $g$ & $a,b,c,d,g,f$ & $\{f,g\}$\\
+12 & $c$ & $a,b,c,d$ & $\{c,d\}$\\
+16 & $a$ & $a,b,e$ & $\{a,b,e\}$\\
+\bottomrule
+\end{tabular}
+\end{center}
+Note que $d$ fica na pilha depois de sair da busca (instante 7), porque $old(d)=3<PE(d)=4$: ele pertence à componente de $c$, que só é fechada quando $c$ sai. A Figura~\ref{fig:condensacao} mostra o grafo das componentes, que é acíclico.
+\begin{figura}[O grafo das componentes (condensação) do digrafo da Figura~\ref{fig:dfsdig}: cada componente fortemente conexa vira um vértice, e as arestas entre componentes diferentes viram arestas entre esses vértices. O resultado é sempre acíclico.\label{fig:condensacao}]
+\begin{tikzpicture}[x=1cm,y=1cm, comp/.style={draw, thick, rounded corners=6pt, fill=azul, minimum height=8mm, font=\small, inner sep=4pt}]
+\node[comp] (A) at (0,0) {$\{a,b,e\}$}; \node[comp] (C) at (3,0.9) {$\{c,d\}$};
+\node[comp] (F) at (3,-0.9) {$\{f,g\}$}; \node[comp] (H) at (6,0) {$\{h\}$};
+\draw[arco] (A) -- node[above, rot] {$bc$} (C); \draw[arco] (A) -- node[below, rot] {$bf$, $ef$} (F);
+\draw[arco] (C) -- node[right, rot] {$cg$} (F); \draw[arco] (C) -- node[above, rot] {$dh$} (H); \draw[arco] (F) -- node[below, rot] {$gh$} (H);
+\end{tikzpicture}
+\end{figura}
 \end{exemplo}
 
 \section{Ordenação topológica}\label{sec:topo}
-Uma \textbf{ordenação topológica} de um digrafo acíclico é uma ordem $v_1,\dots,v_n$ dos vértices tal que toda aresta $v_iv_j$ tem $i<j$. Ela aparece sempre que há tarefas com dependências: se cada aresta $a\to b$ indica que $b$ só pode ser feita depois de $a$, uma ordenação topológica é uma sequência viável de execução.
+Uma \textbf{ordenação topológica} de um digrafo acíclico é uma ordem $v_1,\dots,v_n$ dos vértices tal que toda aresta $v_iv_j$ tem $i<j$. Ela aparece sempre que há tarefas com dependências: se cada aresta $a\to b$ indica que $b$ só pode ser feita depois de $a$, uma ordenação topológica é uma sequência viável de execução. Desenhando os vértices numa linha, na ordem topológica, todas as arestas apontam para a direita.
 
 \textbf{Algoritmo.} Execute uma busca em profundidade; se houver uma aresta de retorno, o digrafo tem ciclo e não há ordenação. Senão, ordene os vértices por \textbf{$PS$ decrescente}. Para obter $O(n+m)$, basta colocar cada vértice na frente de uma lista no momento em que ele recebe o seu $PS$, o que dispensa a ordenação.
 \begin{teo}
@@ -95,10 +140,22 @@ Não há arestas de retorno. Se $vw$ é de árvore ou de avanço, $w$ é descend
 Uma outra forma de ver a correção: o vértice de menor $PS$ é um \emph{sumidouro} (não tem arestas de saída) e pode ser o último da ordem; retirando-o, o de menor $PS$ entre os restantes é um sumidouro do digrafo que sobrou, e assim por diante.
 
 \begin{exemplo}
-No digrafo acíclico com as arestas $a{\to}c$, $a{\to}d$, $d{\to}c$, $b{\to}c$, $e{\to}b$, $e{\to}f$, $e{\to}g$, $f{\to}g$, $h{\to}f$, $i{\to}h$, $i{\to}j$, $j{\to}h$ e $j{\to}g$, uma busca com as raízes em ordem alfabética dá, por $PS$ decrescente, a ordem $i,j,h,e,f,g,b,a,d,c$. Com as raízes na ordem $i,c,b,e,d,a$, obtém-se $a,d,e,b,c,i,j,h,f,g$. As duas são válidas: a ordenação topológica não é única.
+No digrafo acíclico com as arestas $a{\to}c$, $a{\to}d$, $d{\to}c$, $b{\to}c$, $e{\to}b$, $e{\to}f$, $e{\to}g$, $f{\to}g$, $h{\to}f$, $i{\to}h$, $i{\to}j$, $j{\to}h$ e $j{\to}g$, uma busca com as raízes em ordem alfabética dá, por $PS$ decrescente, a ordem $i,j,h,e,f,g,b,a,d,c$ (Figura~\ref{fig:topo}). Com as raízes na ordem $i,c,b,e,d,a$, obtém-se $a,d,e,b,c,i,j,h,f,g$. As duas são válidas: a ordenação topológica não é única.
+\begin{figura}[O digrafo acíclico do exemplo, com os vértices na ordem topológica $i,j,h,e,f,g,b,a,d,c$ (por $PS$ decrescente; os números são os $PS$). Todas as arestas apontam para a direita.\label{fig:topo}]
+\begin{tikzpicture}[x=1.15cm,y=1cm]
+\foreach \nome/\ps [count=\k from 0] in {i/20,j/19,h/16,e/14,f/13,g/12,b/8,a/6,d/5,c/3} {
+  \node[vtxs] (o\nome) at (\k,0) {$\nome$}; \node[idx] at (\k,-0.45) {\ps};}
+\foreach \pp/\qq/\dobra in {i/j/0,j/h/0,e/f/0,f/g/0,a/d/0,d/c/0,i/h/40,h/f/40,e/g/40,j/g/30,e/b/30,a/c/40,b/c/30} {
+  \draw[arco] (o\pp) to[bend left=\dobra] (o\qq);}
+\end{tikzpicture}
+\end{figura}
 \end{exemplo}
 
 \paragraph{Uma alternativa sem busca.} Todo digrafo acíclico tem um sumidouro --- o último vértice de um caminho de comprimento máximo --- e uma fonte. Retirar repetidamente uma fonte e colocá-la no fim da ordem (ou um sumidouro, no início) também produz uma ordenação topológica. Com contadores de grau de entrada e uma fila dos vértices cujo contador chegou a zero, isso custa $O(n+m)$; é o \emph{algoritmo de Kahn}.
+
+\begin{exemplo}[O algoritmo de Kahn]
+No mesmo digrafo, os graus de entrada são zero para $a$, $e$ e $i$, que começam na fila, nessa ordem. Sai $a$: os contadores de $c$ e $d$ diminuem, e $d$ chega a zero e entra na fila. Sai $e$: $b$ chega a zero. Sai $i$: $j$ chega a zero ($h$ ainda depende de $j$). Sai $d$; sai $b$, e $c$ chega a zero; sai $j$, e $h$ chega a zero; saem $c$, $h$ (liberando $f$), $f$ (liberando $g$) e $g$. A ordem é $a,e,i,d,b,j,c,h,f,g$, diferente das obtidas pela busca, e também válida. Se a fila esvaziar antes de todos os vértices saírem, os que sobraram estão em ciclos ou dependem de ciclos: o digrafo não é acíclico.
+\end{exemplo}
 
 \begin{cuidado}[Armadilhas em digrafos]
 \begin{itemize}
