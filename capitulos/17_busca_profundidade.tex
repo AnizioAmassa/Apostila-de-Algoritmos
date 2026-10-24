@@ -1,5 +1,5 @@
 % ================================================================
-\chapter{Busca em profundidade}\label{cap:dfs}\label{sec:dfs}
+\chapter{Busca em profundidade}\label{cap:dfs}\label{sec:dfs}\index{busca em profundidade}
 % ================================================================
 \begin{objetivos}
 \begin{itemize}
@@ -12,7 +12,11 @@
 
 Na busca em profundidade, a próxima aresta examinada parte sempre do vértice visitado mais recentemente: a busca avança o quanto puder e só volta quando não há mais para onde ir. Os instantes de entrada e de saída de cada vértice formam intervalos aninhados que revelam a estrutura do grafo: componentes, ciclos e bipartição e, com um valor auxiliar chamado $back(v)$, as articulações e os blocos --- tudo em tempo linear. Este capítulo trata de grafos não direcionados; o próximo, de digrafos.
 
-\section{O algoritmo}
+\begin{intuicao}
+É a estratégia de quem explora um labirinto desenrolando um novelo de lã: em cada encruzilhada, segue por um corredor ainda não explorado; quando chega a um beco sem saída, ou a um lugar onde já esteve, volta pelo fio até a última encruzilhada com corredores novos. O fio é a pilha de recursão: ele contém exatamente o caminho da entrada até a posição atual. A busca em largura, ao contrário, avança em ondas, como um grupo que se divide em todas as direções ao mesmo tempo.
+\end{intuicao}
+
+\section{O algoritmo}\label{sec:dfsalg}
 A regra da busca em profundidade é ``\emph{esgotar o filho antes de esgotar o pai}'': a busca é naturalmente recursiva, ou, de forma equivalente, usa uma pilha. Um relógio global $t$ marca, para cada vértice $v$, a sua profundidade de entrada $PE(v)$, quando ele é alcançado, e a sua profundidade de saída $PS(v)$, quando todos os seus vizinhos já foram examinados.
 \begin{pseudo}{Busca em profundidade, com o cálculo de $back(v)$ e dos blocos}
 \begin{algorithmic}
@@ -28,7 +32,7 @@ A regra da busca em profundidade é ``\emph{esgotar o filho antes de esgotar o p
       \State $pai(w):=v$;\ empilhe $vw$;\ \Call{P}{$w$}
       \If{$back(w)\ge PE(v)$} \State desempilhe e imprima as arestas até $vw$ \Comment{um bloco} \EndIf
       \State $back(v):=\min\{back(v),\,back(w)\}$
-    \ElsIf{$PS(w)=0$ \textbf{e} $w\ne pai(v)$} \Comment{aresta de \textbf{retorno}}
+    \ElsIf{$PS(w)=0$ \textbf{e} $w\ne pai(v)$} \Comment{aresta de \textbf{retorno}\index{aresta!de retorno}}
       \State empilhe $vw$;\ $back(v):=\min\{back(v),\,PE(w)\}$
     \EndIf
   \EndFor
@@ -38,34 +42,44 @@ A regra da busca em profundidade é ``\emph{esgotar o filho antes de esgotar o p
 \end{pseudo}
 As linhas com $back$ e com a pilha de arestas só são necessárias para encontrar articulações e blocos (§\ref{sec:articulacoes}); sem elas, o procedimento é a busca básica.
 
-\begin{center}
-\begin{tikzpicture}[v/.style={circle,draw,fill=yellow!40,inner sep=1.2pt,minimum size=5mm,font=\small},
-  arv/.style={very thick,MidnightBlue}, ret/.style={thick,dashed,BrickRed}, lab/.style={font=\scriptsize,text=gray!70!black}]
-\node[v] (a) at (0,3.6) {$a$}; \node[v] (b) at (1.9,3.6) {$b$};
-\node[v] (c) at (0,2.4) {$c$}; \node[v] (d) at (1.9,2.4) {$d$};
-\node[v] (e) at (0,1.2) {$e$}; \node[v] (f) at (1.9,1.2) {$f$};
-\node[v] (g) at (0.95,0) {$g$};
+\begin{figura}[Busca em profundidade a partir de $e$, com os vizinhos em ordem alfabética; os rótulos são $PE/PS$. Em azul grosso, a árvore de profundidade; em vermelho tracejado, as arestas de retorno.\label{fig:dfs}]
+\begin{tikzpicture}[arv/.style={very thick,MidnightBlue}, ret/.style={thick,dashed,BrickRed}, lab/.style={font=\scriptsize,text=gray!70!black}]
+\node[vtx] (a) at (0,3.6) {$a$}; \node[vtx] (b) at (1.9,3.6) {$b$};
+\node[vtx] (c) at (0,2.4) {$c$}; \node[vtx] (d) at (1.9,2.4) {$d$};
+\node[vtx] (e) at (0,1.2) {$e$}; \node[vtx] (f) at (1.9,1.2) {$f$};
+\node[vtx] (g) at (0.95,0) {$g$};
 \draw[arv] (e)--(c); \draw[arv] (c)--(a); \draw[arv] (a)--(b); \draw[arv] (b)--(d); \draw[arv] (e)--(f); \draw[arv] (f)--(g);
 \draw[ret] (b)--(c); \draw[ret] (d)--(c); \draw[ret] (d)--(e); \draw[ret] (g)--(e);
 \node[lab,left=1pt of a] {3/8}; \node[lab,right=1pt of b] {4/7}; \node[lab,left=1pt of c] {2/9}; \node[lab,right=1pt of d] {5/6};
 \node[lab,left=1pt of e] {1/14}; \node[lab,right=1pt of f] {10/13}; \node[lab,below=1pt of g] {11/12};
 \end{tikzpicture}
-\qquad
-\begin{minipage}[b]{0.52\linewidth}\small
-\textbf{Exemplo.} Busca a partir de $e$, com os vizinhos em ordem alfabética; os rótulos são $PE/PS$. Em azul grosso, a árvore de profundidade, formada pelos caminhos $e\!-\!c\!-\!a\!-\!b\!-\!d$ e $e\!-\!f\!-\!g$; em vermelho tracejado, as arestas de retorno $bc$, $dc$, $de$ e $ge$.
-Todos os vértices têm $back(v)=1$. A única \textbf{articulação} é $e$, a raiz, que tem dois filhos, $c$ e $f$; os \textbf{blocos} são $\{a,b,c,d,e\}$ e $\{e,f,g\}$.
-\end{minipage}
-\end{center}
+\end{figura}
 
-\section{Propriedades}
+\begin{exemplo}[A busca passo a passo]\label{ex:dfs}
+Na Figura~\ref{fig:dfs}, a busca começa em $e$ (instante 1) e examina os vizinhos em ordem alfabética. O primeiro é $c$, que entra (2); de $c$, o primeiro vizinho não visitado é $a$ (3), e de $a$, o $b$ (4). Em $b$, o vizinho $c$ já está ativo --- a sua chamada ainda não terminou ---, e $bc$ é uma aresta de retorno; o vizinho $d$ é novo e entra (5). Em $d$, os vizinhos $b$ (o pai), $c$ e $e$ já estão ativos: $dc$ e $de$ são arestas de retorno. Sem vizinhos novos, $d$ sai (6); depois saem $b$ (7), $a$ (8) e $c$ (9). De volta a $e$, o vizinho $d$ já terminou e não é examinado de novo; $f$ é novo (10), e dele se chega a $g$ (11), cujo vizinho $e$ está ativo ($ge$ é de retorno). Saem $g$ (12), $f$ (13) e $e$ (14).
+
+No instante 5, quando $d$ entra, a pilha de recursão é $e,c,a,b,d$: exatamente o caminho da raiz até $d$ na árvore. É por isso que uma aresta para um vértice ativo sempre vai a um ancestral.
+\end{exemplo}
+
+\section{Propriedades}\label{sec:dfsprop}
 \begin{itemize}
   \item Se $G$ é conexo, as arestas de árvore formam uma \textbf{árvore geradora}, a árvore de profundidade. Se não é, o laço externo produz uma floresta, com uma árvore por componente.
   \item Num grafo \textbf{não direcionado}, só existem arestas de \textbf{árvore} e de \textbf{retorno}. Toda aresta de retorno liga um vértice $v$ a um \textbf{ancestral} de $v$ na árvore e fecha um ciclo.
-  \item \textbf{Intervalos de vida}: seja $I(v)=[PE(v),PS(v)]$. Dois intervalos são disjuntos ou um contém o outro (o \emph{teorema dos parênteses}), e $v$ é descendente de $w$ se e somente se $PE(w)<PE(v)$ e $PS(v)<PS(w)$: $v$ ``entra depois e sai antes'' de $w$.
+  \item \textbf{Intervalos de vida}\index{intervalo de vida}: seja $I(v)=[PE(v),PS(v)]$. Dois intervalos são disjuntos ou um contém o outro (o \emph{teorema dos parênteses}\index{teorema dos parenteses@teorema dos parênteses}), e $v$ é descendente de $w$ se e somente se $PE(w)<PE(v)$ e $PS(v)<PS(w)$: $v$ ``entra depois e sai antes'' de $w$.
   \item \textbf{Complexidade}: $O(n+m)$ com listas de adjacência. Cada vértice é visitado uma vez, e cada aresta é examinada duas vezes, uma a partir de cada extremo.
 \end{itemize}
 
-\section{Aplicações}
+\begin{figura}[Os intervalos de vida $[PE,PS]$ da busca da Figura~\ref{fig:dfs}, desenhados sobre a linha do tempo. Escrevendo ``('' na entrada e ``)'' na saída de cada vértice, obtém-se $(e\,(c\,(a\,(b\,(d\ d)\,b)\,a)\,c)\,(f\,(g\ g)\,f)\,e)$: os parênteses se aninham corretamente.\label{fig:parenteses}]
+\begin{tikzpicture}[x=7.5mm,y=5.5mm]
+\draw[gray] (0.5,0.7) -- (14.5,0.7);
+\foreach \tt in {1,...,14} {\draw[gray] (\tt,0.6) -- (\tt,0.8); \node[idx] at (\tt,1.15) {\tt};}
+\foreach \nome/\ini/\fim/\prof in {e/1/14/0,c/2/9/1,a/3/8/2,b/4/7/3,d/5/6/4,f/10/13/1,g/11/12/2} {
+  \fill[azul, draw=MidnightBlue] (\ini-0.15,-\prof-0.3) rectangle (\fim+0.15,-\prof+0.3);
+  \node[font=\small] at ({(\ini+\fim)/2},-\prof) {$\nome$};}
+\end{tikzpicture}
+\end{figura}
+
+\section{Aplicações}\label{sec:dfsapl}
 \begin{enumerate}
   \item \textbf{Conexidade.} O número de vezes que o laço externo chama \textsc{P} é o número de componentes conexas; $G$ é conexo se e somente se esse número é 1.
   \item \textbf{Caminho de $v$ a $w$.} Execute \textsc{P}$(v)$. Se ao final $PE(w)=0$, não há caminho; senão, suba de $w$ até $v$ pelos ponteiros $pai$, colocando cada vértice à esquerda do caminho. Esse caminho \textbf{não} é necessariamente o mais curto; para isso, use a busca em largura. Um labirinto pode ser tratado da mesma forma, modelado como um grafo.
@@ -73,8 +87,15 @@ Todos os vértices têm $back(v)=1$. A única \textbf{articulação} é $e$, a r
   \item \textbf{Bipartição.} $G$ é bipartido (2-colorível) se e somente se não contém ciclo ímpar. Durante a busca, dê à raiz a cor 0 e, a cada aresta de árvore, faça $cor(w):=1-cor(v)$. Uma aresta de retorno com $cor(w)=cor(v)$ fecha um ciclo ímpar, e então o grafo não é bipartido.
 \end{enumerate}
 
+\begin{exemplo}[As aplicações no grafo da Figura~\ref{fig:dfs}]\label{ex:dfsapl}
+\textbf{Conexidade}: a chamada \textsc{P}$(e)$ alcança os sete vértices, e o laço externo não faz mais nenhuma chamada: o grafo é conexo. Num grafo com as componentes $\{1,2\}$ e $\{3,4,5\}$, o laço faria duas chamadas, uma para cada componente.
+\textbf{Caminho}: para ir de $e$ até $a$, sobe-se de $a$ pelos pais, $pai(a)=c$ e $pai(c)=e$, e o caminho é $e,c,a$.
+\textbf{Ciclo}: a primeira aresta de retorno encontrada é $bc$; subindo de $b$ até $c$ pelos pais ($b\to a\to c$) e fechando com $bc$, obtém-se o ciclo $c,a,b,c$.
+\textbf{Bipartição}: com $cor(e)=0$, a árvore dá $cor(c)=1$, $cor(a)=0$, $cor(b)=1$ e $cor(d)=0$. A aresta de retorno $bc$ liga dois vértices de cor 1: o ciclo $c,a,b$ é ímpar, e o grafo não é bipartido.
+\end{exemplo}
+
 \section{Articulações, pontes e blocos}\label{sec:articulacoes}
-Uma \textbf{articulação} é um vértice cuja remoção aumenta o número de componentes conexas. Um \textbf{bloco} é um subgrafo maximal conexo e sem articulações; um bloco com uma única aresta é uma \textbf{ponte}, e os demais blocos são subgrafos biconexos maximais, em que quaisquer dois vértices são ligados por dois caminhos internamente disjuntos. Os blocos particionam as \emph{arestas} do grafo; já um vértice pode estar em vários blocos, e isso acontece exatamente quando ele é uma articulação. Pensando no grafo como uma rede, articulações são nós críticos e pontes são ligações críticas.
+Uma \textbf{articulação}\index{articulacao@articulação} é um vértice cuja remoção aumenta o número de componentes conexas. Um \textbf{bloco}\index{bloco} é um subgrafo maximal conexo e sem articulações; um bloco com uma única aresta é uma \textbf{ponte}\index{ponte}, e os demais blocos são subgrafos biconexos maximais, em que quaisquer dois vértices são ligados por dois caminhos internamente disjuntos. Os blocos particionam as \emph{arestas} do grafo; já um vértice pode estar em vários blocos, e isso acontece exatamente quando ele é uma articulação. Pensando no grafo como uma rede, articulações são nós críticos e pontes são ligações críticas.
 
 Para encontrá-los, a busca calcula, para cada vértice $v$, o valor $back(v)$: a menor profundidade de entrada que se pode alcançar a partir de $v$ descendo por arestas da árvore e usando, no máximo, uma aresta de retorno.
 \begin{teo}[Articulações]
@@ -82,7 +103,42 @@ Seja $T$ uma árvore de profundidade de $G$. A raiz de $T$ é articulação se e
 \end{teo}
 Os blocos são obtidos com uma pilha de arestas, como no pseudocódigo: ao voltar de um filho $w$ com $back(w)\ge PE(v)$, desempilham-se as arestas até $vw$, que formam um bloco. As \textbf{pontes} são as arestas de árvore $vw$ com $back(w)>PE(v)$. Tudo isso custa $O(n+m)$.
 
-No exemplo da figura, com a raiz $e$, a regra da raiz identifica $e$ como articulação. Se a busca começar em $a$, o vértice $e$ deixa de ser a raiz, e passa a ser identificado pelo outro caso do teorema: ele tem o filho $f$ com $back(f)=5\ge PE(e)=5$.
+\begin{intuicao}
+Se $v$ não é a raiz e for removido, a subárvore de um filho $w$ só continua ligada ao resto do grafo se algum vértice dela tiver uma aresta de retorno que pule \emph{por cima} de $v$, para um ancestral próprio de $v$. O valor $back(w)$ mede exatamente quão alto a subárvore de $w$ consegue ``alcançar'': se $back(w)<PE(v)$, há uma rota de fuga; se $back(w)\ge PE(v)$, não há, e $v$ é uma articulação. Para uma aresta $vw$ ser ponte, a exigência é mais forte: nem o próprio $v$ pode ser alcançado sem a aresta, isto é, $back(w)>PE(v)$.
+\end{intuicao}
+
+No exemplo da Figura~\ref{fig:dfs}, todos os vértices têm $back(v)=1$. Com a raiz $e$, a regra da raiz identifica $e$ como articulação, pois ele tem dois filhos, $c$ e $f$; os blocos são $\{a,b,c,d,e\}$ e $\{e,f,g\}$. Se a busca começar em $a$, o vértice $e$ deixa de ser a raiz, e passa a ser identificado pelo outro caso do teorema: ele tem o filho $f$ com $back(f)=5\ge PE(e)=5$.
+
+\begin{exemplo}[Articulações, pontes e blocos]\label{ex:articulacoes}
+O grafo da Figura~\ref{fig:articulacoes} tem um quadrado $a,b,c,d$, uma aresta $de$, um triângulo $e,f,g$ e uma aresta pendente $bh$. A busca a partir de $a$, com os vizinhos em ordem alfabética, desce $a,b,c,d,e,f,g$ em linha ($PE=1,\dots,7$), encontra as arestas de retorno $ge$ e $da$, volta até $b$ e só então entra em $h$ ($PE(h)=13$). Os valores de $back$ são 1 para $a,b,c,d$ (por causa da aresta $da$), 5 para $e,f,g$ (por causa de $ge$) e 13 para $h$.
+\begin{itemize}
+  \item $e$ é articulação: o filho $f$ tem $back(f)=5\ge PE(e)=5$; o triângulo não escapa de $e$.
+  \item $d$ é articulação: o filho $e$ tem $back(e)=5\ge PE(d)=4$; e, como $5>4$, a aresta $de$ é uma \textbf{ponte}.
+  \item $b$ é articulação: o filho $h$ tem $back(h)=13\ge PE(b)=2$, e $bh$ também é ponte.
+  \item $c$ não é articulação: o filho $d$ tem $back(d)=1<PE(c)=3$, pela aresta de retorno $da$. E a raiz $a$ tem um único filho, $b$.
+\end{itemize}
+Os blocos, na ordem em que a pilha de arestas os imprime, são $\{e,f,g\}$, $\{d,e\}$, $\{b,h\}$ e $\{a,b,c,d\}$.
+\begin{figura}[À esquerda, o grafo do Exemplo~\ref{ex:articulacoes}, com as articulações em amarelo e as pontes em vermelho. À direita, a árvore de profundidade a partir de $a$, com as arestas de retorno tracejadas e os rótulos $PE/back$.\label{fig:articulacoes}]
+\begin{tikzpicture}[x=1cm,y=1cm, baseline=(base)]
+\node[vtx] (a) at (0,1) {$a$}; \node[vtx, fill=destaque] (b) at (1.2,1) {$b$}; \node[vtx] (c) at (1.2,0) {$c$}; \node[vtx, fill=destaque] (d) at (0,0) {$d$};
+\node[vtx, fill=destaque] (e) at (0,-1.3) {$e$}; \node[vtx] (f) at (-0.7,-2.4) {$f$}; \node[vtx] (g) at (0.7,-2.4) {$g$};
+\node[vtx] (h) at (2.4,1) {$h$};
+\draw[aresta] (a)--(b) (b)--(c) (c)--(d) (d)--(a) (e)--(f) (f)--(g) (g)--(e);
+\draw[aresta, BrickRed, very thick] (d)--(e) (b)--(h);
+\coordinate (base) at (0,-0.6);
+\end{tikzpicture}
+\hspace{2cm}
+\begin{tikzpicture}[x=1cm,y=0.85cm, baseline=(base), lab/.style={font=\small,text=gray!70!black}]
+\foreach \nome/\yy/\rot in {a/0/{1/1},b/-1/{2/1},c/-2/{3/1},d/-3/{4/1},e/-4/{5/5},f/-5/{6/5},g/-6/{7/5}} {
+  \node[vtx] (t\nome) at (0,\yy) {$\nome$}; \node[lab, right=2pt of t\nome] {\rot};}
+\node[vtx] (th) at (1.8,-2) {$h$}; \node[lab, right=2pt of th] {13/13};
+\draw[aresta, MidnightBlue] (ta)--(tb)--(tc)--(td)--(te)--(tf)--(tg); \draw[aresta, MidnightBlue] (tb)--(th);
+\draw[thick, dashed, BrickRed] (td) to[bend left=50] (ta);
+\draw[thick, dashed, BrickRed] (tg) to[bend left=50] (te);
+\coordinate (base) at (0,-3);
+\end{tikzpicture}
+\end{figura}
+\end{exemplo}
 
 \begin{cuidado}[Armadilhas da busca em profundidade]
 \begin{itemize}
@@ -100,65 +156,65 @@ Recursão ou pilha; $PE$ e $PS$; intervalos de vida aninhados (descendente $\iff
 % ----------------------------------------------------------------
 \section{Exercícios}
 \excurso
-\begin{exercicio}{bp-arv}[Slides]
+\begin{exercicio}{bp-arv}[Slides]<sec:dfsprop>
 Dado um grafo conexo $G$ e uma árvore geradora $T$ de $G$, decida se $T$ é uma árvore de profundidade de $G$, isto é, se existe uma busca em profundidade em $G$ que produz $T$.
 \end{exercicio}
-\begin{exercicio}{bp-pilha}[Slides]
+\begin{exercicio}{bp-pilha}[Slides]<fig:dfs,sec:articulacoes>
 Simule o cálculo dos blocos com a pilha de arestas no grafo da figura (raiz $e$, vizinhos em ordem alfabética), mostrando o conteúdo da pilha quando cada bloco é impresso.
 \end{exercicio}
-\begin{exercicio}{bp-pontes}[Slides]
+\begin{exercicio}{bp-pontes}[Slides]<sec:articulacoes>
 Faça pequenos acréscimos ao procedimento com $back(v)$ para listar as articulações e as pontes do grafo.
 \end{exercicio}
-\begin{exercicio}{bp-demarc}[Slides]
+\begin{exercicio}{bp-demarc}[Slides]<sec:articulacoes>
 Verifique se cada bloco tem o seu próprio demarcador, isto é, se o número de demarcadores é igual ao número de blocos.
 \end{exercicio}
-\begin{exercicio}{bp-apl}[Slides]
+\begin{exercicio}{bp-apl}[Slides]<sec:dfsapl>
 Descreva como a busca em profundidade resolve: (a) contar as componentes conexas; (b) encontrar um caminho de $v$ a $w$; (c) encontrar um ciclo ou concluir que o grafo é acíclico; (d) decidir se o grafo é 2-colorível.
 \end{exercicio}
 
 \excompl
-\begin{exercicio}{bp-sim}[Complementar]
+\begin{exercicio}{bp-sim}[Complementar]<ex:articulacoes>
 Execute a busca em profundidade, com o cálculo de $back$, a partir do vértice 1 no grafo com as arestas $12$, $13$, $23$, $34$, $45$, $46$, $56$ e $67$ (vizinhos em ordem crescente). Dê $PE$, $PS$, $back$, as arestas de retorno, as articulações, as pontes e os blocos.
 \end{exercicio}
-\begin{exercicio}{bp-cruz}[Complementar]
+\begin{exercicio}{bp-cruz}[Complementar]<sec:dfsprop>
 Prove que, numa busca em profundidade num grafo \emph{não direcionado}, não existem arestas de cruzamento: toda aresta liga um vértice a um ancestral ou a um descendente.
 \end{exercicio}
-\begin{exercicio}{bp-m}[Complementar]
+\begin{exercicio}{bp-m}[Complementar]<sec:dfsapl>
 Mostre que um grafo não direcionado com $m\ge n$ arestas tem um ciclo, e use isso para decidir se há ciclo em tempo $O(n)$, independentemente de $m$.
 \end{exercicio}
-\begin{exercicio}{bp-iter}[Complementar]
+\begin{exercicio}{bp-iter}[Complementar]<sec:dfsalg>
 Escreva a busca em profundidade sem recursão, com uma pilha explícita, mantendo os mesmos valores de $PE$ e $PS$ da versão recursiva.
 \end{exercicio}
-\begin{exercicio}{bp-trace}[Complementar]
+\begin{exercicio}{bp-trace}[Complementar]<ex:dfs>
 Execute a busca em profundidade a partir do vértice 1 no grafo com as arestas $12$, $13$, $24$, $25$, $36$, $37$, $48$, $58$, $67$ e $78$ (vizinhos em ordem crescente). Dê $PE$, $PS$, as arestas de árvore e as de retorno. O grafo tem articulações?
 \end{exercicio}
-\begin{exercicio}{bp-parenteses}[Complementar]
+\begin{exercicio}{bp-parenteses}[Complementar]<sec:dfsprop>
 Prove o teorema dos parênteses: para quaisquer vértices $u$ e $v$, os intervalos $[PE(u),PS(u)]$ e $[PE(v),PS(v)]$ são disjuntos ou um está contido no outro.
 \end{exercicio}
-\begin{exercicio}{bp-branco}[Complementar \estrela]
+\begin{exercicio}{bp-branco}[Complementar \estrela]<sec:dfsprop>
 Prove o \emph{teorema do caminho livre}: $v$ é descendente de $u$ na floresta de profundidade se e somente se, no instante $PE(u)$, existe um caminho de $u$ a $v$ formado apenas por vértices ainda não alcançados pela busca.
 \end{exercicio}
-\begin{exercicio}{bp-comp}[Complementar]
+\begin{exercicio}{bp-comp}[Complementar]<sec:dfsapl>
 Quantas componentes conexas tem o grafo com os vértices $1,\dots,9$ e as arestas $12$, $23$, $31$, $45$, $67$, $78$, $89$ e $96$? Quais vértices são raízes da floresta de profundidade, se a busca percorre os vértices em ordem crescente?
 \end{exercicio}
-\begin{exercicio}{bp-cicloex}[Complementar]
+\begin{exercicio}{bp-cicloex}[Complementar]<ex:dfsapl>
 No grafo do Exercício~\ref{ex:bp-trace}, use a primeira aresta de retorno encontrada para exibir um ciclo.
 \end{exercicio}
-\begin{exercicio}{bp-bipex}[Complementar]
+\begin{exercicio}{bp-bipex}[Complementar]<ex:dfsapl>
 Use a 2-coloração por busca em profundidade para decidir se é bipartido o grafo com as arestas $12$, $23$, $34$, $41$ e $13$. Indique a aresta que revela o ciclo ímpar, se houver.
 \end{exercicio}
-\begin{exercicio}{bp-arvore}[Complementar]
+\begin{exercicio}{bp-arvore}[Complementar]<sec:articulacoes>
 Quais são as pontes e as articulações de uma árvore? E de um ciclo? E de um caminho com $n\ge3$ vértices?
 \end{exercicio}
-\begin{exercicio}{bp-blocos}[Complementar]
+\begin{exercicio}{bp-blocos}[Complementar]<ex:articulacoes>
 Encontre as articulações, as pontes e os blocos do grafo com as arestas $12$, $23$, $31$, $34$, $45$, $56$, $64$ e $47$.
 \end{exercicio}
-\begin{exercicio}{bp-biconexo}[Complementar]
+\begin{exercicio}{bp-biconexo}[Complementar]<sec:articulacoes>
 Um grafo é \emph{biconexo} se é conexo e não tem articulações. Como decidir isso em $O(n+m)$? Mostre que, num grafo biconexo com pelo menos 3 vértices, toda aresta está em algum ciclo.
 \end{exercicio}
-\begin{exercicio}{bp-labirinto}[Complementar]
+\begin{exercicio}{bp-labirinto}[Complementar]<sec:dfsapl>
 Dê um exemplo de grafo e de vértices $v$ e $w$ em que o caminho de $v$ a $w$ encontrado pela busca em profundidade é mais longo que o caminho mínimo.
 \end{exercicio}
-\begin{exercicio}{bp-euler}[Complementar \estrela]
+\begin{exercicio}{bp-euler}[Complementar \estrela]<sec:dfsalg>
 Um \emph{circuito euleriano} percorre cada aresta exatamente uma vez e volta ao início. Sabendo que um grafo conexo tem circuito euleriano se e somente se todos os vértices têm grau par, mostre como encontrar o circuito em $O(n+m)$ com uma busca que avança por arestas ainda não usadas.
 \end{exercicio}

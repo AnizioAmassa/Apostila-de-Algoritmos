@@ -10,10 +10,15 @@
 \end{itemize}
 \end{objetivos}
 
-Ligar $n$ cidades por uma rede de custo mínimo, usando apenas as ligações possíveis, é encontrar uma \textbf{árvore geradora mínima} (AGM). Os dois algoritmos clássicos são gulosos: o de Kruskal percorre as arestas em ordem crescente de peso e aceita as que não fecham ciclo, usando a estrutura Union-Find do Capítulo~\ref{cap:uf}; o de Prim faz crescer uma única árvore a partir de uma raiz, usando uma fila de prioridades (Capítulos~\ref{cap:heap} e~\ref{cap:heapav}). A correção dos dois decorre de um único lema, a propriedade do corte.
+Ligar $n$ cidades por uma rede de custo mínimo, usando apenas as ligações possíveis, é encontrar uma \textbf{árvore geradora mínima}\index{arvore geradora minima@árvore geradora mínima} (AGM). Os dois algoritmos clássicos são gulosos: o de Kruskal percorre as arestas em ordem crescente de peso e aceita as que não fecham ciclo, usando a estrutura Union-Find do Capítulo~\ref{cap:uf}; o de Prim faz crescer uma única árvore a partir de uma raiz, usando uma fila de prioridades (Capítulos~\ref{cap:heap} e~\ref{cap:heapav}). A correção dos dois decorre de um único lema, a propriedade do corte.
 
-\section{O problema e a propriedade do corte}
-Dado um grafo conexo $G$ com pesos $c$ nas arestas, queremos uma \textbf{árvore geradora} --- um subgrafo conexo e acíclico que contém todos os $n$ vértices e, portanto, tem $n-1$ arestas --- de peso total mínimo. Um \textbf{corte} $(S,V\setminus S)$ é uma partição dos vértices em dois lados, e uma aresta \textbf{atravessa} o corte se tem um extremo em cada lado.
+\section{O problema e a propriedade do corte}\label{sec:corte}\index{propriedade do corte}
+Dado um grafo conexo $G$ com pesos $c$ nas arestas, queremos uma \textbf{árvore geradora}\index{arvore geradora@árvore geradora} --- um subgrafo conexo e acíclico que contém todos os $n$ vértices e, portanto, tem $n-1$ arestas --- de peso total mínimo. Um \textbf{corte}\index{corte} $(S,V\setminus S)$ é uma partição dos vértices em dois lados, e uma aresta \textbf{atravessa} o corte se tem um extremo em cada lado.
+
+\begin{exemplo}[Árvores geradoras de um grafo pequeno]\label{ex:agmpequena}
+O grafo da Figura~\ref{fig:corte} tem 4 vértices e 5 arestas: o quadrado $PQ$ (4), $QR$ (2), $RS$ (5), $SP$ (3) e a diagonal $PR$ (1). Uma árvore geradora escolhe 3 das 5 arestas sem formar ciclo, e há 8 maneiras de fazê-lo, com pesos entre 6 e 12. Por exemplo, $\{PQ,QR,RS\}$ pesa 11 e $\{PQ,QR,SP\}$ pesa 9; a mínima é $\{PR,QR,SP\}$, com peso $1+2+3=6$. Com $n$ vértices o número de árvores geradoras pode chegar a $n^{n-2}$ (no grafo completo), e testar todas é inviável: precisamos de uma regra que diga, aresta a aresta, quais são seguras.
+\end{exemplo}
+
 \begin{lema}[Propriedade do corte]\label{lema:corte}
 Seja $A$ um conjunto de arestas contido em alguma AGM e $(S,V\setminus S)$ um corte que nenhuma aresta de $A$ atravessa. Se $e$ é uma aresta de peso mínimo entre as que atravessam o corte, então $A\cup\{e\}$ está contido em alguma AGM.
 \end{lema}
@@ -21,8 +26,36 @@ Seja $A$ um conjunto de arestas contido em alguma AGM e $(S,V\setminus S)$ um co
 Seja $T$ uma AGM com $A\subseteq T$. Se $e\in T$, não há o que provar. Senão, $T+e$ tem um ciclo que passa por $e$; como $e$ atravessa o corte, o ciclo precisa atravessá-lo de novo, por outra aresta $f\in T$, e $f\notin A$, pois nenhuma aresta de $A$ atravessa o corte. Então $T'=T+e-f$ é uma árvore geradora e $c(T')=c(T)+c(e)-c(f)\le c(T)$, pois $c(e)\le c(f)$. Logo $T'$ é uma AGM e contém $A\cup\{e\}$.
 \end{proof}
 
-\section{O algoritmo de Kruskal}\label{sec:kruskal}
-No algoritmo de Kruskal, a solução parcial é uma \textbf{floresta}. As arestas são percorridas em ordem crescente de peso, e cada uma é aceita se \textbf{não forma ciclo} com as já aceitas, isto é, se liga duas árvores diferentes da floresta. O teste é feito com conjuntos disjuntos: cada árvore da floresta é um conjunto, e uma aresta $uv$ fecha ciclo se e somente se $u$ e $v$ estão no mesmo conjunto.
+\begin{figura}[À esquerda, o corte $(\{P,S\},\{Q,R\})$ do grafo do Exemplo~\ref{ex:agmpequena}: as arestas que o atravessam são $PQ$ (4), $PR$ (1) e $RS$ (5), e a mais leve, $PR$, pertence à AGM. À direita, a troca da demonstração: a árvore $T=\{PQ,QR,SP\}$ (azul), de peso 9, mais a aresta $e=PR$, forma um ciclo que atravessa o corte também por $f=PQ$; trocando $f$ por $e$, obtém-se uma árvore de peso $9+1-4=6$.\label{fig:corte}]
+\begin{tikzpicture}[x=1.5cm,y=1.4cm]
+\node[vtx, fill=azul] (P) at (0,1) {$P$}; \node[vtx] (Q) at (1.6,1) {$Q$};
+\node[vtx] (R) at (1.6,0) {$R$}; \node[vtx, fill=azul] (S) at (0,0) {$S$};
+\draw[aresta, BrickRed, very thick] (P) -- node[peso] {4} (Q);
+\draw[aresta] (Q) -- node[peso] {2} (R);
+\draw[aresta, BrickRed, very thick] (R) -- node[peso] {5} (S);
+\draw[aresta] (S) -- node[peso] {3} (P);
+\draw[aresta, BrickRed, line width=2.4pt] (P) -- node[peso, pos=0.35] {1} (R);
+\draw[dashed, MidnightBlue, thick] (1.2,1.45) .. controls (1.05,0.5) .. (1.2,-0.45);
+\node[rot] at (1.2,-0.7) {corte};
+\begin{scope}[xshift=5.2cm]
+\node[vtx] (P2) at (0,1) {$P$}; \node[vtx] (Q2) at (1.6,1) {$Q$};
+\node[vtx] (R2) at (1.6,0) {$R$}; \node[vtx] (S2) at (0,0) {$S$};
+\draw[aresta, MidnightBlue, very thick, dashed] (P2) -- node[peso] {$f$: 4} (Q2);
+\draw[aresta, MidnightBlue, very thick] (Q2) -- node[peso] {2} (R2);
+\draw[aresta, gray!40] (R2) -- node[peso] {5} (S2);
+\draw[aresta, MidnightBlue, very thick] (S2) -- node[peso] {3} (P2);
+\draw[aresta, BrickRed, very thick] (P2) -- node[peso, pos=0.35] {$e$: 1} (R2);
+\node[rot] at (0.8,-0.7) {$T+e-f$};
+\end{scope}
+\end{tikzpicture}
+\end{figura}
+
+\begin{intuicao}
+Um corte divide as cidades em dois grupos, e a rede final precisa de pelo menos uma ligação entre eles. Qualquer que seja a rede ótima, se ela usasse uma ligação cara para atravessar o corte, poderíamos trocá-la pela mais barata que o atravessa, sem desconectar nada. Por isso a aresta mais leve de um corte é sempre ``segura''. Os algoritmos de Kruskal e de Prim são duas maneiras de escolher, a cada passo, um corte conveniente.
+\end{intuicao}
+
+\section{O algoritmo de Kruskal}\label{sec:kruskal}\index{kruskal, algoritmo de@Kruskal, algoritmo de}
+No algoritmo de Kruskal, a solução parcial é uma \textbf{floresta}\index{floresta}. As arestas são percorridas em ordem crescente de peso, e cada uma é aceita se \textbf{não forma ciclo} com as já aceitas, isto é, se liga duas árvores diferentes da floresta. O teste é feito com conjuntos disjuntos: cada árvore da floresta é um conjunto, e uma aresta $uv$ fecha ciclo se e somente se $u$ e $v$ estão no mesmo conjunto.
 \begin{pseudo}{Kruskal com Union-Find}
 \begin{algorithmic}
 \Function{Kruskal}{$G,c$}
@@ -43,23 +76,46 @@ No algoritmo de Kruskal, a solução parcial é uma \textbf{floresta}. As aresta
 
 \textbf{Correção.} Ao aceitar $e=uv$, tome como $S$ a árvore atual de $u$. Nenhuma aresta aceita atravessa esse corte, e $e$ é a mais leve que o atravessa: uma aresta mais leve que o atravessasse teria sido examinada antes, quando os seus extremos já estavam em árvores diferentes (as árvores só crescem), e teria sido aceita. Pelo Lema~\ref{lema:corte}, por indução, o conjunto de arestas aceitas está sempre contido numa AGM. O algoritmo de Kruskal também é o Teorema~\ref{teo:gulosomat} aplicado à matroide gráfica.
 
-\begin{center}
-\begin{tikzpicture}[v/.style={circle,draw,fill=yellow!40,inner sep=1.2pt,minimum size=5mm,font=\small},
-  agm/.style={very thick,MidnightBlue}, nao/.style={thin,gray}, w/.style={font=\scriptsize,fill=white,inner sep=1pt}]
-\node[v] (a) at (0,1.2) {$a$}; \node[v] (b) at (1.6,2.4) {$b$}; \node[v] (c) at (3.4,2.4) {$c$}; \node[v] (d) at (5.2,2.4) {$d$};
-\node[v] (e) at (6.8,1.2) {$e$}; \node[v] (f) at (5.2,0) {$f$}; \node[v] (g) at (3.4,0) {$g$}; \node[v] (h) at (1.6,0) {$h$};
-\node[v] (i) at (2.5,1.2) {$i$};
-\draw[agm] (a)--node[w]{4}(b); \draw[agm] (a)--node[w]{8}(h); \draw[nao] (b)--node[w]{11}(h); \draw[nao] (b)--node[w]{8}(c);
-\draw[nao] (h)--node[w]{7}(i); \draw[agm] (h)--node[w]{1}(g); \draw[agm] (i)--node[w]{2}(c); \draw[nao] (i)--node[w]{6}(g);
-\draw[agm] (c)--node[w]{7}(d); \draw[agm] (c)--node[w]{4}(f); \draw[agm] (g)--node[w]{2}(f); \draw[nao] (d)--node[w]{14}(f);
-\draw[agm] (d)--node[w]{9}(e); \draw[nao] (e)--node[w]{10}(f);
+\begin{figura}[O grafo dos exemplos deste capítulo. As arestas em azul formam uma AGM, de custo 37.\label{fig:agmgrafo}]
+\begin{tikzpicture}[x=1.3cm,y=1.2cm, agm/.style={very thick,MidnightBlue}, nao/.style={thin,gray}]
+\node[vtx] (a) at (0,1.2) {$a$}; \node[vtx] (b) at (1.6,2.4) {$b$}; \node[vtx] (c) at (3.4,2.4) {$c$}; \node[vtx] (d) at (5.2,2.4) {$d$};
+\node[vtx] (e) at (6.8,1.2) {$e$}; \node[vtx] (f) at (5.2,0) {$f$}; \node[vtx] (g) at (3.4,0) {$g$}; \node[vtx] (h) at (1.6,0) {$h$};
+\node[vtx] (i) at (2.5,1.2) {$i$};
+\draw[agm] (a)--node[peso]{4}(b); \draw[agm] (a)--node[peso]{8}(h); \draw[nao] (b)--node[peso]{11}(h); \draw[nao] (b)--node[peso]{8}(c);
+\draw[nao] (h)--node[peso]{7}(i); \draw[agm] (h)--node[peso]{1}(g); \draw[agm] (i)--node[peso]{2}(c); \draw[nao] (i)--node[peso]{6}(g);
+\draw[agm] (c)--node[peso]{7}(d); \draw[agm] (c)--node[peso]{4}(f); \draw[agm] (g)--node[peso]{2}(f); \draw[nao] (d)--node[peso]{14}(f);
+\draw[agm] (d)--node[peso]{9}(e); \draw[nao] (e)--node[peso]{10}(f);
 \end{tikzpicture}
-\end{center}
-\begin{exemplo}[Kruskal e Prim no grafo acima]\label{ex:agm}
+\end{figura}
+\begin{exemplo}[Kruskal e Prim no grafo da Figura~\ref{fig:agmgrafo}]\label{ex:agm}
 O algoritmo de Kruskal aceita $hg\,(1)$, $ic\,(2)$, $gf\,(2)$, $ab\,(4)$, $cf\,(4)$, $cd\,(7)$, $ah\,(8)$ e $de\,(9)$, e rejeita $ig\,(6)$, $hi\,(7)$, $bc\,(8)$, $ef\,(10)$, $bh\,(11)$ e $df\,(14)$, que fechariam ciclos. A AGM tem \textbf{custo 37} (arestas em azul). O algoritmo de Prim, com raiz $a$, acrescenta $ab\,(4)$, $ah\,(8)$, $hg\,(1)$, $gf\,(2)$, $fc\,(4)$, $ci\,(2)$, $cd\,(7)$ e $de\,(9)$, nessa ordem, e chega à mesma árvore. A AGM não é única: $ah$ e $bc$ pesam 8, e trocar uma pela outra dá outra AGM de custo 37. Quando todos os pesos são distintos, a AGM é única.
 \end{exemplo}
 
-\section{O algoritmo de Prim}\label{sec:prim}
+\begin{exemplo}[O Kruskal passo a passo, com os conjuntos]\label{ex:kruskalpasso}
+A tabela mostra, para cada aresta na ordem examinada (com os empates na ordem em que aparecem), o teste \Find$(u)\ne$ \Find$(v)$ e os conjuntos com mais de um vértice depois dela. Note como a floresta é desconexa no meio do caminho --- $\{a,b\}$ e $\{c,f,g,h,i\}$ crescem separadamente --- e só se junta com a aresta $ah$.
+\begin{center}\small
+\begin{tabular}{@{}cclll@{}}
+\toprule
+aresta & peso & teste & decisão & conjuntos com mais de um vértice\\
+\midrule
+$hg$ & 1 & $h$ e $g$ separados & aceita & $\{g,h\}$\\
+$ic$ & 2 & $i$ e $c$ separados & aceita & $\{c,i\}$, $\{g,h\}$\\
+$gf$ & 2 & $g$ e $f$ separados & aceita & $\{c,i\}$, $\{f,g,h\}$\\
+$ab$ & 4 & $a$ e $b$ separados & aceita & $\{a,b\}$, $\{c,i\}$, $\{f,g,h\}$\\
+$cf$ & 4 & $c$ e $f$ separados & aceita & $\{a,b\}$, $\{c,f,g,h,i\}$\\
+$ig$ & 6 & mesmo conjunto & \textbf{rejeita} & sem mudança\\
+$cd$ & 7 & $c$ e $d$ separados & aceita & $\{a,b\}$, $\{c,d,f,g,h,i\}$\\
+$hi$ & 7 & mesmo conjunto & \textbf{rejeita} & sem mudança\\
+$ah$ & 8 & $a$ e $h$ separados & aceita & $\{a,b,c,d,f,g,h,i\}$\\
+$bc$ & 8 & mesmo conjunto & \textbf{rejeita} & sem mudança\\
+$de$ & 9 & $d$ e $e$ separados & aceita & todos os 9 vértices\\
+\bottomrule
+\end{tabular}
+\end{center}
+Depois de $de$ já há $n-1=8$ arestas, e o algoritmo pode parar; as arestas $ef$, $bh$ e $df$ seriam todas rejeitadas.
+\end{exemplo}
+
+\section{O algoritmo de Prim}\label{sec:prim}\index{prim, algoritmo de@Prim, algoritmo de}
 No algoritmo de Prim, a solução parcial é uma \textbf{árvore} que cresce a partir de uma raiz: a cada passo, entra a aresta mais leve com um extremo na árvore e o outro fora dela. A correção vem do Lema~\ref{lema:corte}, com $S=V(T)$.
 \begin{pseudo}{Prim em $O(n^2)$ com vetores}
 \begin{algorithmic}
@@ -78,6 +134,29 @@ No algoritmo de Prim, a solução parcial é uma \textbf{árvore} que cresce a p
 \end{algorithmic}
 \end{pseudo}
 O valor $chave(v)$ é o peso da aresta mais leve que liga $v$ à árvore. O algoritmo tem o mesmo esqueleto do algoritmo de Dijkstra (Capítulo~\ref{cap:dijkstra}), trocando ``$L(u)+W(u,v)$'' por ``$W(u,v)$''.
+
+\begin{exemplo}[As chaves do Prim]\label{ex:primchaves}
+A tabela acompanha o Prim com raiz $a$ no grafo da Figura~\ref{fig:agmgrafo}. Cada linha mostra o vértice que entra na árvore e as chaves dos vértices depois de atualizadas; ``$\ast$'' marca os vértices que já estão na árvore. Nos empates, escolhemos o vértice cuja chave foi definida primeiro: depois que $b$ entra, $c$ e $h$ têm chave 8, mas a chave de $h$ foi definida antes (quando $a$ entrou), e por isso $h$ entra antes de $c$.
+\begin{center}\small
+\begin{tabular}{@{}cc|ccccccccc@{}}
+\toprule
+entra & aresta & $a$ & $b$ & $c$ & $d$ & $e$ & $f$ & $g$ & $h$ & $i$\\
+\midrule
+$a$ & --- & $\ast$ & 4 & $\infty$ & $\infty$ & $\infty$ & $\infty$ & $\infty$ & 8 & $\infty$\\
+$b$ & $ab$ & $\ast$ & $\ast$ & 8 & $\infty$ & $\infty$ & $\infty$ & $\infty$ & 8 & $\infty$\\
+$h$ & $ah$ & $\ast$ & $\ast$ & 8 & $\infty$ & $\infty$ & $\infty$ & 1 & $\ast$ & 7\\
+$g$ & $hg$ & $\ast$ & $\ast$ & 8 & $\infty$ & $\infty$ & 2 & $\ast$ & $\ast$ & 6\\
+$f$ & $gf$ & $\ast$ & $\ast$ & 4 & 14 & 10 & $\ast$ & $\ast$ & $\ast$ & 6\\
+$c$ & $fc$ & $\ast$ & $\ast$ & $\ast$ & 7 & 10 & $\ast$ & $\ast$ & $\ast$ & 2\\
+$i$ & $ci$ & $\ast$ & $\ast$ & $\ast$ & 7 & 10 & $\ast$ & $\ast$ & $\ast$ & $\ast$\\
+$d$ & $cd$ & $\ast$ & $\ast$ & $\ast$ & $\ast$ & 9 & $\ast$ & $\ast$ & $\ast$ & $\ast$\\
+$e$ & $de$ & $\ast$ & $\ast$ & $\ast$ & $\ast$ & $\ast$ & $\ast$ & $\ast$ & $\ast$ & $\ast$\\
+\bottomrule
+\end{tabular}
+\end{center}
+A chave de um vértice só diminui: a de $c$ passa de 8 (pela aresta $bc$) a 4 (pela $fc$) quando $f$ entra, e a de $i$, de 7 a 6 e depois a 2. A soma das arestas que entram é $4+8+1+2+4+2+7+9=37$.
+\end{exemplo}
+
 \begin{center}\small
 \begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{5.2cm}>{\raggedright\arraybackslash}p{3.6cm}X@{}}
 \toprule
@@ -91,6 +170,10 @@ Listas e heap de Fibonacci & $O(m+n\log n)$ & redução de chave em $O(1)$\am\\
 \end{tabularx}
 \end{center}
 A versão com heap \textbf{não é necessariamente melhor} que a de $O(n^2)$: num grafo denso, $m=\Theta(n^2)$ e $m\log n=\Theta(n^2\log n)$. O heap compensa quando $m=o(n^2/\log n)$.
+
+\begin{exemplo}[Vetor ou heap?]
+Com $n=1000$ vértices, a versão com vetor faz cerca de $n^2=10^6$ passos, qualquer que seja $m$. Num grafo denso, com $m\approx5\cdot10^5$ arestas, o heap binário custa cerca de $(n+m)\log_2n\approx5\cdot10^6$ passos: cinco vezes mais que o vetor. Num grafo esparso, com $m=3000$ arestas, o heap custa cerca de $4000\cdot10=4\cdot10^4$ passos: 25 vezes menos que o vetor. A densidade do grafo decide.
+\end{exemplo}
 
 \begin{cuidado}[Armadilhas de árvores geradoras mínimas]
 \begin{itemize}
@@ -109,68 +192,74 @@ Propriedade do corte: a aresta mais leve que atravessa um corte que $A$ não atr
 % ----------------------------------------------------------------
 \section{Exercícios}
 \excurso
-\begin{exercicio}{agm-l1}[Lista]
+\begin{exercicio}{agm-l1}[Lista]<sec:kruskal>
 Prove a correção do algoritmo de Kruskal.
 \end{exercicio}
-\begin{exercicio}{agm-l2}[Lista]
+\begin{exercicio}{agm-l2}[Lista]<sec:prim>
 Prove a correção do algoritmo de Prim.
 \end{exercicio}
-\begin{exercicio}{agm-l3}[Lista]
+\begin{exercicio}{agm-l3}[Lista]<sec:prim>
 Mostre como implementar o algoritmo de Prim em tempo $O(m\log n)$ com o grafo representado por listas de adjacência.
 \end{exercicio}
-\begin{exercicio}{agm-l4}[Lista]
+\begin{exercicio}{agm-l4}[Lista]<sec:prim>
 Mostre como implementar o algoritmo de Prim em tempo $O(n^2)$ com o grafo representado (a) por listas de adjacência; (b) por matriz de adjacência.
 \end{exercicio}
-\begin{exercicio}{agm-l6}[Lista]
+\begin{exercicio}{agm-l6}[Lista]<sec:prim>
 É possível implementar o algoritmo de Prim em tempo $O(n^2)$ com matriz de adjacência? É possível fazer melhor que isso nessa representação? Justifique.
 \end{exercicio}
-\begin{exercicio}{agm-l7}[Lista]
+\begin{exercicio}{agm-l7}[Lista]<sec:kruskal>
 Quais seriam as formas de resolver o problema da árvore geradora de peso \textbf{máximo}? Justifique.
 \end{exercicio}
 
 \excompl
-\begin{exercicio}{agm-sim}[Complementar]
+\begin{exercicio}{agm-sim}[Complementar]<ex:agm>
 No grafo com as arestas $AB\,(6)$, $AC\,(1)$, $AD\,(5)$, $BC\,(5)$, $BE\,(3)$, $CD\,(5)$, $CE\,(6)$, $CF\,(4)$, $DF\,(2)$ e $EF\,(6)$, execute o Kruskal (indicando as arestas rejeitadas) e o Prim a partir de $A$ (indicando a ordem de entrada das arestas). Qual o custo da AGM? Ela é única?
 \end{exercicio}
-\begin{exercicio}{agm-unica}[Complementar]
+\begin{exercicio}{agm-unica}[Complementar]<lema:corte>
 Prove que, se todos os pesos são distintos, a AGM é única.
 \end{exercicio}
-\begin{exercicio}{agm-ciclo}[Complementar]
+\begin{exercicio}{agm-ciclo}[Complementar]<lema:corte>
 Prove a \emph{propriedade do ciclo}: se $e$ é a aresta de peso estritamente maior de algum ciclo de $G$, então $e$ não pertence a nenhuma AGM.
 \end{exercicio}
-\begin{exercicio}{agm-gargalo}[Complementar]
+\begin{exercicio}{agm-gargalo}[Complementar]<lema:corte>
 Mostre que, numa AGM $T$, o caminho entre dois vértices $u$ e $v$ minimiza o peso da \emph{maior} aresta, entre todos os caminhos de $u$ a $v$ em $G$.
 \end{exercicio}
-\begin{exercicio}{agm-nova}[Complementar]
+\begin{exercicio}{agm-nova}[Complementar]<lema:corte>
 Dada uma AGM $T$ de $G$, acrescenta-se a $G$ uma nova aresta $uv$ de peso $c$. Como obter uma AGM do novo grafo em $O(n)$?
 \end{exercicio}
-\begin{exercicio}{agm-prim7}[Complementar]
+\begin{exercicio}{agm-prim7}[Complementar]<ex:primchaves>
 No grafo com as arestas $AB\,(7)$, $AD\,(5)$, $BC\,(8)$, $BD\,(9)$, $BE\,(7)$, $CE\,(5)$, $DE\,(15)$, $DF\,(6)$, $EF\,(8)$, $EG\,(9)$ e $FG\,(11)$, execute o Prim a partir de $A$, mostrando a ordem em que as arestas entram, e o Kruskal, mostrando as arestas rejeitadas. Qual o custo da AGM?
 \end{exercicio}
-\begin{exercicio}{agm-boruvka}[Complementar \estrela]
+\begin{exercicio}{agm-boruvka}[Complementar \estrela]<lema:corte>
 No algoritmo de Borůvka, cada componente da floresta atual escolhe, em paralelo, a aresta mais leve que sai dela, e todas essas arestas são acrescentadas de uma vez. Mostre que o algoritmo está correto (supondo pesos distintos) e que faz $O(\log n)$ rodadas, cada uma em $O(m)$.
 \end{exercicio}
-\begin{exercicio}{agm-iguais}[Complementar]
+\begin{exercicio}{agm-iguais}[Complementar]<sec:corte>
 Se todas as arestas têm o mesmo peso, como encontrar uma AGM em $O(n+m)$?
 \end{exercicio}
-\begin{exercicio}{agm-12}[Complementar]
+\begin{exercicio}{agm-12}[Complementar]<sec:kruskal>
 Se todos os pesos são 1 ou 2, mostre como encontrar uma AGM em $O(m\,\alpha(n))$, sem ordenar por comparações.
 \end{exercicio}
-\begin{exercicio}{agm-leve}[Complementar]
+\begin{exercicio}{agm-leve}[Complementar]<lema:corte>
 Prove que, se a aresta mais leve do grafo é única, ela pertence a toda AGM. Vale o mesmo para a segunda mais leve? E para a terceira?
 \end{exercicio}
-\begin{exercicio}{agm-dijk}[Complementar]
+\begin{exercicio}{agm-dijk}[Complementar]<sec:corte>
 Dê um grafo conexo com pesos positivos em que a árvore de caminhos mínimos a partir de algum vértice (Capítulo~\ref{cap:dijkstra}) não é uma AGM.
 \end{exercicio}
-\begin{exercicio}{agm-parar}[Complementar]
+\begin{exercicio}{agm-parar}[Complementar]<ex:kruskalpasso>
 No algoritmo de Kruskal, quantas arestas são examinadas no melhor e no pior caso, se o laço para ao aceitar $n-1$ arestas? Isso muda a complexidade assintótica?
 \end{exercicio}
-\begin{exercicio}{agm-listas}[Complementar]
+\begin{exercicio}{agm-listas}[Complementar]<sec:kruskal>
 Explique por que, no algoritmo de Kruskal com Union-Find por listas encadeadas e união ``menor na maior'', o laço principal custa $O(m+n\log n)$.
 \end{exercicio}
-\begin{exercicio}{agm-floresta}[Complementar]
+\begin{exercicio}{agm-floresta}[Complementar]<sec:kruskal>
 Se o grafo é desconexo, o que o algoritmo de Kruskal devolve? E o de Prim? Como obter uma \emph{floresta geradora mínima}?
 \end{exercicio}
-\begin{exercicio}{agm-segunda}[Complementar \estrela]
+\begin{exercicio}{agm-segunda}[Complementar \estrela]<lema:corte>
 A \emph{segunda melhor} árvore geradora é a de menor peso entre as diferentes de uma AGM fixada $T$. Mostre que ela pode ser obtida de $T$ trocando uma única aresta, e dê um algoritmo $O(n^2)$ para encontrá-la.
+\end{exercicio}
+\begin{exercicio}{agm-sim3}[Complementar]<ex:agm>
+No grafo com as arestas $AB\,(4)$, $AC\,(2)$, $BC\,(5)$, $BD\,(10)$, $CE\,(3)$, $DE\,(4)$, $DF\,(11)$ e $EF\,(8)$, execute o Kruskal, com os empates na ordem dada, indicando as arestas rejeitadas, e o Prim a partir de $F$, indicando a ordem em que as arestas entram (nos empates, entra o vértice cuja chave foi definida primeiro). Qual é o custo da AGM?
+\end{exercicio}
+\begin{exercicio}{agm-corte}[Complementar]<lema:corte>
+No grafo do exercício anterior, quais arestas atravessam o corte $(\{A,B\},\{C,D,E,F\})$? Qual delas a propriedade do corte garante estar em alguma AGM? Faça o mesmo para o corte $(\{D\},V\setminus\{D\})$.
 \end{exercicio}

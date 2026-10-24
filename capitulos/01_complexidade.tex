@@ -34,16 +34,16 @@ Para $N=10$, ambos são instantâneos. Para $N=10^{12}$, o primeiro faz um trilh
 
 Este capítulo fixa a linguagem que será usada no resto do livro para fazer esse tipo de comparação. As técnicas para resolver recorrências aparecem no Capítulo~\ref{cap:sortcomp}, junto com o primeiro algoritmo recursivo estudado, e a análise amortizada aparece no Capítulo~\ref{cap:heapav}.
 
-\section{Medidas de complexidade}
+\section{Medidas de complexidade}\label{sec:medidas}
 \begin{intuicao}
-Medir um algoritmo pelo tempo de relógio é pouco confiável: o mesmo programa roda em tempos diferentes em computadores diferentes. Em vez disso, contamos \textbf{passos elementares} (uma comparação, uma soma, uma atribuição, um acesso a uma posição de vetor), cada um com custo constante, e expressamos o total como uma \emph{função do tamanho da entrada}.
+Medir um algoritmo pelo tempo de relógio é pouco confiável: o mesmo programa roda em tempos diferentes em computadores diferentes. Em vez disso, contamos \textbf{passos elementares}\index{passo elementar} (uma comparação, uma soma, uma atribuição, um acesso a uma posição de vetor), cada um com custo constante, e expressamos o total como uma \emph{função do tamanho da entrada}.
 \end{intuicao}
 
 O problema é que entradas do mesmo tamanho podem dar trabalhos diferentes. Fixe um algoritmo $A$ e um tamanho de entrada $n$. Sejam $E_1,\dots,E_m$ todas as entradas possíveis de tamanho $n$ e $T_i$ o número de passos que $A$ executa sobre $E_i$. Há três maneiras naturais de resumir os números $T_1,\dots,T_m$ num só valor:
 \begin{itemize}
-  \item a complexidade de \textbf{pior caso}, $\max_iT_i$;
-  \item a complexidade de \textbf{caso médio}, $\sum_ip_iT_i$, onde $p_i$ é a probabilidade de a entrada ser $E_i$;
-  \item a complexidade de \textbf{melhor caso}, $\min_iT_i$.
+  \item a complexidade de \textbf{pior caso}\index{pior caso}, $\max_iT_i$;
+  \item a complexidade de \textbf{caso médio}\index{caso medio@caso médio}, $\sum_ip_iT_i$, onde $p_i$ é a probabilidade de a entrada ser $E_i$;
+  \item a complexidade de \textbf{melhor caso}\index{melhor caso}, $\min_iT_i$.
 \end{itemize}
 
 \begin{exemplo}[Os três casos da ordenação por inserção]\label{ex:inscasos}
@@ -74,10 +74,10 @@ O pior caso é a medida padrão: ele dá uma \emph{garantia} que vale para toda 
 
 Uma quarta medida, a complexidade \textbf{amortizada}, divide o custo de uma \emph{sequência} de operações sobre uma estrutura de dados pelo número de operações, no pior caso da sequência. Ela não envolve probabilidade e será estudada no Capítulo~\ref{cap:heapav}.
 
-\subsection*{Tamanho da entrada}
+\subsection*{Tamanho da entrada}\index{tamanho da entrada}
 O tamanho de uma entrada é o comprimento da sua codificação, em bits ou em símbolos. Para uma lista de $n$ números de tamanho limitado, o tamanho é proporcional a $n$. Mas quando a entrada é um número $N$, ela ocupa apenas cerca de $\log_2 N$ bits (ou $\log_{10}N$ dígitos), e um algoritmo cujo custo cresce com o \emph{valor} de $N$ pode ser exponencial no tamanho da entrada.
 
-\begin{exemplo}[A soma com laço é exponencial no número de dígitos]
+\begin{exemplo}[A soma com laço é exponencial no número de dígitos]\label{ex:somalaco}
 Volte à soma $1+2+\cdots+N$. O laço faz $N$ iterações, o que parece ``linear''. Mas a entrada é o próprio número $N$, escrito com $d\approx\log_{10}N$ dígitos:
 \begin{center}\small
 \begin{tabular}{@{}rrr@{}}
@@ -94,9 +94,9 @@ $30$ & $10^{30}$ & $\approx3\cdot10^{13}$ anos\\
 Cada dígito a mais multiplica o tempo por 10: o custo é $\Theta(10^d)$, exponencial no tamanho $d$ da entrada. A fórmula $N(N+1)/2$, por outro lado, faz uma multiplicação de números com $d$ dígitos, o que custa $O(d^2)$ pelo método escolar: polinomial.
 \end{exemplo}
 
-Um algoritmo é \textbf{pseudopolinomial} quando é polinomial no \emph{valor} dos números da entrada (isto é, quando eles são escritos em unário), mas não necessariamente no seu tamanho em bits. A soma com laço é um exemplo artificial; exemplos importantes são o \emph{counting sort} do Capítulo~\ref{cap:sortlin}, de custo $\Theta(n+k)$ para inteiros em $[0,k]$, e a programação dinâmica para a mochila do Capítulo~\ref{cap:pd}, de custo $\Theta(nW)$.
+Um algoritmo é \textbf{pseudopolinomial}\index{pseudopolinomial} quando é polinomial no \emph{valor} dos números da entrada (isto é, quando eles são escritos em unário), mas não necessariamente no seu tamanho em bits. A soma com laço é um exemplo artificial; exemplos importantes são o \emph{counting sort} do Capítulo~\ref{cap:sortlin}, de custo $\Theta(n+k)$ para inteiros em $[0,k]$, e a programação dinâmica para a mochila do Capítulo~\ref{cap:pd}, de custo $\Theta(nW)$.
 
-\section{Notações assintóticas}
+\section{Notações assintóticas}\label{sec:notacoes}\index{notacao assintotica@notação assintótica}
 \begin{intuicao}
 Quando $n$ é grande, só o termo que cresce mais rápido importa. Em $n^2+10n+20$, para $n=1000$ o termo $n^2$ vale $10^6$, enquanto $10n+20$ vale $10\,020$, cerca de $1\%$ do total. E constantes multiplicativas dependem da máquina: um computador duas vezes mais rápido transforma $2n^2$ em $n^2$. Por isso dizemos simplesmente que esse custo ``é da ordem de $n^2$''. As notações assintóticas tornam essa frase precisa.
 \end{intuicao}
@@ -117,7 +117,7 @@ $f=\omega(g)$ & $\forall c>0\ \exists n_0:\ f(n)>c\,g(n)\ \forall n\ge n_0$ & $\
 \end{center}
 Formalmente, $O(g)$ é um \emph{conjunto} de funções, e $f=O(g)$ significa $f\in O(g)$; o sinal de igualdade é um abuso de notação consagrado, que deve ser lido sempre da esquerda para a direita ($n=O(n^2)$ está certo; ``$O(n^2)=n$'' não faz sentido).
 
-\subsection*{As notações $O$, $\Omega$ e $\Theta$ numa figura}
+\subsection*{As notações $O$, $\Omega$ e $\Theta$ numa figura}\index{o (notacao)@$O$, $\Omega$, $\Theta$ (notações)}
 A definição de $O$ tem duas constantes, e cada uma tem um papel: $c$ absorve as constantes multiplicativas, e $n_0$ permite ignorar os valores pequenos de $n$, onde termos de ordem menor ainda pesam. A Figura~\ref{fig:otheta} mostra as duas em ação.
 
 \begin{figura}[A função $f(n)=n^2+10n+20$ fica ``ensanduichada'' entre $1\cdot n^2$ e $2\cdot n^2$ a partir de $n_0=12$. A curva de baixo prova $f=\Omega(n^2)$, a de cima prova $f=O(n^2)$ e as duas juntas provam $f=\Theta(n^2)$.\label{fig:otheta}]
@@ -129,7 +129,7 @@ A definição de $O$ tem duas constantes, e cada uma tem um papel: $c$ absorve a
 \addplot[thick, MidnightBlue] {x^2+10*x+20}; \addlegendentry{$f(n)=n^2+10n+20$}
 \addplot[thick, BrickRed, dashed] {2*x^2}; \addlegendentry{$c_2\,g(n)=2n^2$}
 \addplot[thick, ForestGreen, dashed] {x^2}; \addlegendentry{$c_1\,g(n)=n^2$}
-\draw[gray, densely dotted] (axis cs:11.66,0) -- (axis cs:11.66,1000);
+\draw[gray, densely dotted] (axis cs:11.71,0) -- (axis cs:11.71,1000);
 \node[font=\scriptsize, anchor=south west, fill=white, inner sep=1pt] at (axis cs:11.8,30) {$n_0\approx 12$};
 \end{axis}
 \end{tikzpicture}
@@ -145,10 +145,10 @@ Seja $f(n)=n^2+10n+20$.
 \end{exemplo}
 
 \begin{exemplo}
-Pela mesma técnica, a função $2n^2+1$ é $O(n^3)$ e $O(n^2)$, mas não é $O(n)$; é $\Omega(n)$ e $\Omega(n^2)$, mas não é $\Omega(n^3)$; portanto é $\Theta(n^2)$. Para provar $2n^2+1=O(n^2)$ pela definição, basta tomar $c=3$ e $n_0=1$: $2n^2+1\le3n^2$ para todo $n\ge1$.
+Pela mesma técnica, a função $4n^3+5n$ é $O(n^4)$ e $O(n^3)$, mas não é $O(n^2)$; é $\Omega(n^2)$ e $\Omega(n^3)$, mas não é $\Omega(n^4)$; portanto é $\Theta(n^3)$. Para provar $4n^3+5n=O(n^3)$ pela definição, basta tomar $c=9$ e $n_0=1$: $4n^3+5n\le4n^3+5n^3=9n^3$ para todo $n\ge1$.
 \end{exemplo}
 
-\subsection*{As versões estritas $o$ e $\omega$}
+\subsection*{As versões estritas $o$ e $\omega$}\index{o pequeno@$o$, $\omega$ (notações)}
 Em $f=O(g)$, a função $f$ pode crescer \emph{tanto quanto} $g$; em $f=o(g)$, ela cresce \emph{estritamente menos}: para \emph{qualquer} constante $c$, por menor que seja, $f$ acaba ficando abaixo de $c\,g$. A diferença está no quantificador: em $O$ basta \emph{existir} um $c$, em $o$ a desigualdade vale \emph{para todo} $c$.
 
 \begin{exemplo}[Usando limites]\label{ex:limites}
@@ -170,7 +170,7 @@ As notações se comportam como as desigualdades que representam:
   \item \textbf{a base do logaritmo não importa}: $\log_an=\log_bn/\log_ba$ difere de $\log_bn$ pelo fator constante $1/\log_ba$.
 \end{itemize}
 
-\begin{exemplo}[Aplicando as propriedades]\leavevmode
+\begin{exemplo}[Aplicando as propriedades]\label{ex:propriedades}\leavevmode
 \begin{itemize}
   \item $5n^3+100\,n^2\log n+7=\Theta(n^3)$: a soma é dominada pela maior parcela, e $n^2\log n=o(n^3)$ porque $\log n=o(n)$.
   \item $\log_{10}n=\log_2n/\log_2 10\approx0{,}301\log_2n$; logo $\log_{10}n=\Theta(\log_2n)$, e podemos escrever simplesmente $\Theta(\log n)$.
@@ -189,7 +189,7 @@ Também valem $\log(n!)=\Theta(n\log n)$, $(\log n)^c=o(n^\varepsilon)$ para qua
   axis lines=left, xlabel={$n$}, ylabel={$f(n)$}, tick label style={font=\scriptsize},
   xlabel style={font=\small}, ylabel style={font=\small}, clip=true,
   every axis plot/.append style={thick}]
-\addplot[gray] {log2(x)} node[pos=0.97, below, font=\scriptsize] {$\log n$};
+\addplot[gray] {log2(x)} node[pos=0.97, above=1pt, font=\scriptsize] {$\log n$};
 \addplot[ForestGreen] {x} node[pos=0.97, above=1pt, font=\scriptsize] {$n$};
 \addplot[MidnightBlue] {x*log2(x)} node[pos=0.93, above left, font=\scriptsize] {$n\log n$};
 \addplot[Plum, domain=1:12.2] {x^2} node[pos=1, left, font=\scriptsize] {$n^2$};
@@ -200,7 +200,7 @@ Também valem $\log(n!)=\Theta(n\log n)$, $(\log n)^c=o(n^\varepsilon)$ para qua
 
 A Tabela~\ref{tab:tempos} traduz essas ordens em tempo real, supondo um computador que executa um bilhão de passos por segundo. Ela mostra por que a ordem de crescimento importa mais que qualquer constante.
 \begin{figura}
-\captionof{table}{Tempo para executar $f(n)$ passos a $10^9$ passos por segundo.}\label{tab:tempos}
+\captionsetup{type=table}\caption{Tempo para executar $f(n)$ passos a $10^9$ passos por segundo.}\label{tab:tempos}
 \small
 \begin{tabular}{@{}rcccccc@{}}
 \toprule
@@ -214,7 +214,7 @@ $10^6$ & 20\,ns & 1\,ms & 20\,ms & 17\,min & 32 anos & ---\\
 \end{tabular}
 \end{figura}
 
-\section{Analisando laços na prática}
+\section{Analisando laços na prática}\label{sec:lacos}
 Na maior parte das vezes, analisar um algoritmo iterativo é contar quantas vezes o corpo dos seus laços é executado.
 
 \begin{roteiro}[Como analisar um trecho com laços]
@@ -252,7 +252,7 @@ A Figura~\ref{fig:escada} mostra a contagem como uma escada: as execuções ocup
 \end{tikzpicture}
 \end{figura}
 
-Um laço cuja variável é multiplicada ou dividida por uma constante a cada passo dá $\Theta(\log n)$ iterações. É isso que torna a \textbf{busca binária} tão rápida: a cada comparação, o trecho do vetor ordenado onde o elemento procurado pode estar cai pela metade.
+Um laço cuja variável é multiplicada ou dividida por uma constante a cada passo dá $\Theta(\log n)$ iterações. É isso que torna a \textbf{busca binária}\index{busca binaria@busca binária} tão rápida: a cada comparação, o trecho do vetor ordenado onde o elemento procurado pode estar cai pela metade.
 
 \begin{figura}[Busca binária de $x=27$ num vetor ordenado de 16 posições. O trecho candidato (em destaque) cai pela metade a cada comparação com o elemento do meio ($\blacktriangledown$).\label{fig:buscabin}]
 \begin{tikzpicture}[x=6.4mm,y=7.5mm]
@@ -276,13 +276,13 @@ Um laço cuja variável é multiplicada ou dividida por uma constante a cada pas
 \end{itemize}
 \end{cuidado}
 
-\section{Complexidade de problemas e de algoritmos}
+\section{Complexidade de problemas e de algoritmos}\label{sec:problemas}
 A complexidade de um \emph{algoritmo} é uma função que descreve o seu custo. A complexidade de um \emph{problema} é uma pergunta mais difícil: qual o menor custo possível entre \emph{todos} os algoritmos que o resolvem, inclusive os que ainda não foram inventados?
 
 \begin{defi}\leavevmode
 \begin{itemize}
-  \item Uma função $f(n)$ é um \textbf{limite superior} para o problema $\Pi$ se \emph{existe} algum algoritmo que resolve $\Pi$ com no máximo $f(n)$ passos no pior caso. A complexidade de pior caso de qualquer algoritmo para $\Pi$ é um limite superior para $\Pi$.
-  \item Uma função $f(n)$ é um \textbf{limite inferior} para $\Pi$ se \emph{todo} algoritmo que resolve $\Pi$ executa pelo menos $f(n)$ passos no pior caso.
+  \item Uma função $f(n)$ é um \textbf{limite superior}\index{limite superior} para o problema $\Pi$ se \emph{existe} algum algoritmo que resolve $\Pi$ com no máximo $f(n)$ passos no pior caso. A complexidade de pior caso de qualquer algoritmo para $\Pi$ é um limite superior para $\Pi$.
+  \item Uma função $f(n)$ é um \textbf{limite inferior}\index{limite inferior} para $\Pi$ se \emph{todo} algoritmo que resolve $\Pi$ executa pelo menos $f(n)$ passos no pior caso.
   \item Um algoritmo é \textbf{ótimo} se sua complexidade de pior caso coincide com um limite inferior do problema.
 \end{itemize}
 \end{defi}
@@ -314,26 +314,26 @@ Limites superiores se provam exibindo um algoritmo; limites inferiores exigem um
 
 As notações assintóticas são afirmações sobre funções, e não sobre ``limites'' no sentido acima: nada impede dizer que o pior caso de um algoritmo é $\Omega(n^3)$, ou que conhecemos para um problema um limite inferior que é $O(\log n)$.
 
-\section{Algoritmos polinomiais e exponenciais}
+\section{Algoritmos polinomiais e exponenciais}\label{sec:polinomiais}\index{algoritmo!polinomial}\index{algoritmo!exponencial}
 Um algoritmo é \textbf{polinomial} se seu custo de pior caso é $O(n^c)$ para alguma constante $c$; a classe dos problemas que admitem algoritmos polinomiais é chamada de $P$. Custos como $2^n$, $k^n$, $n!$, $2^{n^2}$ e $n^{\log n}$ são \textbf{exponenciais} (ou superpolinomiais).
 
-O consenso é que algoritmos polinomiais são eficientes e exponenciais não, por um motivo que vai além do tempo absoluto da Tabela~\ref{tab:tempos}: algoritmos polinomiais aproveitam o avanço tecnológico. Com uma máquina 10 vezes mais rápida, o maior tamanho de entrada resolvido num tempo fixo é \emph{multiplicado} por uma constante quando o custo é polinomial, mas apenas \emph{acrescido} de uma constante quando é exponencial.
+O consenso é que algoritmos polinomiais são eficientes e exponenciais não, por um motivo que vai além do tempo absoluto da Tabela~\ref{tab:tempos}: algoritmos polinomiais aproveitam o avanço tecnológico. Com uma máquina mais rápida, o maior tamanho de entrada resolvido num tempo fixo é \emph{multiplicado} por uma constante quando o custo é polinomial, mas apenas \emph{acrescido} de uma constante quando é exponencial.
 
-\begin{exemplo}[O que uma máquina 10 vezes mais rápida compra]
-Suponha que hoje, em uma hora, resolvemos entradas de tamanho até $N$. Com a máquina nova, no mesmo tempo, fazemos $10$ vezes mais passos:
+\begin{exemplo}[O que uma máquina 100 vezes mais rápida compra]\label{ex:maquina}
+Suponha que hoje, em uma hora, resolvemos entradas de tamanho até $N$. Com a máquina nova, no mesmo tempo, fazemos $100$ vezes mais passos:
 \begin{center}\small
 \begin{tabular}{@{}lll@{}}
 \toprule
 custo & novo tamanho máximo & por quê\\
 \midrule
-$n$ & $10N$ & $n'=10N$ dá $10N$ passos\\
-$n^2$ & $\sqrt{10}\,N\approx3{,}16\,N$ & $(3{,}16N)^2\approx10N^2$\\
-$n^3$ & $\sqrt[3]{10}\,N\approx2{,}15\,N$ & $(2{,}15N)^3\approx10N^3$\\
-$2^n$ & $N+3{,}3$ & $2^{N+3{,}3}\approx10\cdot2^N$\\
+$n$ & $100N$ & $n'=100N$ dá $100N$ passos\\
+$n^2$ & $\sqrt{100}\,N=10\,N$ & $(10N)^2=100N^2$\\
+$n^3$ & $\sqrt[3]{100}\,N\approx4{,}64\,N$ & $(4{,}64N)^3\approx100N^3$\\
+$2^n$ & $N+6{,}6$ & $2^{N+6{,}6}\approx100\cdot2^N$\\
 \bottomrule
 \end{tabular}
 \end{center}
-Se hoje resolvemos $N=1000$ com o algoritmo quadrático, passaremos a resolver $3160$. Se resolvemos $N=40$ com o exponencial, passaremos a resolver $43$.
+Se hoje resolvemos $N=1000$ com o algoritmo quadrático, passaremos a resolver $10\,000$. Se resolvemos $N=40$ com o exponencial, passaremos a resolver só $46$: cem vezes mais velocidade compram seis posições a mais.
 \end{exemplo}
 
 \begin{chave}
@@ -343,31 +343,31 @@ Pior caso é a medida padrão. $O$ é ``$\le$'', $\Omega$ é ``$\ge$'', $\Theta$
 % ----------------------------------------------------------------
 \section{Exercícios}
 \excurso
-\begin{exercicio}{cx-slide}[Slides]
+\begin{exercicio}{cx-slide}[Slides]<ex:otheta>
 Diga, justificando pela definição, se $2n^2+1$ é: (a) $O(n)$; (b) $O(n^2)$; (c) $O(n^3)$; (d) $\Omega(n)$; (e) $\Omega(n^3)$; (f) $\Theta(n^2)$.
 \end{exercicio}
-\begin{exercicio}{cx-tec}[Slides]
+\begin{exercicio}{cx-tec}[Slides]<ex:maquina>
 Uma máquina nova é 10 vezes mais rápida que a antiga. Para algoritmos de custo $n$, $n^2$ e $2^n$, em quanto aumenta o maior tamanho de entrada que se resolve no mesmo tempo? O que isso diz sobre algoritmos polinomiais e exponenciais?
 \end{exercicio}
-\begin{exercicio}{cx-k}[Slides]
+\begin{exercicio}{cx-k}[Slides]<sec:medidas>
 O \emph{counting sort} ordena $n$ inteiros em $[0,k]$ em tempo $\Theta(n+k)$. Explique por que ele \textbf{não} é polinomial no tamanho da entrada quando $k=2^n$, e por que é linear quando $k=O(n)$.
 \end{exercicio}
 
 \excompl
-\begin{exercicio}{cx-ordem}[Complementar]
+\begin{exercicio}{cx-ordem}[Complementar]<sec:notacoes>
 Ordene as funções pela taxa de crescimento: $\sqrt n$,\ $\log^2 n$,\ $2^{\log_2 n}$,\ $n\log n$,\ $n^{\log_2 3}$,\ $1{,}01^n$,\ $n^{100}$,\ $n!$,\ $2^{2^n}$.
 \end{exercicio}
-\begin{exercicio}{cx-vf}[Complementar]
+\begin{exercicio}{cx-vf}[Complementar]<ex:propriedades>
 Verdadeiro ou falso? Justifique.
 (a) $2^{n+1}=O(2^n)$;\quad (b) $2^{2n}=O(2^n)$;\quad (c) $\log(n^2)=\Theta(\log n)$;\quad (d) $(\log n)^{100}=O(n^{0{,}01})$;\quad (e) $n^{\log n}=O(2^n)$;\quad (f) se $f=O(g)$ então $2^{f}=O(2^{g})$.
 \end{exercicio}
-\begin{exercicio}{cx-fat}[Complementar]
+\begin{exercicio}{cx-fat}[Complementar]<sec:notacoes>
 Mostre que $\log(n!)=\Theta(n\log n)$ sem usar a fórmula de Stirling.
 \end{exercicio}
-\begin{exercicio}{cx-incomp}[Complementar]
+\begin{exercicio}{cx-incomp}[Complementar]<sec:notacoes>
 Dê funções positivas $f$ e $g$ tais que nem $f=O(g)$ nem $g=O(f)$.
 \end{exercicio}
-\begin{exercicio}{cx-lacos}[Complementar]
+\begin{exercicio}{cx-lacos}[Complementar]<ex:lacos>
 Dê a complexidade, em $\Theta$, de cada trecho (o corpo mais interno custa $O(1)$):
 \begin{center}\small
 \begin{minipage}{0.45\linewidth}
@@ -384,45 +384,51 @@ Dê a complexidade, em $\Theta$, de cada trecho (o corpo mais interno custa $O(1
 \end{minipage}
 \end{center}
 \end{exercicio}
-\begin{exercicio}{cx-primo}[Complementar]
+\begin{exercicio}{cx-primo}[Complementar]<ex:somalaco>
 O algoritmo que testa se $N$ é primo tentando dividir $N$ por $2,3,\dots,\floor{\sqrt N}$ faz $O(\sqrt N)$ divisões. Ele é polinomial? (Pense no tamanho da entrada.)
 \end{exercicio}
-\begin{exercicio}{cx-def3}[Complementar]
+\begin{exercicio}{cx-def3}[Complementar]<ex:otheta>
 Prove pela definição, exibindo as constantes, que $3n^3-100n^2+7=\Theta(n^3)$.
 \end{exercicio}
-\begin{exercicio}{cx-nlogn}[Complementar]
+\begin{exercicio}{cx-nlogn}[Complementar]<ex:otheta>
 Prove que $n^2\ne O(n\log n)$.
 \end{exercicio}
-\begin{exercicio}{cx-base}[Complementar]
+\begin{exercicio}{cx-base}[Complementar]<ex:propriedades>
 Prove que, para quaisquer constantes $a,b>1$, $\log_an=\Theta(\log_bn)$. Por que, por outro lado, $a^n$ e $b^n$ não são da mesma ordem quando $a\ne b$?
 \end{exercicio}
-\begin{exercicio}{cx-prop}[Complementar]
+\begin{exercicio}{cx-prop}[Complementar]<sec:notacoes>
 Prove: (a) se $f=O(g)$ e $g=O(h)$, então $f=O(h)$; (b) $f+g=\Theta(\max\{f,g\})$; (c) $f=\Theta(g)$ se e somente se $g=\Theta(f)$.
 \end{exercicio}
-\begin{exercicio}{cx-somak}[Complementar]
+\begin{exercicio}{cx-somak}[Complementar]<ex:lacos>
 Mostre que $\sum_{i=1}^ni^k=\Theta(n^{k+1})$ para toda constante inteira $k\ge1$.
 \end{exercicio}
-\begin{exercicio}{cx-harm}[Complementar]
+\begin{exercicio}{cx-harm}[Complementar]<sec:notacoes>
 Mostre que $H_n=\sum_{i=1}^n\frac1i=\Theta(\log n)$, comparando a soma com a integral de $1/x$.
 \end{exercicio}
-\begin{exercicio}{cx-busca}[Complementar]
+\begin{exercicio}{cx-busca}[Complementar]<sec:medidas>
 Na busca sequencial de $x$ num vetor de $n$ elementos distintos, quantas comparações são feitas no pior caso, no melhor caso e no caso médio, supondo que $x$ está no vetor e é igualmente provável em cada posição?
 \end{exercicio}
-\begin{exercicio}{cx-triplo}[Complementar]
+\begin{exercicio}{cx-triplo}[Complementar]<ex:lacos>
 Quantas vezes o corpo é executado no trecho ``\textbf{para} $i:=1$ \textbf{até} $n$, \textbf{para} $j:=i$ \textbf{até} $n$, \textbf{para} $k:=i$ \textbf{até} $j$: corpo''? Dê a fórmula exata e a ordem em $\Theta$.
 \end{exercicio}
-\begin{exercicio}{cx-loglog}[Complementar]
+\begin{exercicio}{cx-loglog}[Complementar]<ex:lacos>
 Qual a complexidade do trecho ``$j:=2$; \textbf{enquanto} $j\le n$ \textbf{faça} $j:=j^2$''?
 \end{exercicio}
-\begin{exercicio}{cx-fatexp}[Complementar]
+\begin{exercicio}{cx-fatexp}[Complementar]<ex:limites>
 Mostre que $2^n=o(n!)$ e que $n!=o(n^n)$.
 \end{exercicio}
-\begin{exercicio}{cx-binaria}[Complementar]
+\begin{exercicio}{cx-binaria}[Complementar]<fig:buscabin>
 Quantas comparações a busca binária faz no pior caso num vetor ordenado com 1000 elementos? E com $10^6$? Dê a fórmula geral.
 \end{exercicio}
-\begin{exercicio}{cx-inf}[Complementar]
+\begin{exercicio}{cx-inf}[Complementar]<ex:maximo>
 Mostre que todo algoritmo que decide se $x$ está num vetor \emph{não ordenado} de $n$ elementos, usando apenas comparações de $x$ com elementos do vetor, faz pelo menos $n$ comparações no pior caso. Conclua que a busca sequencial é ótima nesse modelo.
 \end{exercicio}
-\begin{exercicio}{cx-max}[Complementar]
+\begin{exercicio}{cx-max}[Complementar]<ex:propriedades>
 Verdadeiro ou falso? (a) $\max\{f,g\}=\Theta(f+g)$; (b) $f=O(g)$ implica $\log f=O(\log g)$, para $f,g\ge2$; (c) $f=O(g)$ implica $f^2=O(g^2)$; (d) $f(n)=O(f(n/2))$ para toda $f$ crescente.
+\end{exercicio}
+\begin{exercicio}{cx-insercao4}[Complementar]<ex:inscasos>
+Conte as comparações que a ordenação por inserção do Exemplo~\ref{ex:inscasos} faz nas entradas $[2,4,1,3]$ e $[4,3,1,2]$, inserção por inserção. Por que a segunda faz tantas comparações quanto o vetor decrescente $[4,3,2,1]$, embora não seja decrescente?
+\end{exercicio}
+\begin{exercicio}{cx-tercos}[Complementar]<ex:lacos>
+Quantas vezes o laço ``$i:=n$; \textbf{enquanto} $i>1$ \textbf{faça} $i:=\floor{i/3}$'' é executado para $n=100$ e para $n=1000$? Dê uma fórmula para $n\ge2$ e a ordem em $\Theta$.
 \end{exercicio}

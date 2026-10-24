@@ -38,3 +38,7 @@
 \resp{dj-inv} Por indução: no início, $L(s)=0=\operatorname{dist}(s,s)$ e os demais valem $\infty$. Um relaxamento só muda $L(w)$ para $L(v)+W(v,w)\ge\operatorname{dist}(s,v)+W(v,w)\ge\operatorname{dist}(s,w)$, pela hipótese e pela desigualdade triangular; e só muda quando o novo valor é menor, de modo que $L(w)$ nunca aumenta.
 
 \resp{dj-fib} No máximo $n$ inserções, $n$ remoções do mínimo e $m$ reduções de chave (no máximo uma por aresta, quando a aresta é relaxada). Com heap de Fibonacci, inserção e redução de chave custam $O(1)$ amortizado e remoção do mínimo $O(\log n)$ amortizado: o total é $O(n+m+n\log n)=O(m+n\log n)$.
+
+\resp{dj-sim3} São removidos, na ordem: $s\,(0)$, que dá $L(a)=4$ e $L(b)=1$; $b\,(1)$, que melhora $L(a)$ para 3 e dá $L(c)=6$; $a\,(3)$, que melhora $L(c)$ para 4 e dá $L(d)=9$; $c\,(4)$, que melhora $L(d)$ para 6 e dá $L(t)=11$; $d\,(6)$, que melhora $L(t)$ para 7; e $t\,(7)$. A árvore é o caminho $s\to b\to a\to c\to d\to t$: cada aresta direta mais cara foi trocada por um desvio mais barato.
+
+\resp{dj-und2} São removidos $A\,(0)$, $B\,(2)$, $C\,(3)$, $D\,(4)$ e $E\,(6)$. Pais: $B\leftarrow A$, $C\leftarrow B$, $D\leftarrow C$ e $E\leftarrow C$. Por exemplo, $L(C)$ começa em 5, pela aresta $AC$, e cai para 3 pelo caminho $A,B,C$; e $E$ fica com o pai $C$ (custo $3+3=6$), e não $D$ ($4+3=7$).

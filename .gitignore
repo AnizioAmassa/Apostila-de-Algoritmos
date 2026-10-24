@@ -1,3 +1,17 @@
-*.aux 
-*.log 
-
+# Arquivos auxiliares do LaTeX (o apostila.pdf é versionado)
+*.aux
+*.log
+*.toc
+*.out
+*.fls
+*.fdb_latexmk
+*.idx
+*.ind
+*.ilg
+*.lof
+*.lot
+*.bbl
+*.blg
+*.run.xml
+*.synctex.gz
+__pycache__/

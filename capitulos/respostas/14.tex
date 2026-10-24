@@ -40,3 +40,7 @@
 \resp{agm-floresta} O Kruskal, executado até o fim, devolve uma \emph{floresta geradora mínima}: uma AGM de cada componente. O Prim só alcança a componente da raiz; para obter a floresta, repita-o a partir de um vértice ainda não alcançado, até cobrir todos os vértices.
 
 \resp{agm-segunda} Seja $T'$ a segunda melhor árvore e $e\in T'\setminus T$ a aresta de menor peso dessa diferença. Pelo argumento de troca, $T+e$ tem um ciclo com uma aresta $f\in T\setminus T'$, e $T+e-f$ não é mais pesada que $T'$; repetindo o argumento, conclui-se que alguma árvore da forma $T+e-f$ é uma segunda melhor. Algoritmo: para cada vértice $u$, faça uma busca em $T$ a partir de $u$ calculando, para todo $v$, a aresta de maior peso no caminho de $u$ a $v$ em $T$, $\max(u,v)$: $O(n^2)$ no total. Depois, para cada aresta $uv\notin T$, o custo da troca é $c(uv)-\max(u,v)$; a melhor troca dá a segunda melhor árvore, em $O(n^2+m)=O(n^2)$.
+
+\resp{agm-sim3} Kruskal: aceita $AC\,(2)$, $CE\,(3)$, $AB\,(4)$ e $DE\,(4)$; rejeita $BC\,(5)$, que fecharia o ciclo $A,B,C$; aceita $EF\,(8)$; rejeita $BD\,(10)$ e $DF\,(11)$. Prim a partir de $F$: $FE\,(8)$, $EC\,(3)$, $CA\,(2)$, $ED\,(4)$ e $AB\,(4)$; quando $A$ entra, $B$ e $D$ empatam com chave 4, e entra $D$, cuja chave foi definida antes. O custo é \textbf{21}.
+
+\resp{agm-corte} O primeiro corte é atravessado por $AC\,(2)$, $BC\,(5)$ e $BD\,(10)$; a mais leve, $AC$, está em alguma AGM (de fato, na do exercício anterior). O segundo é atravessado por $BD\,(10)$, $DE\,(4)$ e $DF\,(11)$, e a mais leve, $DE$, também está na AGM.

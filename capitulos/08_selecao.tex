@@ -12,10 +12,18 @@
 
 Para achar a mediana de um conjunto --- ou, em geral, o $k$-ésimo menor elemento --- não é preciso ordenar. O quickselect resolve o problema em tempo linear \emph{esperado}, recursando em apenas um dos lados da partição. O algoritmo da mediana das medianas, de Blum, Floyd, Pratt, Rivest e Tarjan, garante tempo linear \emph{no pior caso}, escolhendo como pivô a mediana das medianas de grupos de cinco elementos. Sua análise é um belo exemplo de recorrência com subproblemas de tamanhos diferentes.
 
-\section{O problema e o quickselect}
-No \textbf{problema da seleção}, recebemos um conjunto $A$ de $n$ números e um inteiro $k$, e queremos o $k$-ésimo menor elemento de $A$. Casos particulares são o mínimo ($k=1$), o máximo ($k=n$) e as medianas inferior, $k=\floor{(n+1)/2}$, e superior, $k=\ceil{(n+1)/2}$.
+\section{O problema e o quickselect}\label{sec:quickselect}
+No \textbf{problema da seleção}\index{selecao, problema da@seleção, problema da}, recebemos um conjunto $A$ de $n$ números e um inteiro $k$, e queremos o $k$-ésimo menor elemento de $A$, isto é, o elemento que ocuparia a posição $k$ se $A$ fosse ordenado. Casos particulares são o mínimo ($k=1$), o máximo ($k=n$) e as medianas inferior, $k=\floor{(n+1)/2}$, e superior, $k=\ceil{(n+1)/2}$; quando $n$ é ímpar, as duas medianas coincidem.
 
-Há várias maneiras de resolver o problema: (1) ordenar e tomar a posição $k$, em $O(n\log n)$; (2) retirar o mínimo $k$ vezes, em $O(kn)$, o que dá $O(n^2)$ para a mediana; (3) o \textbf{quickselect}, que particiona como o quicksort mas recursa em \emph{um} lado só, em $O(n)$ esperado e $O(n^2)$ no pior caso; (4) o algoritmo da \textbf{mediana das medianas}, em $O(n)$ no \textbf{pior caso}.
+\begin{exemplo}[Medianas de um conjunto pequeno]\label{ex:medianas}
+Em $A=\{9,4,7,1,8,2\}$, com $n=6$, a ordem crescente é $1,2,4,7,8,9$. A mediana inferior é o elemento de posição $\floor{7/2}=3$, o 4; a superior, o de posição $\ceil{7/2}=4$, o 7. O terceiro maior é o quarto menor, também o 7: em geral, o $k$-ésimo maior é o $(n-k+1)$-ésimo menor. Note que, para responder, \emph{não} precisamos saber a ordem dos outros elementos entre si: basta saber quantos são menores e quantos são maiores que a resposta.
+\end{exemplo}
+
+Há várias maneiras de resolver o problema: (1) ordenar e tomar a posição $k$, em $O(n\log n)$; (2) retirar o mínimo $k$ vezes, em $O(kn)$, o que dá $O(n^2)$ para a mediana; (3) o \textbf{quickselect}\index{quickselect}, que particiona como o quicksort mas recursa em \emph{um} lado só, em $O(n)$ esperado e $O(n^2)$ no pior caso; (4) o algoritmo da \textbf{mediana das medianas}\index{mediana das medianas}, em $O(n)$ no \textbf{pior caso}.
+
+\begin{intuicao}
+O quicksort particiona e depois ordena \emph{os dois} lados. Para a seleção, depois de particionar já sabemos em que lado está a resposta: se há pelo menos $k$ elementos menores que o pivô, ela está entre eles; senão, está entre os maiores (ou é o próprio pivô). O outro lado pode ser descartado inteiro. É como procurar uma palavra no dicionário: abrir numa página qualquer diz se a palavra está antes ou depois, e metade do livro deixa de importar.
+\end{intuicao}
 
 \begin{pseudo}{Quickselect: tempo esperado $O(n)$}
 \begin{algorithmic}
@@ -29,10 +37,50 @@ Há várias maneiras de resolver o problema: (1) ordenar e tomar a posição $k$
 \EndFunction
 \end{algorithmic}
 \end{pseudo}
-\textbf{Análise.} Com probabilidade pelo menos $1/2$, o pivô cai entre o primeiro e o terceiro quartis, e então o lado mantido tem no máximo $3n/4$ elementos. Agrupe as chamadas em \emph{fases}: uma fase termina quando o tamanho cai para no máximo $3n/4$. O número de chamadas numa fase é dominado por uma variável geométrica de parâmetro $1/2$, cuja esperança é 2, e cada chamada custa no máximo $cn$. Assim, $E[T(n)]\le E[T(3n/4)]+2cn$, e, somando a série geométrica, $E[T(n)]\le 2cn\sum_{t\ge0}(3/4)^t=8cn=O(n)$.
 
-\section{O algoritmo da mediana das medianas}
-A ideia é garantir que o pivô seja \emph{sempre} bom: ele é a mediana das medianas de grupos de 5 elementos.
+\begin{exemplo}[Quickselect passo a passo]\label{ex:quickselect}
+Procuramos o 5º menor elemento do conjunto $S=\{15,3,22,\allowbreak8,11,6,\allowbreak19,2,13\}$ e supomos que os pivôs sorteados sejam, em sequência, 13, 3, 8 e 11 (Figura~\ref{fig:quickselect}).
+\begin{itemize}
+  \item Pivô 13: $S_1=\{3,8,11,6,2\}$, $S_2=\{13\}$, $S_3=\{15,22,19\}$. Como $|S_1|=5\ge5$, a resposta está em $S_1$, e $k$ continua 5.
+  \item Pivô 3: $S_1=\{2\}$, $S_2=\{3\}$, $S_3=\{8,11,6\}$. Como $|S_1|+|S_2|=2<5$, a resposta está em $S_3$; os 2 elementos de $S_1\cup S_2$ ficaram para trás, e $k$ passa a $5-2=3$.
+  \item Pivô 8: $S_1=\{6\}$, $S_2=\{8\}$, $S_3=\{11\}$. Como $1+1=2<3$, segue para $S_3$ com $k=3-2=1$.
+  \item Pivô 11: $|S_1|=0<1\le|S_1|+|S_2|=1$, e a resposta é \textbf{11}.
+\end{itemize}
+De fato, a ordem crescente de $S$ é $2,3,6,8,\mathbf{11},13,15,19,22$. As quatro chamadas examinaram $9+5+3+1=18$ elementos, contra cerca de $n\log_2n\approx29$ comparações de uma ordenação.
+\begin{figura}[O quickselect procurando o 5º menor. Em cada linha, o pivô está em azul, os menores que ele em verde e os maiores em amarelo; só a parte que contém a resposta passa para a linha seguinte.\label{fig:quickselect}]
+\begin{tikzpicture}[x=7mm,y=7mm]
+\foreach \lin/\vals/\txt in {
+  0/{15/destaque,3/feito,22/destaque,8/feito,11/feito,6/feito,19/destaque,2/feito,13/azul}/{$k=5$, pivô 13: $|S_1|=5\ge k$, segue em $S_1$},
+  1/{3/azul,8/destaque,11/destaque,6/destaque,2/feito}/{$k=5$, pivô 3: $|S_1|+|S_2|=2<k$, segue em $S_3$ com $k=3$},
+  2/{8/azul,11/destaque,6/feito}/{$k=3$, pivô 8: $|S_1|+|S_2|=2<k$, segue em $S_3$ com $k=1$},
+  3/{11/azul}/{$k=1$, pivô 11: $|S_1|<k\le|S_1|+|S_2|$, devolve 11}}{
+  \foreach \xx/\cor [count=\k] in \vals {
+    \fill[\cor] (\k-0.5,-\lin-0.3) rectangle (\k+0.5,-\lin+0.3);
+    \node[cel] at (\k,-\lin) {\xx};}
+  \node[rot,anchor=west] at (9.8,-\lin) {\txt};}
+\end{tikzpicture}
+\end{figura}
+\end{exemplo}
+
+\textbf{Análise.} Com probabilidade pelo menos $1/2$, o pivô cai entre o primeiro e o terceiro quartis, e então o lado mantido tem no máximo $3n/4$ elementos (Figura~\ref{fig:pivobom}). Agrupe as chamadas em \emph{fases}: uma fase termina quando o tamanho cai para no máximo $3n/4$. O número de chamadas numa fase é dominado por uma variável geométrica de parâmetro $1/2$, cuja esperança é 2, e cada chamada custa no máximo $cn$. Assim, $E[T(n)]\le E[T(3n/4)]+2cn$, e, somando a série geométrica, $E[T(n)]\le 2cn\sum_{t\ge0}(3/4)^t=8cn=O(n)$.
+
+\begin{figura}[Os elementos em ordem crescente. Se o pivô cai na metade central (entre o primeiro e o terceiro quartis), cada lado da partição tem no máximo $3n/4$ elementos, qualquer que seja o lado mantido. Um pivô aleatório cai ali com probabilidade $1/2$.\label{fig:pivobom}]
+\begin{tikzpicture}[x=1cm,y=1cm]
+\fill[ruim] (0,0) rectangle (2.5,0.6); \fill[feito] (2.5,0) rectangle (7.5,0.6); \fill[ruim] (7.5,0) rectangle (10,0.6);
+\draw (0,0) rectangle (10,0.6);
+\foreach \x/\t in {0/{$1$},2.5/{$n/4$},5/{$n/2$},7.5/{$3n/4$},10/{$n$}} {\draw (\x,0) -- (\x,-0.12); \node[font=\scriptsize, below] at (\x,-0.1) {\t};}
+\node[font=\small] at (5,0.3) {pivô bom};
+\node[font=\scriptsize] at (1.25,0.3) {pivô ruim}; \node[font=\scriptsize] at (8.75,0.3) {pivô ruim};
+\draw[decorate, decoration={brace, amplitude=4pt}, gray] (0,0.75) -- (7.5,0.75) node[midway, above=4pt, font=\scriptsize, text=black] {pivô na posição $3n/4$: o lado dos menores tem cerca de $3n/4$ elementos};
+\end{tikzpicture}
+\end{figura}
+
+\begin{exemplo}[Quantos pivôs são bons?]\label{ex:pivosbons}
+Com $n=100$ elementos distintos, os pivôs das posições 26 a 75 na ordem crescente, a metade central, deixam no máximo 74 elementos de cada lado, menos que $3n/4=75$: são 50 dos 100 possíveis. Em média, portanto, são necessários dois sorteios para obter um pivô bom, e cada pivô bom reduz o problema a no máximo $3/4$ do tamanho. Os custos das fases formam a série $2cn+2c\frac34n+2c\frac9{16}n+\cdots$, que soma no máximo $8cn$.
+\end{exemplo}
+
+\section{O algoritmo da mediana das medianas}\label{sec:mmedianas}
+O quickselect só é linear \emph{em média}: um azar persistente na escolha do pivô o leva a $\Theta(n^2)$. A ideia da mediana das medianas é garantir que o pivô seja \emph{sempre} bom, sem sorteio: ele é a mediana das medianas de grupos de 5 elementos.
 \begin{pseudo}{Seleção$(S,k)$ pela mediana das medianas}
 \begin{algorithmic}
 \Function{Seleção}{$S,k$}
@@ -48,11 +96,39 @@ A ideia é garantir que o pivô seja \emph{sempre} bom: ele é a mediana das med
 \EndFunction
 \end{algorithmic}
 \end{pseudo}
+Repare que o algoritmo faz \emph{duas} chamadas recursivas: uma para encontrar o pivô, sobre as $n/5$ medianas, e outra para continuar a busca, sobre um dos lados da partição. É essa segunda chamada que precisa ser pequena, e é para isso que o pivô é escolhido com tanto cuidado.
+
+\begin{exemplo}[Escolhendo o pivô]\label{ex:mmedianas}
+Tome os 35 números
+\[
+\begin{array}{c}
+24,16,85,58,43,\quad 31,26,63,81,64,\quad 99,62,38,59,34,\quad 93,33,98,42,67,\\
+23,94,22,78,84,\quad 47,65,75,90,28,\quad 39,97,1,44,52,
+\end{array}
+\]
+já divididos em 7 grupos de 5. (Como $35\le49$, o algoritmo ordenaria tudo diretamente; o exemplo serve para ver como o pivô é escolhido.) As medianas dos grupos são $43,63,59,67,78,65,44$; em ordem, $43,44,59,63,65,67,78$, e a mediana delas é $m=63$. A partição dá $|S_1|=20$ elementos menores que 63 e $|S_3|=14$ maiores. A mediana verdadeira dos 35 números é 58, e não 63: o pivô não é a mediana, mas é \emph{bom o bastante}. A Figura~\ref{fig:mmedianas} mostra por quê: pelo menos 12 elementos são certamente $\ge63$, e pelo menos 12 são certamente $\le63$; logo, cada lado da partição tem no máximo $35-12=23$ elementos, menos que $3\cdot35/4\approx26$.
+\begin{figura}[Os grupos do Exemplo~\ref{ex:mmedianas}, cada um ordenado de cima (maior) para baixo (menor), com as colunas em ordem crescente de mediana. A linha do meio são as medianas, e o pivô $m=63$ está em azul. Em amarelo, 12 elementos que são certamente $\ge m$ (maiores ou iguais à mediana do seu grupo, que é $\ge m$); em verde, 12 que são certamente $\le m$. Os elementos brancos podem estar de qualquer lado.\label{fig:mmedianas}]
+\begin{tikzpicture}[x=9mm,y=6.6mm]
+\foreach \col/\vals in {1/{85,58,43,24,16},2/{97,52,44,39,1},3/{99,62,59,38,34},4/{81,64,63,31,26},5/{90,75,65,47,28},6/{98,93,67,42,33},7/{94,84,78,23,22}} {
+  \foreach \xx [count=\k] in \vals {
+    \ifnum\col>3 \ifnum\k<4 \fill[destaque] (\col-0.5,-\k-0.3) rectangle (\col+0.5,-\k+0.3); \fi\fi
+    \ifnum\col<5 \ifnum\k>2 \fill[feito] (\col-0.5,-\k-0.3) rectangle (\col+0.5,-\k+0.3); \fi\fi
+    \ifnum\col=4 \ifnum\k=3 \fill[azul] (\col-0.5,-\k-0.3) rectangle (\col+0.5,-\k+0.3); \fi\fi
+    \node[cel] at (\col,-\k) {\xx};}}
+\draw[thick, MidnightBlue] (0.5,-3.3) rectangle (7.5,-2.7);
+\node[rot, anchor=west] at (7.7,-3) {medianas};
+\node[rot, anchor=west] at (7.7,-1.5) {$\ge$ mediana do grupo};
+\node[rot, anchor=west] at (7.7,-4.5) {$\le$ mediana do grupo};
+\end{tikzpicture}
+\end{figura}
+\end{exemplo}
+
 \begin{cuidado}
 O teste que decide ir para $S_1$ é $|S_1|\ge k$, e não $|S_1|=k$: o $k$-ésimo menor está em $S_1$ sempre que há pelo menos $k$ elementos menores que o pivô. E, ao ir para $S_3$, o índice muda para $k-|S_1|-|S_2|$, pois os elementos de $S_1$ e $S_2$ ficaram para trás.
 \end{cuidado}
 
-\section{Análise}
+\section{Análise}\label{sec:mmanalise}
+A Figura~\ref{fig:mmedianas} contém toda a ideia da análise: metade das colunas tem mediana $\ge m$, e cada uma delas tem três elementos $\ge$ a sua mediana. O lema abaixo faz a conta para um $n$ qualquer.
 \begin{lema}
 $|S_1|\le n-3\floor{n/10}$ e $|S_3|\le n-3\floor{n/10}$. Para $n\ge50$, ambos são no máximo $3n/4$.
 \end{lema}
@@ -60,6 +136,7 @@ $|S_1|\le n-3\floor{n/10}$ e $|S_3|\le n-3\floor{n/10}$. Para $n\ge50$, ambos s�
 Das $\floor{n/5}$ medianas de grupos completos, pelo menos metade, isto é, $\floor{\floor{n/5}/2}=\floor{n/10}$, são maiores ou iguais a $m$. Cada uma delas vem de um grupo que tem mais dois elementos maiores ou iguais a ela, e portanto a $m$. Assim, pelo menos $3\floor{n/10}$ elementos são maiores ou iguais a $m$, ou seja, $|S_2|+|S_3|\ge3\floor{n/10}$ e $|S_1|\le n-3\floor{n/10}$. O argumento para $S_3$ é simétrico.
 Para que $n-3\floor{n/10}\le3n/4$ basta $12\floor{n/10}\ge n$, isto é, $2\floor{n/10}\ge n-10\floor{n/10}$. Como o lado direito é no máximo 9, basta $\floor{n/10}\ge5$, ou seja, $n\ge50$. Por isso o caso base é $n\le49$.
 \end{proof}
+Por exemplo, com $n=1000$, há pelo menos $3\cdot100=300$ elementos de cada lado do pivô, e a chamada seguinte recebe no máximo 700 elementos, menos que $3n/4=750$.
 
 \begin{teo}
 $T(n)\le 20cn$; portanto, a seleção pela mediana das medianas custa $O(n)$ no pior caso.
@@ -71,9 +148,40 @@ T(n)\le 20c\,\frac n5+20c\,\frac{3n}{4}+cn=4cn+15cn+cn=20cn.\qedhere
 \]
 \end{proof}
 
+\begin{figura}[Árvore de recursão de $T(n)=T(n/5)+T(3n/4)+cn$. Os dois subproblemas somam $\frac{19}{20}$ do tamanho do pai, e o custo de cada nível é $\frac{19}{20}$ do custo do nível acima: a soma é uma série geométrica, limitada por $20cn$.\label{fig:arvmm}]
+\begin{tikzpicture}[x=1cm,y=1.05cm, every node/.style={font=\small}]
+\node (r) at (0,0) {$cn$};
+\node (a1) at (-2.6,-1) {$c\frac n5$}; \node (a2) at (2.6,-1) {$c\frac{3n}4$};
+\node (b1) at (-3.6,-2) {$c\frac{n}{25}$}; \node (b2) at (-1.6,-2) {$c\frac{3n}{20}$};
+\node (b3) at (1.6,-2) {$c\frac{3n}{20}$}; \node (b4) at (3.6,-2) {$c\frac{9n}{16}$};
+\draw (r)--(a1) (r)--(a2) (a1)--(b1) (a1)--(b2) (a2)--(b3) (a2)--(b4);
+\node at (0,-2.9) {$\vdots$};
+\foreach \y/\txt in {0/{$cn$},-1/{$\frac{19}{20}\,cn$},-2/{$\bigl(\frac{19}{20}\bigr)^2cn$},-2.9/{$\vdots$}} {\node[anchor=west, MidnightBlue] at (5.2,\y) {\txt};}
+\draw[gray] (5.05,0.3) -- (5.05,-3.2);
+\node[anchor=west, MidnightBlue, font=\small\bfseries] at (5.2,-3.7) {total $\le20cn$};
+\end{tikzpicture}
+\end{figura}
+
 \paragraph{Por que grupos de 5?} Para que o tempo seja linear, a soma dos tamanhos dos dois subproblemas precisa ser uma fração menor que 1 de $n$: com grupos de 5, $\frac n5+\frac{3n}4=\frac{19n}{20}<n$. Com grupos de 3, o pivô só garante cerca de $n/3$ elementos de cada lado, e a recorrência $T(n)=T(n/3)+T(2n/3)+cn$, com $\frac13+\frac23=1$, tem solução $\Theta(n\log n)$. Grupos de 7, 9 ou mais também funcionam, com outras constantes.
 
+\begin{intuicao}
+Na árvore de recursão, o que decide o custo é a soma das frações dos subproblemas. Se ela é menor que 1, cada nível custa uma fração fixa do anterior, e o total é dominado pela raiz: $O(n)$, como na Figura~\ref{fig:arvmm}. Se ela é exatamente 1, todos os níveis custam $cn$, e são $\Theta(\log n)$ níveis: $\Theta(n\log n)$, como no mergesort. Grupos maiores dão um pivô mais garantido, mas cada mediana de grupo fica mais cara; grupos de 5 são o menor tamanho ímpar em que a soma das frações fica abaixo de 1.
+\end{intuicao}
+
 \paragraph{Aplicação.} Usando como pivô do quicksort a mediana exata, calculada pela mediana das medianas, obtém-se $T(n)=2T(n/2)+O(n)=O(n\log n)$ no \textbf{pior} caso. Na prática, porém, esse quicksort é mais lento que o quicksort com pivô aleatório, por causa das constantes.
+
+\begin{center}\small
+\begin{tabular}{@{}lccc@{}}
+\toprule
+método & pior caso & caso esperado & observação\\
+\midrule
+ordenar e indexar & $\Theta(n\log n)$ & $\Theta(n\log n)$ & devolve também a ordem completa\\
+retirar o mínimo $k$ vezes & $\Theta(kn)$ & $\Theta(kn)$ & bom só para $k$ pequeno\\
+quickselect (pivô aleatório) & $\Theta(n^2)$ & $\Theta(n)$ & simples e rápido na prática\\
+mediana das medianas & $\Theta(n)$ & $\Theta(n)$ & garantia de pior caso, constantes altas\\
+\bottomrule
+\end{tabular}
+\end{center}
 
 \begin{chave}
 Seleção em $O(n)$ no pior caso: grupos de 5, mediana das medianas como pivô, pelo menos $3\floor{n/10}$ elementos de cada lado, $T(n)\le T(n/5)+T(3n/4)+cn\le20cn$. O quickselect com pivô aleatório é mais simples e linear em média. Não é preciso ordenar para achar o $k$-ésimo menor.
@@ -82,65 +190,71 @@ Seleção em $O(n)$ no pior caso: grupos de 5, mediana das medianas como pivô, 
 % ----------------------------------------------------------------
 \section{Exercícios}
 \excurso
-\begin{exercicio}{se-quick}[Slides]
+\begin{exercicio}{se-quick}[Slides]<sec:quickselect>
 Escreva um algoritmo de tempo \emph{esperado} $O(n)$ para determinar a mediana de uma lista com $n$ elementos, mais simples que o método da mediana das medianas.
 \end{exercicio}
-\begin{exercicio}{se-qs}[Slides]
+\begin{exercicio}{se-qs}[Slides]<sec:mmanalise>
 Argumente como o quicksort pode ser implementado com complexidade $O(n\log n)$ no pior caso. Qual o problema dessa abordagem na prática?
 \end{exercicio}
 
 \excompl
-\begin{exercicio}{se-trace}[Complementar]
+\begin{exercicio}{se-trace}[Complementar]<ex:mmedianas>
 Para $S=12,3,25,7,18,\ 1,22,9,15,6,\ 20,2,11,24,5,\ 17,8,23,4,14,\ 10,21,13,19,16$ (grupos de 5 na ordem dada), calcule as medianas dos grupos, o pivô $m$ e os tamanhos de $S_1$ e $S_3$. Confira que ambos são pelo menos $3\floor{n/10}$.
 \end{exercicio}
-\begin{exercicio}{se-grupos}[Complementar]
+\begin{exercicio}{se-grupos}[Complementar]<sec:mmanalise>
 Refaça a análise do algoritmo com grupos de 7 e com grupos de 3. Em qual dos casos ele continua linear?
 \end{exercicio}
-\begin{exercicio}{se-kmenores}[Complementar]
+\begin{exercicio}{se-kmenores}[Complementar]<sec:quickselect>
 Dê um algoritmo $O(n)$ que devolve os $k$ menores elementos de um conjunto, em qualquer ordem. E se eles forem pedidos em ordem crescente?
 \end{exercicio}
-\begin{exercicio}{se-oleo}[Complementar]
+\begin{exercicio}{se-oleo}[Complementar]<sec:quickselect>
 Um oleoduto horizontal (leste-oeste) deve ligar $n$ poços, cada um por um duto vertical. Dadas as coordenadas $y_1,\dots,y_n$ dos poços, em que altura colocar o oleoduto para minimizar o comprimento total dos dutos verticais? Mostre que a resposta pode ser encontrada em $O(n)$.
 \end{exercicio}
-\begin{exercicio}{se-piorqs}[Complementar]
+\begin{exercicio}{se-piorqs}[Complementar]<sec:quickselect>
 Mostre que o quickselect pode custar $\Theta(n^2)$ no pior caso, mesmo para encontrar o mínimo.
 \end{exercicio}
-\begin{exercicio}{se-qstrace}[Complementar]
+\begin{exercicio}{se-qstrace}[Complementar]<ex:quickselect>
 Execute o quickselect sobre $[7,2,9,4,3,8,6,1]$ com $k=4$, usando sempre o \emph{último} elemento do conjunto (na ordem dada) como pivô. Mostre $S_1$, $S_2$, $S_3$ e o novo $k$ em cada chamada.
 \end{exercicio}
-\begin{exercicio}{se-n49}[Complementar]
+\begin{exercicio}{se-n49}[Complementar]<sec:mmanalise>
 Calcule $n-3\floor{n/10}$ e $3n/4$ para $n=49$ e para $n=50$. O que isso mostra sobre o caso base do algoritmo?
 \end{exercicio}
-\begin{exercicio}{se-ordmed}[Complementar]
+\begin{exercicio}{se-ordmed}[Complementar]<sec:mmedianas>
 Suponha que, em vez de calcular a mediana das medianas recursivamente, o algoritmo ordene as $n/5$ medianas com o mergesort para achar a do meio. Qual passa a ser a complexidade?
 \end{exercicio}
-\begin{exercicio}{se-lista}[Complementar]
+\begin{exercicio}{se-lista}[Complementar]<sec:mmedianas>
 O algoritmo da mediana das medianas continua linear se os elementos estiverem numa lista encadeada, em vez de um vetor? Justifique.
 \end{exercicio}
-\begin{exercicio}{se-quartis}[Complementar]
+\begin{exercicio}{se-quartis}[Complementar]<sec:quickselect>
 Mostre como calcular os três quartis de um conjunto de $n$ números em $O(n)$.
 \end{exercicio}
-\begin{exercicio}{se-proximos}[Complementar]
+\begin{exercicio}{se-proximos}[Complementar]<sec:quickselect>
 Dados $n$ números distintos e um inteiro $k$, encontre em $O(n)$ os $k$ números mais próximos da mediana (em valor absoluto da diferença).
 \end{exercicio}
-\begin{exercicio}{se-ponderada}[Complementar \estrela]
+\begin{exercicio}{se-ponderada}[Complementar \estrela]<sec:mmedianas>
 Cada elemento $x_i$ tem um peso $w_i>0$, com $\sum w_i=1$. A \emph{mediana ponderada} é o elemento $x_k$ tal que a soma dos pesos dos elementos menores que $x_k$ é menor que $1/2$ e a soma dos pesos dos maiores é no máximo $1/2$. Encontre-a em $O(n)$.
 \end{exercicio}
-\begin{exercicio}{se-dois}[Complementar \estrela]
+\begin{exercicio}{se-dois}[Complementar \estrela]<sec:quickselect>
 Dados dois vetores ordenados $X$ e $Y$, cada um com $n$ elementos, encontre a mediana dos $2n$ elementos em $O(\log n)$.
 \end{exercicio}
-\begin{exercicio}{se-segundo}[Complementar \estrela]
+\begin{exercicio}{se-segundo}[Complementar \estrela]<ex:maximo>
 Mostre como encontrar o segundo menor de $n$ elementos com $n+\ceil{\log_2n}-2$ comparações, organizando as comparações como um torneio.
 \end{exercicio}
-\begin{exercicio}{se-cinco}[Complementar \estrela]
+\begin{exercicio}{se-cinco}[Complementar \estrela]<sec:mmedianas>
 Mostre como encontrar a mediana de 5 elementos com apenas 6 comparações.
 \end{exercicio}
-\begin{exercicio}{se-inferior}[Complementar]
+\begin{exercicio}{se-inferior}[Complementar]<ex:maximo>
 Mostre que todo algoritmo baseado em comparações que encontra a mediana de $n$ elementos distintos faz pelo menos $n-1$ comparações. (Pense no grafo cujas arestas são as comparações feitas.)
 \end{exercicio}
-\begin{exercicio}{se-esperado}[Complementar \estrela]
+\begin{exercicio}{se-esperado}[Complementar \estrela]<ex:pivosbons>
 Mostre que o número esperado de comparações do quickselect satisfaz \[E[T(n)]\le n+\frac2n\sum_{i=\floor{n/2}}^{n-1}E[T(i)]\] e conclua, por substituição, que $E[T(n)]\le4n$.
 \end{exercicio}
-\begin{exercicio}{se-maior}[Complementar]
+\begin{exercicio}{se-maior}[Complementar]<ex:medianas>
 Como usar um algoritmo que seleciona o $k$-ésimo \emph{menor} para encontrar o $k$-ésimo \emph{maior}? E para encontrar o percentil 90 de um conjunto de $n$ notas?
+\end{exercicio}
+\begin{exercicio}{se-qstrace2}[Complementar]<ex:quickselect>
+Execute o quickselect sobre $S=\{14,3,9,21,7,16,1,11,5\}$ procurando o 7º menor elemento, supondo que os pivôs sorteados sejam, em sequência, 9, 16, 11 e 14. Mostre $S_1$, $S_2$, $S_3$ e o valor de $k$ em cada chamada.
+\end{exercicio}
+\begin{exercicio}{se-trace2}[Complementar]<ex:mmedianas>
+Para $S=31,8,22,15,4,\ 27,12,19,2,35,\ 10,26,6,18,30$ (grupos de 5 na ordem dada), calcule as medianas dos grupos, o pivô $m$ escolhido pela mediana das medianas e os tamanhos de $S_1$ e $S_3$. Compare $m$ com a mediana verdadeira de $S$.
 \end{exercicio}

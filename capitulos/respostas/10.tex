@@ -38,3 +38,11 @@
 \resp{rv-busca} Uma \textbf{AVL} indexada pela chave: busca, inserção e remoção em $O(\log n)$ e listagem em ordem em $O(n)$. Uma tabela hash daria buscas em $O(1)$ esperado, mas a listagem em ordem exigiria ordenar a cada vez.
 
 \resp{rv-desfazer} \textbf{Union-Find sem compressão}, com união por rank ou tamanho e uma pilha das alterações: cada ligação empilha o ponteiro e o rank alterados; desfazer é desempilhar e restaurar em $O(1)$; a consulta custa $O(\log n)$.
+
+\resp{rv-estimativa} $n^2=2{,}5\cdot10^{11}$ operações: cerca de 2500 segundos, mais de 40 minutos. $n\log_2n\approx5\cdot10^5\cdot19\approx9{,}5\cdot10^6$: cerca de 0,1 segundo. $n^3=8\cdot10^9$: cerca de 80 segundos. Para uma resposta interativa, só o $\Theta(n\log n)$ serve; o quadrático e o cúbico precisariam de um algoritmo melhor ou de entradas menores.
+
+\resp{rv-postes} Ordem: $4,9,12,18,27,31,40,45$. Diferenças entre vizinhos: $5,3,6,9,4,9,5$. A menor distância é 3, entre os postes em 9 e 12. São 7 diferenças, contra $\binom82=28$ pares na versão quadrática.
+
+\resp{rv-catalogos} A saída é $(2,3,7,9,11,15,20,22,30)$. As comparações são $2<3$; $7>3$; $7=7$ (sai um só e os dois índices avançam); $11>9$; $11<15$; $15=15$; $20<22$. Quando a primeira lista acaba, 22 e 30 são copiados sem comparação: são 7 comparações.
+
+\resp{rv-painel} (a) Lista 95: E, B; lista 70: C, A; lista 40: D. (b) C sai da lista 70, que fica só com A, e entra na lista 99; B sai da lista 95, que fica só com E, e entra na lista 60. Cada mudança custa $O(1)$, graças ao vetor que diz em que nó está cada servidor. (c) Percorrendo as listas de 100 para baixo: C (99), E (95) e A (70). O relatório completo é C (99), E (95), A (70), B (60) e D (40).

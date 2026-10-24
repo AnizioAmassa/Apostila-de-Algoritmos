@@ -12,8 +12,23 @@
 
 O mergesort, o quicksort e a seleção pela mediana das medianas já usaram a mesma ideia: quebrar o problema em pedaços menores do mesmo tipo, resolvê-los recursivamente e combinar as respostas. Este capítulo trata essa ideia como um método de projeto, com um roteiro para escrever o pseudocódigo e analisar a recorrência, e a aplica a vários problemas.
 
-\section{O paradigma}
-Um algoritmo de \textbf{divisão e conquista} tem três passos: (1) \emph{divisão}: quebrar o problema $\Pi$ em subproblemas menores \textbf{do mesmo tipo}, $\Pi_1,\dots,\Pi_k$; (2) \emph{conquista}: resolvê-los recursivamente, resolvendo diretamente os casos pequenos; (3) \emph{combinação}: juntar as soluções dos subproblemas, por um procedimento relativamente simples, numa solução de $\Pi$. Busca-se um \textbf{bom balanceamento}, com partes de tamanhos parecidos, que leva a poucas camadas de recursão. A técnica funciona bem quando os subproblemas são \textbf{disjuntos}; quando eles se repetem muito, a técnica adequada é a programação dinâmica do Capítulo~\ref{cap:pd}.
+\section{O paradigma}\label{sec:dcparadigma}
+Um algoritmo de \textbf{divisão e conquista}\index{divisao e conquista@divisão e conquista} tem três passos: (1) \emph{divisão}: quebrar o problema $\Pi$ em subproblemas menores \textbf{do mesmo tipo}, $\Pi_1,\dots,\Pi_k$; (2) \emph{conquista}: resolvê-los recursivamente, resolvendo diretamente os casos pequenos; (3) \emph{combinação}: juntar as soluções dos subproblemas, por um procedimento relativamente simples, numa solução de $\Pi$. Busca-se um \textbf{bom balanceamento}, com partes de tamanhos parecidos, que leva a poucas camadas de recursão. A técnica funciona bem quando os subproblemas são \textbf{disjuntos}; quando eles se repetem muito, a técnica adequada é a programação dinâmica do Capítulo~\ref{cap:pd}.
+
+\begin{figura}[Os três passos da divisão e conquista. A divisão e a combinação são feitas pelo próprio algoritmo; a conquista é delegada às chamadas recursivas, que repetem o esquema até chegar a casos pequenos, resolvidos diretamente.\label{fig:dcesquema}]
+\begin{tikzpicture}[x=1cm,y=1cm, cx/.style={draw, thick, rounded corners=2pt, minimum width=2.2cm, minimum height=7mm, font=\small, align=center}]
+\node[cx, fill=azul] (P) at (0,0) {problema $\Pi$};
+\node[cx, fill=azul!60] (P1) at (-2.2,-1.4) {$\Pi_1$}; \node[cx, fill=azul!60] (P2) at (2.2,-1.4) {$\Pi_2$};
+\node[cx, fill=feito] (S1) at (-2.2,-2.9) {solução de $\Pi_1$}; \node[cx, fill=feito] (S2) at (2.2,-2.9) {solução de $\Pi_2$};
+\node[cx, fill=feito!150] (S) at (0,-4.3) {solução de $\Pi$};
+\draw[seta] (P) -- (P1); \draw[seta] (P) -- (P2);
+\draw[seta, dashed] (P1) -- node[left, rot] {recursão} (S1); \draw[seta, dashed] (P2) -- node[right, rot] {recursão} (S2);
+\draw[seta] (S1) -- (S); \draw[seta] (S2) -- (S);
+\node[passo, anchor=west] at (4.2,-0.7) {1. dividir};
+\node[passo, anchor=west] at (4.2,-2.15) {2. conquistar};
+\node[passo, anchor=west] at (4.2,-3.6) {3. combinar};
+\end{tikzpicture}
+\end{figura}
 
 \begin{roteiro}[Como escrever um algoritmo de divisão e conquista]
 \begin{enumerate}
@@ -28,10 +43,29 @@ Um algoritmo de \textbf{divisão e conquista} tem três passos: (1) \emph{divis�
 \end{roteiro}
 
 % ------------------------------------------------------------------
-\section{Contagem de inversões}
-Dada uma sequência $a_1,\dots,a_n$, um par $i<j$ é uma \textbf{inversão} se $a_i>a_j$. O número de inversões mede quão distante uma ordem está da ordem crescente, e serve como medida de semelhança entre dois rankings: se uma pessoa ordena $n$ itens como $1,\dots,n$ e outra pessoa os ordena de outra forma, as inversões da segunda ordem contam os pares em que as duas discordam. A força bruta testa todos os pares, em $\Theta(n^2)$.
+\section{Contagem de inversões}\label{sec:inversoes}
+Dada uma sequência $a_1,\dots,a_n$, um par $i<j$ é uma \textbf{inversão}\index{inversao@inversão} se $a_i>a_j$. O número de inversões mede quão distante uma ordem está da ordem crescente, e serve como medida de semelhança entre dois rankings: se uma pessoa ordena $n$ itens como $1,\dots,n$ e outra pessoa os ordena de outra forma, as inversões da segunda ordem contam os pares em que as duas discordam. A força bruta testa todos os pares, em $\Theta(n^2)$.
+
+\begin{exemplo}[Inversões e rankings]\label{ex:inversoes}
+A sequência $(4,1,3,2)$ tem 4 inversões: os pares $(4,1)$, $(4,3)$, $(4,2)$ e $(3,2)$, em que um número maior aparece antes de um menor (Figura~\ref{fig:inversoes}). Uma sequência crescente não tem nenhuma inversão, e uma decrescente tem todas as possíveis.
+
+Agora, duas amigas ordenam cinco filmes por preferência. Numerando os filmes pela ordem da primeira, a segunda escolheu $(2,1,4,5,3)$. As inversões são $(2,1)$, $(4,3)$ e $(5,3)$: as duas discordam sobre 3 dos $\binom52=10$ pares de filmes. Quanto menos inversões, mais parecidos os gostos.
+\begin{figura}[As 4 inversões de $(4,1,3,2)$: cada arco liga um par em que o elemento da esquerda é maior.\label{fig:inversoes}]
+\begin{tikzpicture}[x=13mm,y=9mm]
+\foreach \xx [count=\k] in {4,1,3,2} {\node[cel] (n\k) at (\k,0) {\xx};}
+% cada arco sai e chega num ponto diferente do topo da célula, para não se sobreporem
+\foreach \pa/\da/\pb/\db in {1/1.8/2/0,1/0/3/0,1/-1.8/4/1.8,3/1.8/4/-1.8} {
+  \draw[thick, BrickRed!70] ($(n\pa.north)+(\da mm,0)$) to[out=75, in=105, looseness=1.1] ($(n\pb.north)+(\db mm,0)$);}
+\end{tikzpicture}
+\end{figura}
+\end{exemplo}
 
 \textbf{Divisão e conquista.} Divida a sequência em metades $A$ e $B$; conte recursivamente as inversões dentro de cada uma; e \textbf{combine} contando os pares $(a,b)$ com $a\in A$, $b\in B$ e $a>b$. Esse último passo é fácil se $A$ e $B$ estiverem \emph{ordenadas}: durante a intercalação, ao comparar $a_i$ com $b_j$, se $a_i\le b_j$, então $a_i$ não forma inversão com nenhum elemento restante de $B$; se $a_i>b_j$, então $b_j$ forma inversão com \textbf{todos os elementos restantes de $A$}. Por isso a função também devolve o vetor ordenado: ela é um mergesort ``instrumentado''.
+
+\begin{intuicao}
+Ordenar cada metade não muda o número de inversões \emph{entre} as metades: um par $(a,b)$, com $a$ na esquerda e $b$ na direita, é inversão se e só se $a>b$, e isso não depende de onde $a$ e $b$ estão dentro das suas metades. Então podemos ordenar as metades à vontade --- e, com elas ordenadas, as inversões cruzadas são contadas em blocos, e não uma a uma.
+\end{intuicao}
+
 \begin{pseudo}{Contagem de inversões}
 \begin{algorithmic}
 \Function{CalculaInversões}{$V,ini,fim$} \Comment{conta e deixa $V[ini..fim]$ ordenado}
@@ -57,13 +91,46 @@ Dada uma sequência $a_1,\dots,a_n$, um par $i<j$ é uma \textbf{inversão} se $
 \EndFunction
 \end{algorithmic}
 \end{pseudo}
+
+\begin{exemplo}[Contando inversões cruzadas na intercalação]\label{ex:intercont}
+Intercalemos $A=(2,5,8)$ com $B=(1,3,9)$, contando as inversões entre as duas metades.
+\begin{itemize}
+  \item $2>1$: sai o 1, que é menor que \emph{todos} os 3 elementos restantes de $A$ (2, 5 e 8); soma 3.
+  \item $2\le3$: sai o 2, que não forma inversão com nenhum elemento restante de $B$.
+  \item $5>3$: sai o 3, menor que os 2 restantes de $A$ (5 e 8); soma 2.
+  \item $5\le9$ e $8\le9$: saem o 5 e o 8; por fim, o 9.
+\end{itemize}
+O total é $3+2=5$, e de fato as inversões cruzadas são $(2,1)$, $(5,1)$, $(8,1)$, $(5,3)$ e $(8,3)$. Cada elemento de $B$ ``cobrou'' de uma vez as inversões com o que restava de $A$, sem examiná-las uma a uma.
+\end{exemplo}
+
 O custo é $T(n)=2T(n/2)+\Theta(n)=\Theta(n\log n)$. Dois detalhes importam: o teste é ``$\le$'', porque elementos iguais não formam inversão, e soma-se $meio-i+1$, a quantidade de elementos que restam em $A$, e não 1. Por exemplo, a sequência $1,5,4,8,10,2,6,9,12,11,3,7$ tem \textbf{22} inversões.
 
-% ------------------------------------------------------------------
-\section{Subvetor contíguo de soma máxima}
-Dado um vetor $A[1..n]$ de inteiros, que podem ser negativos, queremos $i\le j$ que maximizem $A[i]+\dots+A[j]$, isto é, o subvetor contíguo \textbf{não vazio} de maior soma. Pense, por exemplo, nos resultados diários de uma empresa, positivos ou negativos, e na busca do período de dias consecutivos de maior resultado acumulado.
+\begin{exemplo}[A recursão completa]
+A Figura~\ref{fig:inversoesrec} mostra a contagem para $(6,2,8,4,1,7,3,5)$. No nível de baixo, os pares $(6,2)$ e $(8,4)$ têm uma inversão cada; $(1,7)$ e $(3,5)$, nenhuma. No nível do meio, a intercalação de $(2,6)$ com $(4,8)$ encontra 1 inversão cruzada (o par $(6,4)$), e a de $(1,7)$ com $(3,5)$ encontra 2 ($(7,3)$ e $(7,5)$). Na última intercalação, de $(2,4,6,8)$ com $(1,3,5,7)$, o 1 sai antes dos quatro elementos da esquerda, o 3 antes de três, o 5 antes de dois e o 7 antes de um: $4+3+2+1=10$. O total é $1+1+0+0+1+2+10=15$.
+\begin{figura}[Contagem de inversões de $(6,2,8,4,1,7,3,5)$ de baixo para cima. Ao lado de cada vetor intercalado está o número de inversões cruzadas encontradas na intercalação que o produziu.\label{fig:inversoesrec}]
+\begin{tikzpicture}[x=1mm,y=1mm]
+\pic at (0,0) {arr={8}{6,2,8,4,1,7,3,5}};
+\pic at (-37.5,-12) {arr={2}{2,6}}; \pic at (-12.5,-12) {arr={2}{4,8}}; \pic at (12.5,-12) {arr={2}{1,7}}; \pic at (37.5,-12) {arr={2}{3,5}};
+\pic at (-25,-24) {arr={4}{2,4,6,8}}; \pic at (25,-24) {arr={4}{1,3,5,7}};
+\pic[fill=feito] at (0,-36) {arr={8}{1,2,3,4,5,6,7,8}};
+\foreach \xx/\txt in {-37.5/1,-12.5/1,12.5/0,37.5/0} {\node[font=\scriptsize, BrickRed, anchor=west] at (\xx+6,-12) {$+\txt$};}
+\node[font=\scriptsize, BrickRed, anchor=west] at (-13,-24) {$+1$}; \node[font=\scriptsize, BrickRed, anchor=west] at (37,-24) {$+2$};
+\node[font=\scriptsize, BrickRed, anchor=west] at (22,-36) {$+10$};
+\begin{scope}[MidnightBlue!80, -{Stealth[length=1.4mm]}]
+\foreach \pp/\qq in {-15/-37.5,-5/-12.5,5/12.5,15/37.5} {\draw (\pp,-3) -- (\qq,-9.5);}
+\foreach \pp/\qq in {-37.5/-25,-12.5/-25,12.5/25,37.5/25} {\draw (\pp,-15) -- (\qq,-21.5);}
+\draw (-25,-27) -- (-6,-33.5); \draw (25,-27) -- (6,-33.5);
+\end{scope}
+\node[passo, anchor=west] at (52,-36) {total: 15};
+\end{tikzpicture}
+\end{figura}
+\end{exemplo}
 
-\textbf{Ideia.} O melhor subvetor de $A[ini..fim]$ está (i) inteiro na metade esquerda, (ii) inteiro na direita, ou (iii) \textbf{cruza o meio}, sendo da forma $A[i..meio]\cup A[meio+1..j]$. O caso (iii) se resolve em tempo linear: é o melhor sufixo da esquerda que termina em $meio$ somado ao melhor prefixo da direita que começa em $meio+1$.
+% ------------------------------------------------------------------
+\section{Subvetor contíguo de soma máxima}\label{sec:maxsub}\index{subvetor de soma maxima@subvetor de soma máxima}
+Dado um vetor $A[1..n]$ de inteiros, que podem ser negativos, queremos $i\le j$ que maximizem $A[i]+\dots+A[j]$, isto é, o subvetor contíguo \textbf{não vazio} de maior soma. Pense, por exemplo, nos resultados diários de uma empresa, positivos ou negativos, e na busca do período de dias consecutivos de maior resultado acumulado. A força bruta testa os $\binom{n}{2}+n$ intervalos; com somas acumuladas, cada um custa $O(1)$, e o total é $\Theta(n^2)$.
+
+\textbf{Ideia.} O melhor subvetor de $A[ini..fim]$ está (i) inteiro na metade esquerda, (ii) inteiro na direita, ou (iii) \textbf{cruza o meio}, sendo da forma $A[i..meio]\cup A[meio+1..j]$ (Figura~\ref{fig:maxsub}). O caso (iii) se resolve em tempo linear: é o melhor sufixo da esquerda que termina em $meio$ somado ao melhor prefixo da direita que começa em $meio+1$. As duas escolhas são independentes, porque o valor do sufixo não depende de qual prefixo vem depois, e vice-versa.
 \begin{pseudo}{Subvetor de soma máxima por divisão e conquista (devolve soma, início e fim)}
 \begin{algorithmic}
 \Function{MaxSub}{$A,ini,fim$}
@@ -90,6 +157,35 @@ Dado um vetor $A[1..n]$ de inteiros, que podem ser negativos, queremos $i\le j$ 
 \EndFunction
 \end{algorithmic}
 \end{pseudo}
+
+\begin{exemplo}[O subvetor cruzado]\label{ex:maxcruz}
+Seja $A=(1,-4,3,-2,\,5,-1,-6,2)$, com $meio=4$. Na metade esquerda, o melhor subvetor é $(3)$, de soma 3; na direita, $(5)$, de soma 5. Para o cruzado, \textsc{MaxCruzado} acumula os sufixos da esquerda, de trás para frente, e os prefixos da direita:
+\begin{center}\small
+\begin{tabular}{@{}lcccc@{\qquad}lcccc@{}}
+\toprule
+sufixo $A[i..4]$, $i=$ & 4 & 3 & 2 & 1 & prefixo $A[5..j]$, $j=$ & 5 & 6 & 7 & 8\\
+\midrule
+soma & $-2$ & $\mathbf{1}$ & $-3$ & $-2$ & soma & $\mathbf{5}$ & 4 & $-2$ & 0\\
+\bottomrule
+\end{tabular}
+\end{center}
+O melhor sufixo é $A[3..4]=(3,-2)$, de soma 1, e o melhor prefixo é $A[5..5]=(5)$, de soma 5: o cruzado é $A[3..5]=(3,-2,5)$, de soma 6. Como $6>\max\{3,5\}$, a resposta é o subvetor cruzado. Repare que o melhor sufixo inclui o $-2$: sozinho ele é ruim, mas é o preço para ligar o 3 ao 5.
+\end{exemplo}
+
+\begin{figura}[Os três casos para o subvetor máximo de $A=(1,-4,3,-2,5,-1,-6,2)$: inteiro à esquerda do meio (melhor soma 3), inteiro à direita (5) ou cruzando o meio (6, a resposta).\label{fig:maxsub}]
+\begin{tikzpicture}[x=9mm,y=3mm]
+\foreach \xx [count=\k] in {1,-4,3,-2,5,-1,-6,2} {
+  \ifnum\xx>0 \fill[feito, draw=gray] (\k-0.35,0) rectangle (\k+0.35,\xx);
+  \else \fill[ruim, draw=gray] (\k-0.35,0) rectangle (\k+0.35,\xx); \fi
+  \node[font=\scriptsize] at (\k,{\xx>0 ? -0.9 : 0.9}) {$\xx$};}
+\draw[gray] (0.4,0) -- (8.6,0);
+\draw[dashed, MidnightBlue] (4.5,-7) -- (4.5,5.2); \node[rot] at (4.5,-7.8) {meio};
+\draw[decorate, decoration={brace, amplitude=4pt, mirror}, ForestGreen!70!black, thick] (2.65,-4.6) -- (3.35,-4.6) node[midway, below=4pt, font=\scriptsize] {esq.: 3};
+\draw[decorate, decoration={brace, amplitude=4pt, mirror}, ForestGreen!70!black, thick] (4.65,-4.6) -- (5.35,-4.6) node[midway, below=4pt, font=\scriptsize] {dir.: 5};
+\draw[decorate, decoration={brace, amplitude=5pt}, MidnightBlue, thick] (2.65,5.8) -- (5.35,5.8) node[midway, above=5pt, font=\scriptsize] {cruzado: $1+5=6$};
+\end{tikzpicture}
+\end{figura}
+
 \begin{itemize}
   \item \textbf{Complexidade}: $T(n)=2T(n/2)+\Theta(n)=\Theta(n\log n)$.
   \item \textbf{Todos os elementos negativos}: o algoritmo funciona, porque o caso base devolve um elemento e o subvetor cruzado usa pelo menos $A[meio]$ e $A[meio+1]$; o máximo das três opções acaba sendo o maior elemento. Por exemplo, $[-8,-3,-6,-2,-5,-4]$ dá $-2$.
@@ -98,8 +194,22 @@ Dado um vetor $A[1..n]$ de inteiros, que podem ser negativos, queremos $i\le j$ 
 \end{itemize}
 
 % ------------------------------------------------------------------
-\section{Multiplicação de matrizes: o algoritmo de Strassen}
+\section{Multiplicação de matrizes: o algoritmo de Strassen}\label{sec:strassen}\index{strassen, algoritmo de@Strassen, algoritmo de}
 Multiplicando matrizes $n\times n$ por blocos de tamanho $n/2$, o produto ingênuo faz 8 multiplicações de blocos, e $T(n)=8T(n/2)+\Theta(n^2)=\Theta(n^3)$, sem ganho sobre o método escolar. Strassen mostrou como fazer apenas \textbf{7} multiplicações de blocos, à custa de mais somas e subtrações: $T(n)=7T(n/2)+\Theta(n^2)=\Theta(n^{\log_27})\approx\Theta(n^{2{,}807})$, pelo caso 1 do Teorema Mestre, pois $n^2=O(n^{\log_27-\varepsilon})$.
+
+\begin{figura}[Multiplicação por blocos: cada matriz $n\times n$ é vista como uma matriz $2\times2$ de blocos $\frac n2\times\frac n2$, e o bloco $C_{11}$ é $A_{11}B_{11}+A_{12}B_{21}$, como no produto de matrizes $2\times2$ de números. As fórmulas de Strassen valem para blocos porque só usam somas, subtrações e produtos, sem nunca trocar a ordem dos fatores.\label{fig:blocos}]
+\begin{tikzpicture}[x=6mm,y=6mm, bl/.style={font=\small}]
+\fill[destaque, opacity=0.6] (0,2) rectangle (4,4); \fill[destaque, opacity=0.6] (6.6,0) rectangle (8.6,4);
+\fill[destaque, opacity=0.6] (13.2,2) rectangle (15.2,4);
+\foreach \xo/\nome in {0/A,6.6/B,13.2/C} {
+  \draw[thick] (\xo,0) rectangle ++(4,4); \draw (\xo+2,0) -- (\xo+2,4); \draw (\xo,2) -- (\xo+4,2);
+  \node[bl] at (\xo+1,3) {$\nome_{11}$}; \node[bl] at (\xo+3,3) {$\nome_{12}$};
+  \node[bl] at (\xo+1,1) {$\nome_{21}$}; \node[bl] at (\xo+3,1) {$\nome_{22}$};}
+\node at (5.3,2) {$\times$}; \node at (11.9,2) {$=$};
+\node[rot] at (2,-0.6) {$n\times n$}; \node[rot] at (8.6,-0.6) {$n\times n$}; \node[rot] at (15.2,-0.6) {$n\times n$};
+\end{tikzpicture}
+\end{figura}
+
 \begin{pseudo}{Strassen$(A,B,n)$, com $n$ potência de 2 e soma e subtração de matrizes dadas}
 \begin{algorithmic}
 \Function{Strassen}{$A,B,n$}
@@ -120,8 +230,22 @@ Multiplicando matrizes $n\times n$ por blocos de tamanho $n/2$, o produto ingên
 \end{pseudo}
 Cada chamada faz 18 somas ou subtrações de matrizes $\frac n2\times\frac n2$, de custo $\Theta(n^2)$. Na prática, usa-se o método clássico abaixo de um certo tamanho, pois as constantes de Strassen são maiores e o algoritmo é numericamente menos estável.
 
+\begin{exemplo}[As fórmulas de Strassen com números]
+Com $A=\begin{bmatrix}1&2\\3&4\end{bmatrix}$ e $B=\begin{bmatrix}5&6\\7&8\end{bmatrix}$, os ``blocos'' são números, e as sete multiplicações dão
+\begin{gather*}
+M_1=(1+4)(5+8)=65,\qquad M_2=(3+4)\cdot5=35,\qquad M_3=1\cdot(6-8)=-2,\\
+M_4=4\cdot(7-5)=8,\qquad M_5=(1+2)\cdot8=24,\qquad M_6=(3-1)(5+6)=22,\\
+M_7=(2-4)(7+8)=-30.
+\end{gather*}
+Combinando: $C_{11}=65+8-24-30=19$, $C_{12}=-2+24=22$, $C_{21}=35+8=43$ e $C_{22}=65-35-2+22=50$. É o mesmo que o produto direto, $\begin{bmatrix}1\cdot5+2\cdot7&1\cdot6+2\cdot8\\3\cdot5+4\cdot7&3\cdot6+4\cdot8\end{bmatrix}=\begin{bmatrix}19&22\\43&50\end{bmatrix}$, que usa 8 multiplicações. Para números, economizar uma multiplicação não compensa as 18 somas; para \emph{blocos} grandes, compensa, porque uma multiplicação de blocos custa muito mais que uma soma.
+\end{exemplo}
+
+\begin{exemplo}[O ganho de uma multiplicação a menos]
+Com $n=2^{10}=1024$, a recursão tem 10 níveis. O produto por blocos com 8 multiplicações chega a $8^{10}\approx1{,}07\cdot10^9$ multiplicações de números, que é $n^3$; o de Strassen, a $7^{10}\approx2{,}8\cdot10^8$, quase 4 vezes menos. A cada nível, a diferença entre 8 e 7 se multiplica, e por isso uma única multiplicação a menos muda o expoente.
+\end{exemplo}
+
 % ------------------------------------------------------------------
-\section{Outros exemplos clássicos}
+\section{Outros exemplos clássicos}\label{sec:dcoutros}
 \begin{pseudo}{Busca binária, potência rápida e máximo e mínimo simultâneos}
 \begin{algorithmic}
 \Function{BuscaBin}{$V,ini,fim,x$} \Comment{$V$ ordenado; $T(n)=T(n/2)+O(1)=O(\log n)$}
@@ -146,6 +270,27 @@ Cada chamada faz 18 somas ou subtrações de matrizes $\frac n2\times\frac n2$, 
 \EndFunction
 \end{algorithmic}
 \end{pseudo}
+Nos três, a divisão produz subproblemas do mesmo tipo, mas a combinação é trivial; o que muda é quantos subproblemas são resolvidos. A busca binária e a potência resolvem \emph{um} subproblema de metade do tamanho, e por isso são logarítmicas; o \textsc{MaxMin} resolve dois.
+
+\begin{exemplo}[Os três algoritmos em ação]\label{ex:outrosdc}
+\textbf{Busca binária}: procuramos $x=34$ no vetor ordenado $V=(3,8,12,\allowbreak17,21,30,\allowbreak34,41,50)$ (Figura~\ref{fig:buscabindc}). Com $ini=1$ e $fim=9$, o meio é a posição 5, com $V[5]=21<34$, e a busca segue em $[6,9]$; o meio passa a ser 7, com $V[7]=34$: encontrado, com 2 comparações, contra até 9 de uma busca sequencial.
+
+\textbf{Potência rápida}\index{potencia rapida@potência rápida} $2^{10}$: \textsc{Pot}$(2,10)$ chama \textsc{Pot}$(2,5)$, que chama \textsc{Pot}$(2,2)$, \textsc{Pot}$(2,1)$ e \textsc{Pot}$(2,0)=1$. Na volta: $2^1=1\cdot1\cdot2$; $2^2=2\cdot2$; $2^5=4\cdot4\cdot2=32$; $2^{10}=32\cdot32=1024$. São 6 multiplicações (duas nos níveis ímpares, uma nos pares), contra 9 do produto $2\cdot2\cdots2$.
+
+\textbf{Máximo e mínimo} de 6 elementos: o vetor se divide em duas metades de 3, e cada uma em partes de 2 e de 1. Uma parte de 2 custa 1 comparação, e uma de 1 não custa nada; combinar custa 2 (uma para o máximo, outra para o mínimo). Cada metade de 3 custa $1+0+2=3$, e o total é $3+3+2=8$ comparações, contra $2\cdot6-2=10$ do método que procura o máximo e depois o mínimo.
+\begin{figura}[Busca binária por 34. Em cada passo, o intervalo $[ini,fim]$ ainda possível está em branco, o meio em destaque e as posições descartadas em cinza.\label{fig:buscabindc}]
+\begin{tikzpicture}[x=7mm,y=7mm]
+\foreach \lin/\ini/\fim/\meio/\txt in {0/1/9/5/{$V[5]=21<34$: descarta $[1,5]$},1/6/9/7/{$V[7]=34$: encontrado}} {
+  \foreach \xx [count=\k] in {3,8,12,17,21,30,34,41,50} {
+    \ifnum\k<\ini \fill[gray!25] (\k-0.5,-\lin-0.3) rectangle (\k+0.5,-\lin+0.3); \fi
+    \ifnum\k>\fim \fill[gray!25] (\k-0.5,-\lin-0.3) rectangle (\k+0.5,-\lin+0.3); \fi
+    \ifnum\k=\meio \fill[destaque] (\k-0.5,-\lin-0.3) rectangle (\k+0.5,-\lin+0.3); \fi
+    \node[cel] at (\k,-\lin) {\xx};}
+  \node[rot,anchor=west] at (9.8,-\lin) {\txt};}
+\foreach \k in {1,...,9} {\node[idx] at (\k,0.55) {\k};}
+\end{tikzpicture}
+\end{figura}
+\end{exemplo}
 
 \begin{pseudo}{Elemento majoritário (aparece mais de $n/2$ vezes): $T(n)=2T(n/2)+\Theta(n)=\Theta(n\log n)$}
 \begin{algorithmic}
@@ -154,15 +299,27 @@ Cada chamada faz 18 somas ou subtrações de matrizes $\frac n2\times\frac n2$, 
   \State $meio:=\floor{(ini+fim)/2}$
   \State $a:=$ \Call{Maj}{$V,ini,meio$};\ $b:=$ \Call{Maj}{$V,meio+1,fim$}
   \For{$c\in\{a,b\}$, $c\ne$ \textsc{nenhum}}
-    \If{$c$ ocorre mais de $(fim-ini+1)/2$ vezes em $V[ini..fim]$} \State \Return $c$ \EndIf \Comment{contagem em $O(n)$}
+    \If{$c$ ocorre mais de $(fim-ini+1)/2$ vezes em $V[ini..fim]$} \Comment{contagem em $O(n)$} \State \Return $c$ \EndIf
   \EndFor
   \State \Return \textsc{nenhum}
 \EndFunction
 \end{algorithmic}
 \end{pseudo}
-A correção do último algoritmo vem de uma observação simples: se $x$ é majoritário no vetor todo, ele é majoritário em pelo menos uma das metades, pois do contrário apareceria no máximo $n/2$ vezes.
+A correção do último algoritmo vem de uma observação simples: se $x$ é majoritário no vetor todo, ele é majoritário em pelo menos uma das metades, pois do contrário apareceria no máximo $n/2$ vezes. Assim, os candidatos devolvidos pelas metades são os únicos que precisam ser testados.
 
-\paragraph{Mais ideias.} O algoritmo de \emph{Karatsuba} multiplica inteiros de $n$ dígitos com 3 produtos de inteiros de $n/2$ dígitos, em $\Theta(n^{\log_23})\approx\Theta(n^{1{,}585})$. O \emph{par de pontos mais próximos} no plano se resolve em $\Theta(n\log n)$, dividindo os pontos pela mediana das abscissas e combinando com uma varredura da faixa central, em que cada ponto precisa ser comparado com no máximo 7 vizinhos. O \emph{pico de um vetor unimodal} e a \emph{raiz de uma função monótona} se encontram por busca binária, em $O(\log n)$; e o número de ocorrências de $x$ num vetor ordenado sai de duas buscas binárias.
+\begin{exemplo}[Elemento majoritário]\label{ex:majoritario}\index{elemento majoritario@elemento majoritário}
+Em $V=(3,1,3,3,\,2,3,1,3)$, o 3 aparece 5 vezes, mais que $8/2$. A Figura~\ref{fig:maj} mostra a recursão. A metade direita, $(2,3,1,3)$, não tem majoritário: o 3 aparece só 2 vezes em 4. Mesmo assim, o 3 é majoritário na metade esquerda, $(3,1,3,3)$, e chega à raiz como candidato; a contagem no vetor todo confirma as 5 ocorrências. Note também que $(3,1)$ não tem majoritário: aparecer \emph{metade} das vezes não basta.
+\begin{figura}[A recursão do elemento majoritário em $(3,1,3,3,2,3,1,3)$. Cada nó mostra o trecho e o majoritário encontrado (ou ``--'', se não há).\label{fig:maj}]
+\forestset{majf/.style={for tree={draw, rounded corners=2pt, font=\small, inner sep=2.5pt, s sep=5mm, l sep=6mm, edge={thick}, align=center}}}
+\begin{forest} majf
+[{$3,1,3,3,2,3,1,3$\\ \textbf{3}}, fill=feito
+  [{$3,1,3,3$\\ \textbf{3}}, fill=feito [{$3,1$\\ --}] [{$3,3$\\ \textbf{3}}, fill=feito]]
+  [{$2,3,1,3$\\ --} [{$2,3$\\ --}] [{$1,3$\\ --}]]]
+\end{forest}
+\end{figura}
+\end{exemplo}
+
+\paragraph{Mais ideias.} O algoritmo de \emph{Karatsuba}\index{karatsuba, algoritmo de@Karatsuba, algoritmo de} multiplica inteiros de $n$ dígitos com 3 produtos de inteiros de $n/2$ dígitos, em $\Theta(n^{\log_23})\approx\Theta(n^{1{,}585})$. O \emph{par de pontos mais próximos} no plano se resolve em $\Theta(n\log n)$, dividindo os pontos pela mediana das abscissas e combinando com uma varredura da faixa central, em que cada ponto precisa ser comparado com no máximo 7 vizinhos. O \emph{pico de um vetor unimodal} e a \emph{raiz de uma função monótona} se encontram por busca binária, em $O(\log n)$; e o número de ocorrências de $x$ num vetor ordenado sai de duas buscas binárias.
 
 \begin{cuidado}[Erros frequentes em pseudocódigo de divisão e conquista]
 \begin{itemize}
@@ -181,68 +338,74 @@ Divisão e conquista $=$ dividir ao meio, conquistar com duas chamadas e combina
 % ----------------------------------------------------------------
 \section{Exercícios}
 \excurso
-\begin{exercicio}{dc-t1}[Avaliação]
+\begin{exercicio}{dc-t1}[Avaliação]<sec:maxsub>
 Dado um vetor de inteiros, determine por divisão e conquista a maior soma de um subvetor contíguo \textbf{não vazio} e o subvetor responsável, com suas posições inicial e final. Determine a complexidade. Exemplos: $[-2,1,-3,4,-1,2,1,-5,4]$ (soma 6, subvetor $[4,-1,2,1]$) e $[-8,-3,-6,-2,-5,-4]$ (soma $-2$). Compare sua solução com a da §\ref{sec:dc}.
 \end{exercicio}
-\begin{exercicio}{dc-t2}[Avaliação]
+\begin{exercicio}{dc-t2}[Avaliação]<sec:strassen>
 Escreva um algoritmo recursivo que multiplica duas matrizes $n\times n$, com $n$ potência de 2, pela estratégia de Strassen, com as sete multiplicações $M_1,\dots,M_7$, supondo dados procedimentos de soma e subtração de matrizes.
 \end{exercicio}
-\begin{exercicio}{dc-balanc}[Slides]
+\begin{exercicio}{dc-balanc}[Slides]<sec:dcparadigma>
 Prove: um algoritmo de divisão e conquista $c$-balanceado ($c>1$; cada uma das $k$ partes tem tamanho no máximo $n/c$, e os tamanhos diferem por uma constante), que gasta tempo linear para dividir e combinar, roda em $O(n\log n)$.
 \end{exercicio}
-\begin{exercicio}{dc-inv}[Slides]
+\begin{exercicio}{dc-inv}[Slides]<sec:inversoes>
 Escreva o pseudocódigo completo do algoritmo de contagem de inversões por divisão e conquista.
 \end{exercicio}
 
 \excompl
-\begin{exercicio}{dc-contar}[Complementar]
+\begin{exercicio}{dc-contar}[Complementar]<ex:inversoes>
 Conte as inversões de (a) $2,4,1,3,5$; (b) $5,4,3,2,1$; (c) $3,1,4,1,5,9,2,6$ (pares iguais não são inversão). Qual o máximo possível para $n$ elementos?
 \end{exercicio}
-\begin{exercicio}{dc-pico}[Complementar]
+\begin{exercicio}{dc-pico}[Complementar]<sec:dcoutros>
 Um vetor $V[1..n]$ é \emph{unimodal}: estritamente crescente até uma posição $p$ e estritamente decrescente depois dela. Encontre $p$ em $O(\log n)$.
 \end{exercicio}
-\begin{exercicio}{dc-ocorr}[Complementar]
+\begin{exercicio}{dc-ocorr}[Complementar]<sec:dcoutros>
 Conte quantas vezes $x$ aparece num vetor ordenado em $O(\log n)$.
 \end{exercicio}
-\begin{exercicio}{dc-kara}[Complementar]
+\begin{exercicio}{dc-kara}[Complementar]<sec:dcoutros>
 Multiplique dois inteiros de $n$ dígitos com três produtos de inteiros de $n/2$ dígitos (Karatsuba): escreva $x=x_1B^{n/2}+x_0$ e $y=y_1B^{n/2}+y_0$ e use $(x_1+x_0)(y_1+y_0)$. Qual a recorrência e a sua solução?
 \end{exercicio}
-\begin{exercicio}{dc-maxmin}[Complementar]
+\begin{exercicio}{dc-maxmin}[Complementar]<ex:outrosdc>
 Mostre que o \textsc{MaxMin} faz $\frac{3n}2-2$ comparações quando $n$ é potência de 2.
 \end{exercicio}
-\begin{exercicio}{dc-maj}[Complementar \estrela]
+\begin{exercicio}{dc-maj}[Complementar \estrela]<ex:majoritario>
 Dê um algoritmo $O(n)$, com memória $O(1)$, para encontrar o elemento majoritário, se existir.
 \end{exercicio}
-\begin{exercicio}{dc-bbin}[Complementar]
+\begin{exercicio}{dc-bbin}[Complementar]<ex:outrosdc>
 Escreva a busca binária de forma iterativa e prove que ela faz no máximo $\floor{\log_2n}+1$ comparações com elementos do vetor.
 \end{exercicio}
-\begin{exercicio}{dc-pot}[Complementar]
+\begin{exercicio}{dc-pot}[Complementar]<ex:outrosdc>
 Mostre que \textsc{Pot}$(a,n)$ faz no máximo $2\floor{\log_2n}+2$ multiplicações. Quantas faz para $n=13$?
 \end{exercicio}
-\begin{exercicio}{dc-linear}[Complementar]
+\begin{exercicio}{dc-linear}[Complementar]<sec:maxsub>
 Mostre como resolver o subvetor de soma máxima por divisão e conquista em $O(n)$, fazendo cada chamada devolver quatro valores: a soma total do intervalo, o melhor prefixo, o melhor sufixo e o melhor subvetor.
 \end{exercicio}
-\begin{exercicio}{dc-blocos}[Complementar]
+\begin{exercicio}{dc-blocos}[Complementar]<sec:strassen>
 Escreva a multiplicação de matrizes por blocos com 8 multiplicações recursivas e mostre que ela custa $\Theta(n^3)$. Quantas somas de blocos ela faz por chamada?
 \end{exercicio}
-\begin{exercicio}{dc-faltante}[Complementar]
+\begin{exercicio}{dc-faltante}[Complementar]<sec:dcoutros>
 Um vetor ordenado contém os inteiros de 1 a $n+1$, exceto um. Encontre o que falta em $O(\log n)$.
 \end{exercicio}
-\begin{exercicio}{dc-fixo}[Complementar]
+\begin{exercicio}{dc-fixo}[Complementar]<sec:dcoutros>
 Dado um vetor ordenado $A[1..n]$ de inteiros \emph{distintos}, decida em $O(\log n)$ se existe $i$ com $A[i]=i$.
 \end{exercicio}
-\begin{exercicio}{dc-uns}[Complementar]
+\begin{exercicio}{dc-uns}[Complementar]<sec:dcoutros>
 Um vetor ordenado contém apenas zeros seguidos de uns. Conte os uns em $O(\log n)$. E se o tamanho do vetor for desconhecido (pode-se consultar qualquer posição, e posições além do fim devolvem um valor especial)?
 \end{exercicio}
-\begin{exercicio}{dc-signif}[Complementar \estrela]
+\begin{exercicio}{dc-signif}[Complementar \estrela]<ex:intercont>
 Um par $i<j$ é uma \emph{inversão significativa} se $a_i>2a_j$. Conte as inversões significativas em $O(n\log n)$.
 \end{exercicio}
-\begin{exercicio}{dc-par}[Complementar \estrela]
+\begin{exercicio}{dc-par}[Complementar \estrela]<sec:dcoutros>
 Descreva o algoritmo de divisão e conquista para o par de pontos mais próximos no plano e justifique por que cada ponto da faixa central precisa ser comparado com um número constante de vizinhos.
 \end{exercicio}
-\begin{exercicio}{dc-skyline}[Complementar \estrela]
+\begin{exercicio}{dc-skyline}[Complementar \estrela]<sec:dcparadigma>
 Prédios retangulares são dados por triplas $(e_i,d_i,h_i)$: o prédio ocupa o intervalo $[e_i,d_i]$ e tem altura $h_i$. O \emph{contorno} (\emph{skyline}) é a curva formada pelo ponto mais alto em cada abscissa. Calcule o contorno de $n$ prédios em $O(n\log n)$.
 \end{exercicio}
-\begin{exercicio}{dc-recs}[Complementar]
+\begin{exercicio}{dc-recs}[Complementar]<sec:dcoutros>
 Escreva e resolva as recorrências da busca binária, da potência rápida, do \textsc{MaxMin} e do elemento majoritário por divisão e conquista.
+\end{exercicio}
+\begin{exercicio}{dc-intercont}[Complementar]<ex:intercont>
+Intercale $A=(1,4,6,9)$ com $B=(2,3,8)$ como no procedimento \textsc{IntercalaContando}, mostrando, a cada elemento de $B$ que sai, quantas inversões cruzadas ele soma. Liste as inversões encontradas.
+\end{exercicio}
+\begin{exercicio}{dc-cruzado}[Complementar]<ex:maxcruz>
+Aplique \textsc{MaxCruzado} a $A=(2,-5,4,-1,\,3,-6,1,2)$, com $meio=4$: dê as somas dos sufixos $A[i..4]$ e dos prefixos $A[5..j]$, o subvetor cruzado e a resposta de \textsc{MaxSub} para o vetor todo.
 \end{exercicio}

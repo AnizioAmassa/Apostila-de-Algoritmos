@@ -1,0 +1,68 @@
+# Verifica, compila e atualiza o apostila.pdf a cada push, em qualquer branch.
+#
+# Para não entrar em laço: (1) pushes feitos com o GITHUB_TOKEN não disparam
+# novas execuções; (2) o commit do PDF leva "[skip ci]" na mensagem; (3) pushes
+# que só alteram o apostila.pdf são ignorados (paths-ignore).
+name: Apostila
+
+on:
+  push:
+    branches: ['**']
+    paths-ignore:
+      - 'apostila.pdf'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+# Dois pushes seguidos no mesmo branch: só o mais recente precisa terminar.
+concurrency:
+  group: apostila-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  compilar:
+    if: ${{ !contains(github.event.head_commit.message, '[skip ci]') }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - name: Baixa o repositório (com o histórico, usado pela verificação)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Instala o TeX
+        run: |
+          sudo apt-get update -qq
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+            latexmk texlive-latex-recommended texlive-latex-extra texlive-pictures \
+            texlive-fonts-extra texlive-fonts-recommended texlive-lang-portuguese \
+            texlive-science texlive-plain-generic cm-super
+
+      - name: Verifica os exercícios e os números do texto
+        run: make verificar
+
+      - name: Compila a apostila
+        run: |
+          # Datas do PDF fixadas pelo último commit das fontes: as mesmas fontes
+          # geram o mesmo arquivo, e o PDF só é commitado quando o conteúdo muda.
+          export SOURCE_DATE_EPOCH="$(git log -1 --format=%ct -- apostila.tex capitulos)"
+          export FORCE_SOURCE_DATE=1
+          latexmk -pdf -interaction=nonstopmode -halt-on-error apostila.tex
+
+      - name: Resume os avisos da compilação
+        run: python3 verificacao/log.py apostila.log || true
+
+      - name: Faz commit do apostila.pdf, se ele mudou
+        env:
+          RAMO: ${{ github.ref_name }}
+        run: |
+          if git diff --quiet -- apostila.pdf; then
+            echo "O apostila.pdf não mudou; nada a fazer."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add apostila.pdf
+          git commit -m "Atualiza apostila.pdf [skip ci]"
+          git push origin "HEAD:refs/heads/${RAMO}"
