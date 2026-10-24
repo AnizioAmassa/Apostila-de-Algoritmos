@@ -134,4 +134,14 @@ aceitas, _, _ = kruskal(G, maximo=True)
 v.igual((peso(G, aceitas), max(p for _, p in arvores_geradoras(G))), (71, 71), "agm-l7: árvore máxima = 71")
 v.igual((2 + 3, 2 + 2), (5, 4), "agm-dijk: árvore de caminhos mínimos x AGM")
 
+# --- Exercícios novos ---
+G3 = [("AB", 4), ("AC", 2), ("BC", 5), ("BD", 10), ("CE", 3), ("DE", 4), ("DF", 11), ("EF", 8)]
+aceitas, rejeitadas, _ = kruskal(G3)
+v.igual((aceitas, rejeitadas, peso(G3, aceitas)), (["AC", "CE", "AB", "DE", "EF"], ["BC", "BD", "DF"], 21),
+        "agm-sim3: Kruskal")
+v.igual(prim(G3, "F")[0], ["FE", "EC", "CA", "ED", "AB"], "agm-sim3: Prim a partir de F")
+v.igual(min(p for _, p in arvores_geradoras(G3)), 21, "agm-sim3: 21 é o mínimo")
+corta = lambda S: sorted(n for n, _ in G3 if (n[0] in S) != (n[1] in S))
+v.igual((corta("AB"), corta("D")), (["AC", "BC", "BD"], ["BD", "DE", "DF"]), "agm-corte")
+
 v.fim()

@@ -184,4 +184,28 @@ v.igual(sum(sum(sorted(x, reverse=True)[:2]) for x in cats.values()), 38, "gm-un
 v.igual((len(troco_guloso(14, [1, 7, 10])), troco_otimo(14, [1, 7, 10])), (5, 2), "gm-moedas: S=14")
 v.igual(guloso_otimo_ate([1, 5, 10, 25], 1000), True, "gm-moedas: {1,5,10,25}")
 
+# --- Exercícios novos ---
+v.igual((troco_guloso(68, [25, 10, 5, 1]), troco_guloso(99, [25, 10, 5, 1])),
+        ([25, 25, 10, 5, 1, 1, 1], [25, 25, 25, 10, 10, 1, 1, 1, 1]), "gm-trocosim (a)")
+v.igual(guloso_otimo_ate([25, 10, 5, 1], 100), True, "gm-trocosim (a): soluções ótimas")
+primeiro = next(S for S in range(1, 100) if len(troco_guloso(S, [12, 5, 1])) != troco_otimo(S, [12, 5, 1]))
+v.igual((primeiro, troco_guloso(15, [12, 5, 1]), troco_otimo(15, [12, 5, 1]), troco_otimo(14, [12, 5, 1])),
+        (15, [12, 1, 1, 1], 3, 3), "gm-trocosim (b)")
+G2 = {"PQ": 3, "PR": 8, "QR": 5, "QS": 7, "RS": 2, "RT": 6, "ST": 4}
+aceitas, rejeitadas = [], []
+for e in sorted(G2, key=lambda e: -G2[e]):
+    (aceitas if eh_floresta([tuple(x) for x in aceitas + [e]]) else rejeitadas).append(e)
+melhor = max(sum(G2[e] for e in T) for T in combinations(G2, 4) if eh_floresta([tuple(e) for e in T]))
+v.igual((aceitas, rejeitadas, sum(G2[e] for e in aceitas), melhor),
+        (["PR", "QS", "RT", "QR"], ["ST", "PQ", "RS"], 26, 26), "gm-maxarv")
+cand = [("P", 8), ("P", 6), ("P", 5), ("A", 9), ("A", 4), ("F", 7), ("F", 3)]
+lim, usados, aceitos = {"P": 2, "A": 1, "F": 1}, {"P": 0, "A": 0, "F": 0}, []
+for cat, pts in sorted(cand, key=lambda c: -c[1]):
+    if usados[cat] < lim[cat]:
+        usados[cat] += 1
+        aceitos.append(pts)
+otimo = max(sum(p for _, p in c) for k in range(5) for c in combinations(cand, k)
+            if all(sum(1 for x, _ in c if x == cat) <= lim[cat] for cat in lim))
+v.igual((aceitos, sum(aceitos), otimo), ([9, 8, 7, 6], 30, 30), "gm-comite")
+
 v.fim()

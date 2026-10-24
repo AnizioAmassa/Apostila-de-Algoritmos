@@ -200,3 +200,15 @@ Conte quantos valores distintos há numa sequência de $n$ inteiros arbitrários
 \begin{exercicio}{hs-tamanho}[Complementar]
 Uma tabela com endereçamento aberto vai guardar $10^6$ chaves, e o fator de carga não deve passar de $0{,}75$. Qual o tamanho mínimo da tabela? Que valor de $m$ você escolheria para usar o método da divisão?
 \end{exercicio}
+\begin{exercicio}{hs-busca}[Complementar]
+Na tabela da Figura~\ref{fig:sondagem} (sondagem linear, $m=13$), quantas sondagens faz uma busca por 31? E uma busca sem sucesso por 57? E por 26? O que esses números mostram sobre o agrupamento?
+\end{exercicio}
+\begin{exercicio}{hs-reinsere}[Complementar]
+Na mesma tabela, remova o 44, marcando a posição como ``removida'', e depois insira o 70, que não está na tabela. Em que posição o 70 fica? Quantas sondagens faz, em seguida, uma busca pelo 32?
+\end{exercicio}
+\begin{exercicio}{hs-univsim}[Complementar]
+Com $p=17$, $m=6$ e a família $h_{a,b}(k)=((ak+b)\bmod17)\bmod6$, calcule os endereços das chaves 3, 8 e 14 para $(a,b)=(2,7)$ e para $(a,b)=(11,3)$. Em qual dos casos há colisão?
+\end{exercicio}
+\begin{exercicio}{hs-horner}[Complementar]
+Com as letras valendo $\mathtt a=1,\dots,\mathtt z=26$, $b=31$ e $m=97$, calcule pela regra de Horner o endereço de ``casa'' e o de ``saca''. As duas palavras têm as mesmas letras: elas colidem? O que aconteceria com uma função que só somasse os valores das letras?
+\end{exercicio}

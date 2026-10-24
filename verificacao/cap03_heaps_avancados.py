@@ -196,4 +196,15 @@ v.igual(round(32_000_000 / 2 ** 20, 1), 30.5, "hb-t2: 32·10^6 bytes ≈ 30,5 MB
 total = 5e6 + 8e7 + 5e6 * log2(5e6)
 v.igual((round(total / 1e8), round(log2(5e6)), round(8e7 * 22 / 1e9)), (2, 22, 2), "hb-t3: estimativas")
 
+# --- Exercícios novos ---
+h, por_insercao = [], []
+for x in (4, 9, 2, 7, 5):
+    h, l = fusao(h, [(x, [])])
+    por_insercao.append(l)
+v.igual((por_insercao, h), ([0, 1, 0, 2, 0], [(5, []), (9, [(7, [(2, [])]), (4, [])])]), "hb-binsim")
+v.igual([bin(n ^ (n + 1)).count("1") - 1 for n in range(5)], por_insercao, "hb-binsim: links = vai um")
+final, links = consolida([(k, []) for k in (6, 2, 4, 8, 1, 7)])
+v.igual((final, links), ([(7, [(1, [])]), (8, [(6, [(2, [])]), (4, [])])], 4), "hb-fibsim")
+v.tem("Restam duas raízes, 8 (grau 2) e 7 (grau 1), depois de 4 links", "hb-fibsim", "respostas/03.tex")
+
 v.fim()

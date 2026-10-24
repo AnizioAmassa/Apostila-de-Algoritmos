@@ -40,3 +40,7 @@
 \resp{dc-skyline} Represente um contorno como uma lista de pontos $(x,h)$ em que a altura muda. Divida os prédios em duas metades, calcule recursivamente os dois contornos e \emph{intercale-os} como no mergesort: percorra as duas listas em ordem de $x$, mantendo a altura atual de cada contorno, e em cada $x$ registre $\max\{h_1,h_2\}$ sempre que esse máximo mudar. A intercalação custa $O(n)$ e o total é $O(n\log n)$.
 
 \resp{dc-recs} Busca binária: $T(n)=T(n/2)+O(1)=\Theta(\log n)$. Potência: $T(n)=T(n/2)+O(1)=\Theta(\log n)$ multiplicações. \textsc{MaxMin}: $T(n)=2T(n/2)+2$, isto é, $\frac{3n}2-2$ comparações. Elemento majoritário: $T(n)=2T(n/2)+\Theta(n)=\Theta(n\log n)$, por causa das contagens na combinação.
+
+\resp{dc-intercont} $1\le2$: sai o 1. $4>2$: sai o 2, que soma 3 (restam 4, 6 e 9 em $A$). $4>3$: sai o 3, que soma 3. $4\le8$ e $6\le8$: saem o 4 e o 6. $9>8$: sai o 8, que soma 1. Por fim, sai o 9. São $3+3+1=7$ inversões cruzadas: $(4,2)$, $(6,2)$, $(9,2)$, $(4,3)$, $(6,3)$, $(9,3)$ e $(9,8)$. A saída é $(1,2,3,4,6,8,9)$.
+
+\resp{dc-cruzado} Sufixos, para $i=4,3,2,1$: $-1$, $3$, $-2$ e $0$; o melhor é $A[3..4]=(4,-1)$, com soma 3. Prefixos, para $j=5,6,7,8$: $3$, $-3$, $-2$ e $0$; o melhor é $A[5..5]=(3)$. O cruzado é $A[3..5]=(4,-1,3)$, com soma 6. As metades têm melhores somas 4 e 3, e a resposta é o subvetor cruzado: soma 6, das posições 3 a 5.

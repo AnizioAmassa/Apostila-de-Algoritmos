@@ -460,3 +460,9 @@ Mostre que, se um heap de Fibonacci sofre apenas inserções, fusões e remoçõ
 \begin{exercicio}{hb-fibcaro}[Complementar]
 Dê uma sequência de operações, a partir de um heap de Fibonacci vazio, em que \emph{uma única} remoção do máximo tem custo real $\Theta(n)$. Por que isso não contradiz o custo amortizado $O(\log n)$?
 \end{exercicio}
+\begin{exercicio}{hb-binsim}[Complementar]
+Insira $4,9,2,7,5$, nessa ordem, num heap binomial de máximo inicialmente vazio. Mostre as árvores depois de cada inserção e conte os \emph{links}. Compare o número de links de cada inserção com o número de ``vai um'' ao somar 1 em binário.
+\end{exercicio}
+\begin{exercicio}{hb-fibsim}[Complementar]
+Num heap de Fibonacci de máximo vazio, insira $6,2,9,4,8,1,7$ e depois remova o máximo, consolidando as raízes na ordem em que foram inseridas, como no Exemplo~\ref{ex:consolida}. Quais árvores restam? Quantos links são feitos? Quanto vale o potencial $\Phi=t+2m$ antes e depois da remoção?
+\end{exercicio}

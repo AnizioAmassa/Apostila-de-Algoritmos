@@ -55,4 +55,37 @@ v.igual([Fraction(*t) for t in sorted(fr, key=cmp_to_key(compara))], sorted(Frac
 v.igual(round(1e8 * log2(1e8) / 1e9, 1), 2.7, "rv-idades: n log2 n ≈ 2,7·10^9")
 v.igual(ceil(500 / 12), 42, "rv-externo: 42 blocos de 12 GB")
 
+# --- Exercícios novos ---
+v.igual((round(5e5 ** 2 / OPS), round(5e5 * log2(5e5) / 1e6, 1), round(5e5 * log2(5e5) / OPS, 1), 2000 ** 3 / OPS),
+        (2500, 9.5, 0.1, 80.0), "rv-estimativa")
+pos = [31, 4, 18, 45, 12, 27, 40, 9]
+o = sorted(pos)
+dif = [b - a for a, b in zip(o, o[1:])]
+v.igual((o, dif, min(dif), len(dif), len(pos) * (len(pos) - 1) // 2),
+        ([4, 9, 12, 18, 27, 31, 40, 45], [5, 3, 6, 9, 4, 9, 5], 3, 7, 28), "rv-postes")
+a, b = [2, 7, 11, 15, 20], [3, 7, 9, 15, 22, 30]
+i = j = comps = 0
+out = []
+while i < len(a) and j < len(b):
+    comps += 1
+    if a[i] < b[j]:
+        out.append(a[i]); i += 1
+    elif a[i] > b[j]:
+        out.append(b[j]); j += 1
+    else:
+        out.append(a[i]); i += 1; j += 1
+out += a[i:] + b[j:]
+v.igual((out, comps), ([2, 3, 7, 9, 11, 15, 20, 22, 30], 7), "rv-catalogos")
+listas, onde = {}, {}
+for s_, carga in zip("ABCDE", (70, 95, 70, 40, 95)):
+    listas.setdefault(carga, []).insert(0, s_)
+    onde[s_] = carga
+v.igual(listas, {95: ["E", "B"], 70: ["C", "A"], 40: ["D"]}, "rv-painel (a)")
+for s_, carga in (("C", 99), ("B", 60)):
+    listas[onde[s_]].remove(s_)
+    listas.setdefault(carga, []).insert(0, s_)
+    onde[s_] = carga
+relatorio = [s_ for c in range(100, -1, -1) for s_ in listas.get(c, [])]
+v.igual((relatorio[:3], relatorio), (["C", "E", "A"], ["C", "E", "A", "B", "D"]), "rv-painel (c)")
+
 v.fim()

@@ -38,3 +38,9 @@
 \resp{gm-pesado} Com $A=[0,3)$ de peso 1 e $B=[1,5)$ de peso 10, o guloso escolhe $A$, que termina primeiro, e não pode escolher $B$, ficando com peso 1; o ótimo é 10. O problema se resolve por programação dinâmica: ordene os intervalos por término, seja $p(j)$ o último intervalo compatível com o $j$-ésimo e $OPT(j)=\max\{OPT(j-1),\ w_j+OPT(p(j))\}$, em $O(n\log n)$.
 
 \resp{gm-fracn} Encontre, por seleção em $O(n)$, a razão mediana $r$ dos itens e some os pesos dos itens com razão maior que $r$. Se essa soma é no máximo a capacidade restante, leve todos esses itens inteiros e continue com os itens de razão no máximo $r$ e a capacidade que sobra; senão, descarte os itens de razão no máximo $r$ e continue com os de razão maior. Cada passo descarta metade dos itens: $T(n)=T(n/2)+O(n)=O(n)$. No fim, sobra no máximo um item, levado fracionado.
+
+\resp{gm-trocosim} (a) $68=25+25+10+5+1+1+1$ (7 moedas) e $99=25+25+25+10+10+1+1+1+1$ (9 moedas). (b) $S=15$: o guloso dá $12+1+1+1$ (4 moedas), mas $5+5+5$ usa 3. Até $S=14$ o guloso é ótimo; por exemplo, $14=12+1+1$ usa 3 moedas, e não há solução com 2.
+
+\resp{gm-maxarv} Em ordem decrescente de peso: aceita $PR\,(8)$, $QS\,(7)$ e $RT\,(6)$; aceita $QR\,(5)$, que liga as componentes $\{P,R,T\}$ e $\{Q,S\}$; rejeita $ST\,(4)$, $PQ\,(3)$ e $RS\,(2)$, que fechariam ciclos. A árvore tem peso $8+7+6+5=26$, o máximo possível pelo Teorema~\ref{teo:gulosomat}.
+
+\resp{gm-comite} (a) Uma matroide de partição, com as partes professores, alunos e funcionários e os limites 2, 1 e 1. (b) Aceita o aluno 9, o professor 8, o funcionário 7 e o professor 6; rejeita o professor 5 (já há dois professores), o aluno 4 e o funcionário 3. (c) $9+8+7+6=30$, o máximo possível, pelo Teorema~\ref{teo:gulosomat}.

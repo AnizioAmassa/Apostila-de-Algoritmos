@@ -89,4 +89,16 @@ for n, a, b in ((49, 37, "36{,}75"), (50, 35, "37{,}5")):
 v.tem("$49-3\\cdot4=37>36{,}75=3\\cdot49/4$", "se-n49", "respostas/08.tex")
 v.tem("$50-3\\cdot5=35\\le37{,}5$", "se-n49", "respostas/08.tex")
 
+# --- Exercícios novos ---
+r, reg = quickselect([14, 3, 9, 21, 7, 16, 1, 11, 5], 7, [9, 16, 11, 14])
+v.igual((r, [(m, sorted(a), sorted(c), k) for m, a, _, c, k in reg]),
+        (14, [(9, [1, 3, 5, 7], [11, 14, 16, 21], 7), (16, [11, 14], [21], 2), (11, [], [14], 2), (14, [], [], 1)]),
+        "se-qstrace2")
+v.tem("$S_1=\\{3,7,1,5\\}$, $S_2=\\{9\\}$ e $S_3=\\{14,21,16,11\\}$", "se-qstrace2", "respostas/08.tex")
+S = [31, 8, 22, 15, 4, 27, 12, 19, 2, 35, 10, 26, 6, 18, 30]
+grupos, med = medianas_de_grupos(S)
+m = sorted(med)[1]
+v.igual((med, m, len([s for s in S if s < m]), len([s for s in S if s > m]), sorted(S)[7]),
+        ([15, 19, 18], 18, 7, 7, 18), "se-trace2")
+
 v.fim()

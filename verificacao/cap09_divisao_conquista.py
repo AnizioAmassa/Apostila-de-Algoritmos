@@ -135,4 +135,14 @@ pot(3, 13, cont)
 v.igual(cont[0], 7, "dc-pot: 7 multiplicações para n=13")
 v.igual(max_sub([5, 15, -30, 10, -5, 40, 10]), (55, 4, 7), "Kadane em 5,15,-30,10,-5,40,10 (pd-apa)")
 
+# --- Exercícios novos ---
+_, c = conta_dc([1, 4, 6, 9, 2, 3, 8], [])
+v.igual((c - inversoes([1, 4, 6, 9]) - inversoes([2, 3, 8])), 7, "dc-intercont: inversões cruzadas")
+v.tem("São $3+3+1=7$ inversões cruzadas", "dc-intercont", "respostas/09.tex")
+A = [2, -5, 4, -1, 3, -6, 1, 2]
+suf = [sum(A[i:4]) for i in range(3, -1, -1)]
+pre = [sum(A[4:j + 1]) for j in range(4, 8)]
+v.igual((suf, pre, max_sub(A[:4])[0], max_sub(A[4:])[0], max_sub(A)), ([-1, 3, -2, 0], [3, -3, -2, 0], 4, 3, (6, 3, 5)),
+        "dc-cruzado")
+
 v.fim()

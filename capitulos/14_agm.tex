@@ -257,3 +257,9 @@ Se o grafo é desconexo, o que o algoritmo de Kruskal devolve? E o de Prim? Como
 \begin{exercicio}{agm-segunda}[Complementar \estrela]
 A \emph{segunda melhor} árvore geradora é a de menor peso entre as diferentes de uma AGM fixada $T$. Mostre que ela pode ser obtida de $T$ trocando uma única aresta, e dê um algoritmo $O(n^2)$ para encontrá-la.
 \end{exercicio}
+\begin{exercicio}{agm-sim3}[Complementar]
+No grafo com as arestas $AB\,(4)$, $AC\,(2)$, $BC\,(5)$, $BD\,(10)$, $CE\,(3)$, $DE\,(4)$, $DF\,(11)$ e $EF\,(8)$, execute o Kruskal, com os empates na ordem dada, indicando as arestas rejeitadas, e o Prim a partir de $F$, indicando a ordem em que as arestas entram (nos empates, entra o vértice cuja chave foi definida primeiro). Qual é o custo da AGM?
+\end{exercicio}
+\begin{exercicio}{agm-corte}[Complementar]
+No grafo do exercício anterior, quais arestas atravessam o corte $(\{A,B\},\{C,D,E,F\})$? Qual delas a propriedade do corte garante estar em alguma AGM? Faça o mesmo para o corte $(\{D\},V\setminus\{D\})$.
+\end{exercicio}

@@ -119,4 +119,24 @@ for n in range(1, 300):
         i *= 2
     v.igual(total < 2 * n, True, f"cx-lacos (a), n={n}")
 
+# --- Exercícios novos ---
+v.igual((comparacoes_insercao([2, 4, 1, 3]), comparacoes_insercao([4, 3, 1, 2]),
+         comparacoes_insercao([4, 3, 2, 1])), ([1, 2, 2], [1, 2, 3], [1, 2, 3]), "cx-insercao4")
+v.tem("Em $[2,4,1,3]$: $1+2+2=5$ comparações", "cx-insercao4", "respostas/01.tex")
+v.tem("Em $[4,3,1,2]$: $1+2+3=6$", "cx-insercao4", "respostas/01.tex")
+
+
+def tercos(n):
+    i, vals = n, [n]
+    while i > 1:
+        i //= 3
+        vals.append(i)
+    return vals
+
+
+v.tem("passa por $" + ",".join(map(str, tercos(100))) + "$: 4 iterações", "cx-tercos, n=100", "respostas/01.tex")
+v.tem("por $" + ",".join(map(str, tercos(1000))) + "$: 6 iterações", "cx-tercos, n=1000", "respostas/01.tex")
+v.igual(all(len(tercos(n)) - 1 == min(k for k in range(60) if 3 ** k > n / 2) for n in range(2, 50000)),
+        True, "cx-tercos: menor k com 3^k > n/2")
+
 v.fim()

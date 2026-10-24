@@ -52,3 +52,7 @@ São $\ceil{\log_2n}$ passadas de custo $O(n)$: $\Theta(n\log n)$, sem pilha de 
 \resp{sc-nlog2} O nível $j$ tem $2^j$ subproblemas de tamanho $n/2^j$, com custo total $n\log(n/2^j)=n(\log n-j)$. Somando de $j=0$ a $\log n-1$: $n\sum_{j}(\log n-j)=n\cdot\frac{\log n(\log n+1)}2=\Theta(n\log^2n)$. O Teorema Mestre não se aplica porque $f(n)=n\log n$ é maior que $n^E=n$, mas não por um fator polinomial $n^\varepsilon$: cai no ``vão'' entre os casos 2 e 3.
 
 \resp{sc-lineares} (a) $T(n)=1+2+\cdots+n=\frac{n(n+1)}2$. (b) $T(n)=2^n-1$: por indução, $2(2^{n-1}-1)+1=2^n-1$. (c) $T(n)=1+\sum_{i=2}^n\log i=1+\log(n!)=\Theta(n\log n)$.
+
+\resp{sc-quicktrace} 1ª chamada, $V[1..7]$, pivô 2: só o 1 é menor; o vetor fica $[1,2,5,9,3,7,8]$, e a posição devolvida é 2. 2ª, $V[3..7]=(5,9,3,7,8)$, pivô 8: o vetor fica $[1,2,5,3,7,8,9]$, posição 6. 3ª, $V[3..5]=(5,3,7)$, pivô 7: nada muda, posição 5. 4ª, $V[3..4]=(5,3)$, pivô 3: o vetor fica $[1,2,3,5,7,8,9]$, posição 3. Trechos com um elemento não são particionados. São $6+4+2+1=13$ comparações.
+
+\resp{sc-instrace} $[2,6,5,1,4]$ (1 deslocamento), $[2,5,6,1,4]$ (1), $[1,2,5,6,4]$ (3) e $[1,2,4,5,6]$ (2): 7 deslocamentos no total. As inversões são $(6,2)$, $(6,5)$, $(6,1)$, $(6,4)$, $(2,1)$, $(5,1)$ e $(5,4)$: também 7.

@@ -132,4 +132,35 @@ for j in range(2):
 a[i + 1], a[-1] = a[-1], a[i + 1]
 v.igual(a, [(1, ""), (2, "b"), (2, "a")], "sc-estavel (b): 2a passa para depois de 2b")
 
+# --- Exercícios novos ---
+def quick_registro(a, ini, fim, reg):
+    if ini < fim:
+        b, q, _ = lomuto(a[ini:fim + 1])
+        a[ini:fim + 1] = b
+        q += ini
+        reg.append((a[q - 1], q, list(a)))
+        quick_registro(a, ini, q - 2, reg)
+        quick_registro(a, q, fim, reg)
+
+
+reg = []
+quick_registro([5, 8, 1, 9, 3, 7, 2], 0, 6, reg)
+for piv, q, vet in reg:
+    v.tem(lista(vet), f"sc-quicktrace: vetor depois da partição com pivô {piv}", "respostas/06.tex")
+v.igual([(piv, q) for piv, q, _ in reg], [(2, 2), (8, 6), (7, 5), (3, 3)], "sc-quicktrace: pivôs e posições")
+v.igual(quicksort_comparacoes([5, 8, 1, 9, 3, 7, 2]), 13, "sc-quicktrace: comparações")
+a, linhas, desl = [6, 2, 5, 1, 4], [], []
+for j in range(1, 5):
+    x, i, d = a[j], j - 1, 0
+    while i >= 0 and a[i] > x:
+        a[i + 1] = a[i]
+        i, d = i - 1, d + 1
+    a[i + 1] = x
+    linhas.append(f"{lista(a)} ({d}")
+    desl.append(d)
+for lin in linhas:
+    v.tem(lin, "sc-instrace", "respostas/06.tex")
+v.igual((sum(desl), sum(1 for i in range(5) for j in range(i + 1, 5) if [6, 2, 5, 1, 4][i] > [6, 2, 5, 1, 4][j])),
+        (7, 7), "sc-instrace: deslocamentos = inversões")
+
 v.fim()

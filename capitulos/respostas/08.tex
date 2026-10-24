@@ -38,3 +38,7 @@
 \resp{se-esperado} Com pivô aleatório, cada posição final $i$ do pivô tem probabilidade $1/n$, e a partição custa no máximo $n$ comparações. No pior caso, a recursão vai para o lado maior, de tamanho $\max\{i-1,n-i\}$, e cada tamanho entre $\floor{n/2}$ e $n-1$ aparece no máximo duas vezes; daí a desigualdade. Supondo $E[T(i)]\le4i$ para $i<n$: $E[T(n)]\le n+\frac2n\sum_{i=\floor{n/2}}^{n-1}4i\le n+\frac8n\cdot\frac{3n^2}8=4n$, usando $\sum_{i=\floor{n/2}}^{n-1}i\le\frac{3n^2}8$.
 
 \resp{se-maior} O $k$-ésimo maior é o $(n-k+1)$-ésimo menor. O percentil 90 de $n$ notas é o elemento de posição $\ceil{0{,}9n}$ na ordem crescente, obtido por uma seleção em $O(n)$.
+
+\resp{se-qstrace2} Pivô 9, com $k=7$: $S_1=\{3,7,1,5\}$, $S_2=\{9\}$ e $S_3=\{14,21,16,11\}$; como $4+1<7$, segue em $S_3$ com $k=7-5=2$. Pivô 16: $S_1=\{14,11\}$, $S_2=\{16\}$ e $S_3=\{21\}$; como $|S_1|=2\ge2$, segue em $S_1$ com $k=2$. Pivô 11: $S_1=\emptyset$, $S_2=\{11\}$ e $S_3=\{14\}$; como $0+1<2$, segue em $S_3$ com $k=1$. Pivô 14: devolve \textbf{14}. De fato, a ordem crescente é $1,3,5,7,9,11,\mathbf{14},16,21$.
+
+\resp{se-trace2} Medianas dos grupos: $15$, $19$ e $18$; o pivô é a mediana delas, $m=18$. Há 7 elementos menores ($8,15,4,12,2,10,6$) e 7 maiores ($31,22,27,19,35,26,30$), bem mais que a garantia de $3\floor{15/10}=3$ de cada lado. Aqui o pivô coincide com a mediana verdadeira, o 8º menor dos 15 elementos; em geral, ele é só uma aproximação, como no Exemplo~\ref{ex:mmedianas}.

@@ -144,4 +144,16 @@ v.igual((1 + 2, 2 + 2 + (-2 + 2)), (3, 4), "dj-neg: somar 2 muda o caminho ótim
 n1, m1, n2, m2 = 10 ** 5, 3 * 10 ** 5, 10 ** 4, 5 * 10 ** 7
 v.igual((round((n1 + m1) * log2(n1) / 1e6), round((n2 + m2) * log2(n2) / 1e8)), (7, 7), "dj-escolha")
 
+# --- Exercícios novos ---
+L3, p3, lin = dijkstra([("s", "a", 4), ("s", "b", 1), ("b", "a", 2), ("b", "c", 5), ("a", "c", 1), ("a", "d", 6),
+                        ("c", "d", 2), ("c", "t", 7), ("d", "t", 1)], "s")
+v.igual(([x for x, _, _ in lin], [L3[x] for x in "sbacdt"], [p3[x] for x in "bacdt"]),
+        (list("sbacdt"), [0, 1, 3, 4, 6, 7], list("sbacd")), "dj-sim3")
+v.igual([{y: rot[y] for y in mud} for _, rot, mud in lin],
+        [{"a": 4, "b": 1}, {"a": 3, "c": 6}, {"c": 4, "d": 9}, {"d": 6, "t": 11}, {"t": 7}, {}], "dj-sim3: rótulos")
+L4, p4, lin = dijkstra([("A", "B", 2), ("A", "C", 5), ("B", "C", 1), ("B", "D", 4), ("C", "D", 1), ("C", "E", 3),
+                        ("D", "E", 3)], "A", nao_direcionado=True)
+v.igual(([x for x, _, _ in lin], [L4[x] for x in "ABCDE"], [p4[x] for x in "BCDE"]),
+        (list("ABCDE"), [0, 2, 3, 4, 6], list("ABCC")), "dj-und2")
+
 v.fim()

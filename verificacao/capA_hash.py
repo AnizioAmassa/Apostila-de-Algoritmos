@@ -99,4 +99,27 @@ v.igual((round(123456 * A_OURO, 4), round(123457 * A_OURO, 4)), (76300.0041, 763
 v.igual((ceil(10 ** 6 / 0.75), primo(1333357)), (1333334, True), "hs-tamanho")
 v.igual(next(n for n in range(1333334, 1400000) if primo(n)), 1333357, "hs-tamanho: o primeiro primo acima")
 
+# --- Exercícios novos ---
+T, _ = aberto([18, 41, 22, 44, 59, 32, 31, 73], 13, lambda k, i: (k % 13 + i) % 13)
+
+
+def busca(T, k):
+    for i in range(13):
+        p = (k % 13 + i) % 13
+        if T[p] is None or T[p] == k:
+            return i + 1
+    return 13
+
+
+v.igual((busca(T, 31), busca(T, 57), busca(T, 26)), (6, 8, 1), "hs-busca")
+T2 = list(T)
+T2[T2.index(44)] = "removida"
+pos70 = next((70 % 13 + i) % 13 for i in range(13) if T2[(70 % 13 + i) % 13] in (None, "removida"))
+T2[pos70] = 70
+v.igual((pos70, busca(T2, 32)), (6, 3), "hs-reinsere")
+v.igual(([uni(2, 7, k) for k in (3, 8, 14)], [((11 * k + 3) % 17) % 6 for k in (3, 8, 14)]),
+        ([1, 0, 1], [2, 0, 4]), "hs-univsim")
+v.igual((horner("casa", 31, 97), horner("saca", 31, 97), sum(ord(c) - 96 for c in "casa") % 97),
+        ([3, 94, 23, 35], [19, 8, 57, 22], 24), "hs-horner")
+
 v.fim()

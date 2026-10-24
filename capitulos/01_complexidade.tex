@@ -426,3 +426,9 @@ Mostre que todo algoritmo que decide se $x$ está num vetor \emph{não ordenado}
 \begin{exercicio}{cx-max}[Complementar]
 Verdadeiro ou falso? (a) $\max\{f,g\}=\Theta(f+g)$; (b) $f=O(g)$ implica $\log f=O(\log g)$, para $f,g\ge2$; (c) $f=O(g)$ implica $f^2=O(g^2)$; (d) $f(n)=O(f(n/2))$ para toda $f$ crescente.
 \end{exercicio}
+\begin{exercicio}{cx-insercao4}[Complementar]
+Conte as comparações que a ordenação por inserção do Exemplo~\ref{ex:inscasos} faz nas entradas $[2,4,1,3]$ e $[4,3,1,2]$, inserção por inserção. Por que a segunda faz tantas comparações quanto o vetor decrescente $[4,3,2,1]$, embora não seja decrescente?
+\end{exercicio}
+\begin{exercicio}{cx-tercos}[Complementar]
+Quantas vezes o laço ``$i:=n$; \textbf{enquanto} $i>1$ \textbf{faça} $i:=\floor{i/3}$'' é executado para $n=100$ e para $n=1000$? Dê uma fórmula para $n\ge2$ e a ordem em $\Theta$.
+\end{exercicio}
