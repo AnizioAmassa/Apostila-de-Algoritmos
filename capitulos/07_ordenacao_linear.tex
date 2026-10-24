@@ -12,8 +12,18 @@
 
 O limite $\Omega(n\log n)$ do capítulo anterior vale para algoritmos que só \emph{comparam} elementos. Qualquer algoritmo de ordenação em tempo linear precisa, portanto, fazer no máximo $O(n)$ comparações e tomar suas decisões de outra forma. Se soubermos algo sobre as chaves --- que são inteiros num intervalo pequeno, números com poucos dígitos ou reais uniformemente distribuídos ---, podemos usá-las diretamente como \emph{índices} e ordenar em tempo linear. O preço é memória extra e hipóteses sobre os dados.
 
+\begin{intuicao}
+Um carteiro não ordena as cartas comparando endereços dois a dois. Ele olha o número da casa e põe a carta direto no escaninho daquele número; no fim, basta recolher os escaninhos em ordem. Cada carta é manuseada um número constante de vezes, e nenhuma pergunta do tipo ``$a_i\le a_j$?'' é feita. Por isso o argumento da árvore de decisão (Capítulo~\ref{cap:sortcomp}) não se aplica: ele só limita algoritmos que obtêm informação \emph{exclusivamente} por comparações. Todos os algoritmos deste capítulo são variações dessa ideia de ``distribuir em escaninhos''.
+\end{intuicao}
+
+% ------------------------------------------------------------------
 \section{Counting sort}
-O counting sort ordena inteiros no intervalo $[0,k]$. Ele conta quantas vezes cada valor ocorre, acumula as contagens para saber quantos elementos são menores ou iguais a cada valor e, com isso, coloca cada elemento diretamente na sua posição final.
+O counting sort ordena inteiros no intervalo $[0,k]$. Ele trabalha em três etapas:
+\begin{enumerate}
+  \item \textbf{contar}: $C[i]$ recebe o número de elementos iguais a $i$;
+  \item \textbf{acumular}: $C[i]$ passa a ser o número de elementos \emph{menores ou iguais} a $i$; esse número é exatamente a última posição que o valor $i$ ocupa na saída;
+  \item \textbf{distribuir}: cada elemento é copiado diretamente para a sua posição final no vetor de saída $B$, e o contador do seu valor é decrementado, para que a próxima cópia do mesmo valor vá uma posição antes.
+\end{enumerate}
 \begin{pseudo}{Counting-Sort$(A,n,k)$}
 \begin{algorithmic}
 \For{$i:=0$ \textbf{até} $k$} \State $C[i]:=0$ \EndFor
@@ -25,10 +35,53 @@ O counting sort ordena inteiros no intervalo $[0,k]$. Ele conta quantas vezes ca
 \State \Return $B$
 \end{algorithmic}
 \end{pseudo}
-O tempo e a memória são $\Theta(n+k)$, o que é \textbf{linear quando $k=O(n)$}. Quando $k$ é muito maior que $n$ (por exemplo, $k=\Theta(2^n)$), o algoritmo fica exponencial no tamanho da entrada: é \textbf{pseudopolinomial}. Ele é \textbf{estável}, porque, percorrendo a entrada de trás para frente, a última ocorrência de cada valor vai para a última posição do seu bloco; não é in-place, pois usa os vetores $B$ e $C$; e não faz nenhuma comparação entre elementos.
 
+\begin{exemplo}[Counting sort passo a passo]\label{ex:counting}
+Ordenamos $A=(4,1,3,1,0,4,1)$, com $k=4$. Para acompanhar a estabilidade, os elementos repetidos levam uma etiqueta com a ordem em que aparecem: $A=(4_a,1_a,3,1_b,0,4_b,1_c)$.
+\begin{itemize}
+  \item Contagem: o valor 0 aparece uma vez, o 1 três vezes, o 2 nenhuma, o 3 uma e o 4 duas: $C=(1,3,0,1,2)$, com índices de 0 a 4.
+  \item Acumulação: $C=(1,4,4,5,7)$. Leia assim: há 4 elementos $\le1$, logo os 1 ocupam as posições 2 a 4 da saída (a posição 1 é do 0); há 7 elementos $\le4$, logo os 4 terminam na posição 7.
+  \item Distribuição: percorrendo $A$ de trás para frente, cada elemento vai para a posição indicada pelo contador do seu valor (Figura~\ref{fig:counting}).
+\end{itemize}
+\begin{figura}[Counting sort sobre $A=(4_a,1_a,3,1_b,0,4_b,1_c)$. Acima, o vetor de contadores depois da contagem e depois da acumulação (indexado a partir de 0). Abaixo, a distribuição: em cada linha, o elemento $A[j]$ (em destaque) vai para a posição $C[A[j]]$ de $B$, e esse contador diminui de 1.\label{fig:counting}]
+\small
+\begin{tabular}{@{}r@{\quad}l@{\qquad}r@{\quad}l@{}}
+$A$: & \vetor{4_a,1_a,3,1_b,0,4_b,1_c} & & \\[4mm]
+$C$ contado: & \vetorz{1,3,0,1,2} & $C$ acumulado: & \vetorz{1,4,4,5,7}
+\end{tabular}
+
+\medskip
+\begin{tikzpicture}[x=7mm,y=6.6mm]
+\foreach \lin/\vals/\novo/\txt in {
+  0/{{},{},{},1_c,{},{},{}}/4/{$j=7$: $1_c$ vai para $B[C[1]]=B[4]$; $C[1]:=3$},
+  1/{{},{},{},1_c,{},{},4_b}/7/{$j=6$: $4_b$ vai para $B[C[4]]=B[7]$; $C[4]:=6$},
+  2/{0,{},{},1_c,{},{},4_b}/1/{$j=5$: $0$ vai para $B[C[0]]=B[1]$; $C[0]:=0$},
+  3/{0,{},1_b,1_c,{},{},4_b}/3/{$j=4$: $1_b$ vai para $B[C[1]]=B[3]$; $C[1]:=2$},
+  4/{0,{},1_b,1_c,3,{},4_b}/5/{$j=3$: $3$ vai para $B[C[3]]=B[5]$; $C[3]:=4$},
+  5/{0,1_a,1_b,1_c,3,{},4_b}/2/{$j=2$: $1_a$ vai para $B[C[1]]=B[2]$; $C[1]:=1$},
+  6/{0,1_a,1_b,1_c,3,4_a,4_b}/6/{$j=1$: $4_a$ vai para $B[C[4]]=B[6]$; $C[4]:=5$}}{
+  \foreach \xx [count=\k] in \vals {
+    \ifnum\k=\novo \fill[destaque] (\k-0.5,-\lin-0.3) rectangle (\k+0.5,-\lin+0.3); \fi
+    \node[cel] at (\k,-\lin) {\ensuremath{\xx}};}
+  \node[rot,anchor=west] at (7.8,-\lin) {\txt};}
+\foreach \k in {1,...,7} {\node[idx] at (\k,0.55) {\k};}
+\node[font=\small,anchor=east] at (0.3,0) {$B$:};
+\end{tikzpicture}
+\end{figura}
+O resultado é $B=(0,1_a,1_b,1_c,3,4_a,4_b)$: os três 1 e os dois 4 saíram na mesma ordem relativa da entrada. Nenhum par de elementos foi comparado; todo o trabalho foi feito com os valores servindo de índices.
+\end{exemplo}
+
+O tempo e a memória são $\Theta(n+k)$: os laços sobre $i$ custam $\Theta(k)$ e os laços sobre $j$, $\Theta(n)$. O algoritmo é, portanto, \textbf{linear quando $k=O(n)$}. Ele é \textbf{estável}, porque, percorrendo a entrada de trás para frente, a última ocorrência de cada valor vai para a última posição do seu bloco, a penúltima para a penúltima, e assim por diante; não é in-place, pois usa os vetores $B$ e $C$; e não faz nenhuma comparação entre elementos.
+
+\paragraph{Quando $k$ é grande.} Se $k$ é muito maior que $n$ (por exemplo, $k=\Theta(2^n)$), o termo $\Theta(k)$ domina e o algoritmo fica exponencial no tamanho da entrada: é \textbf{pseudopolinomial}, porque o custo depende do \emph{valor} das chaves, e não apenas da quantidade delas.
+
+\begin{exemplo}[Poucos elementos, chaves enormes]
+Ordenar $n=1000$ números de identificação, cada um entre 0 e $k=10^9$, com o counting sort exigiria um vetor de $10^9+1$ contadores (vários gigabytes) e $10^9$ passos só para zerá-los e acumulá-los, embora a entrada tenha só mil números. Um mergesort faria cerca de $1000\log_21000\approx10^4$ comparações. O counting sort só compensa quando o intervalo das chaves é comparável à quantidade de elementos; para chaves grandes com poucos dígitos, a solução é o radix sort, a seguir.
+\end{exemplo}
+
+% ------------------------------------------------------------------
 \section{Radix sort}
-O radix sort ordena inteiros com $d$ dígitos na base $b$ \textbf{dígito a dígito, do menos significativo para o mais significativo}, usando em cada passada um método de ordenação \textbf{estável}. A versão abaixo usa uma fila para cada valor de dígito.
+O radix sort ordena inteiros com $d$ dígitos na base $b$ \textbf{dígito a dígito, do menos significativo para o mais significativo}, usando em cada passada um método de ordenação \textbf{estável}. Cada passada é um counting sort com $k=b-1$, que é pequeno mesmo quando os números são enormes. A versão abaixo usa uma fila para cada valor de dígito, o que equivale a um counting sort.
 \begin{pseudo}{Radix sort com filas}
 \begin{algorithmic}
 \For{$i:=1$ \textbf{até} $d$}
@@ -42,24 +95,127 @@ O radix sort ordena inteiros com $d$ dígitos na base $b$ \textbf{dígito a díg
 \EndFor
 \end{algorithmic}
 \end{pseudo}
-\textbf{Por que a estabilidade é necessária?} Depois da passada pelo dígito $i$, elementos com o mesmo dígito $i$ devem manter entre si a ordem obtida pelos dígitos $1,\dots,i-1$. É isso que garante, por indução, que após a passada $i$ a lista está ordenada pelos $i$ últimos dígitos. As filas preservam a ordem de chegada naturalmente; outra opção é usar o counting sort em cada dígito.
 
-O tempo é $\Theta(d(n+b))$: com $b$ e $d$ constantes, $\Theta(n)$. Uma escolha útil é usar a própria base $b=n$: inteiros menores que $n^c$ têm $c$ dígitos nessa base, e o radix sort os ordena em $\Theta(cn)$.
-
-\begin{exemplo}[Radix sort na base 10]
-Ordenemos $102,313,690,131,222,670,690,130,079,102$.\\
+\begin{exemplo}[Radix sort na base 10]\label{ex:radix}
+Ordenemos $102,313,690,131,222,670,690,130,079,102$. A Figura~\ref{fig:radix} mostra a lista depois de cada passada, com o dígito usado em destaque.\\
 Pelas unidades: $690\ 670\ 690\ 130\ 131\ 102\ 222\ 102\ 313\ 079$;\\
 pelas dezenas: $102\ 102\ 313\ 222\ 130\ 131\ 670\ 079\ 690\ 690$;\\
-pelas centenas: $079\ 102\ 102\ 130\ 131\ 222\ 313\ 670\ 690\ 690$.
+pelas centenas: $079\ 102\ 102\ 130\ 131\ 222\ 313\ 670\ 690\ 690$.\\
+Observe a segunda passada: 130 e 131 têm o mesmo dígito das dezenas (3), e continuam na ordem $130,131$ obtida pela passada das unidades. Na terceira, 102, 102, 130 e 131 têm todos centena 1 e mantêm a ordem que já tinham pelos dois últimos dígitos.
+\begin{figura}[Radix sort na base 10. Cada coluna é a lista depois de uma passada; o dígito em vermelho é o que decidiu aquela passada. Dentro de um mesmo valor do dígito, a ordem da coluna anterior é preservada.\label{fig:radix}]
+\begin{tikzpicture}[x=2.6cm,y=0.52cm]
+\foreach \col/\lista in {
+  0/{102,313,690,131,222,670,690,130,079,102},
+  1/{69\textbf{\color{BrickRed}0},67\textbf{\color{BrickRed}0},69\textbf{\color{BrickRed}0},13\textbf{\color{BrickRed}0},13\textbf{\color{BrickRed}1},10\textbf{\color{BrickRed}2},22\textbf{\color{BrickRed}2},10\textbf{\color{BrickRed}2},31\textbf{\color{BrickRed}3},07\textbf{\color{BrickRed}9}},
+  2/{1\textbf{\color{BrickRed}0}2,1\textbf{\color{BrickRed}0}2,3\textbf{\color{BrickRed}1}3,2\textbf{\color{BrickRed}2}2,1\textbf{\color{BrickRed}3}0,1\textbf{\color{BrickRed}3}1,6\textbf{\color{BrickRed}7}0,0\textbf{\color{BrickRed}7}9,6\textbf{\color{BrickRed}9}0,6\textbf{\color{BrickRed}9}0},
+  3/{\textbf{\color{BrickRed}0}79,\textbf{\color{BrickRed}1}02,\textbf{\color{BrickRed}1}02,\textbf{\color{BrickRed}1}30,\textbf{\color{BrickRed}1}31,\textbf{\color{BrickRed}2}22,\textbf{\color{BrickRed}3}13,\textbf{\color{BrickRed}6}70,\textbf{\color{BrickRed}6}90,\textbf{\color{BrickRed}6}90}}{
+  \foreach \num [count=\k] in \lista {\node[cel, minimum width=11mm, minimum height=4.8mm, font=\small\ttfamily] at (\col,-\k) {\num};}}
+\foreach \col/\tit in {0/entrada,1/unidades,2/dezenas,3/centenas} {\node[rot] at (\col,0) {\tit};}
+\foreach \col in {0,1,2} {\draw[seta, gray] (\col+0.3,-5.5) -- (\col+0.7,-5.5);}
+\end{tikzpicture}
+\end{figura}
 \end{exemplo}
 
-\paragraph{Chaves de tamanhos variados.} Se os números têm quantidades diferentes de dígitos, $d_1,\dots,d_n$, completar todos com zeros até o maior tamanho desperdiça trabalho. É possível ordenar em tempo $O(\sum_id_i)$, linear no tamanho da entrada, agrupando os números pelo número de dígitos (um número com menos dígitos é menor) e fazendo cada número participar apenas das passadas correspondentes aos seus próprios dígitos. Para \textbf{strings}, ordena-se da direita para a esquerda completando as menores com um símbolo ``menor que todos'', ou usa-se a versão que começa pelo caractere mais significativo, descrita a seguir.
+\textbf{Por que a estabilidade é necessária?} Depois da passada pelo dígito $i$, elementos com o mesmo dígito $i$ devem manter entre si a ordem obtida pelos dígitos $1,\dots,i-1$. É isso que garante, por indução, que após a passada $i$ a lista está ordenada pelos $i$ últimos dígitos. As filas preservam a ordem de chegada naturalmente; outra opção é usar o counting sort em cada dígito.
 
+\begin{exemplo}[O que dá errado sem estabilidade]
+Ordene $23,21,13$. A passada pelas unidades dá $21,23,13$ (os dígitos 1, 3, 3). Na passada pelas dezenas, 21 e 23 empatam (dezena 2). Uma passada estável mantém $21$ antes de $23$ e produz $13,21,23$, correto. Uma passada que não fosse estável poderia devolver $13,23,21$: ordenado pelas dezenas, mas com a informação das unidades perdida. É a mesma situação do Exemplo~\ref{ex:estavel}, em que se ordena primeiro pela chave secundária e depois, de forma estável, pela principal: no radix sort, os dígitos menos significativos fazem o papel das chaves secundárias.
+\end{exemplo}
+
+O tempo é $\Theta(d(n+b))$: são $d$ passadas, e cada uma percorre os $n$ elementos e as $b$ filas (ou contadores). Com $b$ e $d$ constantes, $\Theta(n)$. Há uma troca entre $d$ e $b$: uma base maior deixa os números com menos dígitos (menos passadas), mas cada passada paga $\Theta(b)$ pelos contadores. Uma escolha útil é usar a própria base $b=n$: inteiros menores que $n^c$ têm $c$ dígitos nessa base, e o radix sort os ordena em $\Theta(cn)$.
+
+\begin{exemplo}[Escolhendo a base]
+Para ordenar $n=10^6$ inteiros menores que $10^6$, podemos escrevê-los em várias bases:
+\begin{center}\small
+\begin{tabular}{@{}lccc@{}}
+\toprule
+base $b$ & dígitos $d$ & custo de cada passada & custo total aproximado\\
+\midrule
+$10$ & 6 & $n+10$ & $6\cdot10^6$\\
+$100$ & 3 & $n+100$ & $3\cdot10^6$\\
+$1000$ & 2 & $n+1000$ & $2\cdot10^6$\\
+$10^6$ & 1 & $n+10^6$ & $2\cdot10^6$ (é o counting sort direto)\\
+\bottomrule
+\end{tabular}
+\end{center}
+Aumentar a base reduz o número de passadas enquanto $b$ é pequeno perto de $n$; quando $b$ se aproxima de $n$, o custo dos contadores passa a pesar, e não há mais ganho.
+\end{exemplo}
+
+\paragraph{Chaves de tamanhos variados.} Se os números têm quantidades diferentes de dígitos, $d_1,\dots,d_n$, completar todos com zeros até o maior tamanho desperdiça trabalho. É possível ordenar em tempo $O(\sum_id_i)$, linear no tamanho da entrada, agrupando os números pelo número de dígitos (um número com menos dígitos é menor) e fazendo cada número participar apenas das passadas correspondentes aos seus próprios dígitos. Por exemplo, em $7,\,42,\,3,\,105,\,18$, os grupos são $\{7,3\}$, $\{42,18\}$ e $\{105\}$; ordenado cada grupo, a concatenação $3,7,18,42,105$ já é a resposta, e o 105 foi o único a passar por três passadas. Para \textbf{strings}, ordena-se da direita para a esquerda completando as menores com um símbolo ``menor que todos'', ou usa-se a versão que começa pelo caractere mais significativo, descrita adiante.
+
+\begin{exemplo}[Strings de tamanhos diferentes]
+Ordenemos as palavras \texttt{ba}, \texttt{a} e \texttt{ab}, completando-as até 2 letras com um símbolo $\bot$ menor que todas as letras: \texttt{ba}, \texttt{a}$\bot$, \texttt{ab}. Pela segunda letra ($\bot<\mathtt{a}<\mathtt{b}$): \texttt{a}$\bot$, \texttt{ba}, \texttt{ab}. Pela primeira letra, de forma estável: \texttt{a}$\bot$, \texttt{ab}, \texttt{ba}. Removendo o $\bot$, obtemos a ordem alfabética \texttt{a}, \texttt{ab}, \texttt{ba}: o símbolo $\bot$ garante que um prefixo vem antes das palavras que o estendem.
+\end{exemplo}
+
+% ------------------------------------------------------------------
 \section{Bucket sort}
-O bucket sort supõe que as chaves são reais \textbf{uniformemente distribuídos} em $[0,1)$. Divide-se o intervalo em $r$ baldes de mesmo tamanho, coloca-se $A[i]$ no balde $\floor{r\,A[i]}$, ordena-se cada balde (por exemplo, por inserção) e concatenam-se os baldes. Com entrada uniforme, cada balde recebe em média $n/r$ elementos; com $r=\Theta(n)$, o tempo \textbf{esperado} é $\Theta(n)$, porque, sendo $n_i$ o número de elementos no balde $i$, vale $E[n_i^2]=2-1/n$, e $\sum_iE[O(n_i^2)]=O(n)$. O pior caso, quando todos os elementos caem no mesmo balde, é o do algoritmo usado dentro dos baldes.
+O bucket sort supõe que as chaves são reais \textbf{uniformemente distribuídos} em $[0,1)$. Divide-se o intervalo em $r$ baldes de mesmo tamanho, coloca-se $A[i]$ no balde $\floor{r\,A[i]}$, ordena-se cada balde (por exemplo, por inserção) e concatenam-se os baldes. Como os baldes correspondem a intervalos disjuntos e crescentes, todo elemento de um balde é menor que todo elemento do balde seguinte, e a concatenação fica ordenada.
 
+\begin{exemplo}[Bucket sort com 10 baldes]\label{ex:bucket}
+Com $r=10$ baldes, ordenemos os números $0{,}42$; $0{,}07$; $0{,}93$; $0{,}15$; $0{,}48$; $0{,}61$; $0{,}11$; $0{,}88$; $0{,}44$ e $0{,}35$. O balde de cada número é o seu primeiro dígito depois da vírgula: $\floor{10\cdot0{,}42}=4$, $\floor{10\cdot0{,}07}=0$, e assim por diante. O balde 4 recebe três números, o balde 1 recebe dois, e os baldes 2, 5 e 7 ficam vazios (Figura~\ref{fig:bucket}). Ordenando cada balde e concatenando, obtemos $0{,}07$; $0{,}11$; $0{,}15$; $0{,}35$; $0{,}42$; $0{,}44$; $0{,}48$; $0{,}61$; $0{,}88$; $0{,}93$.
+\begin{figura}[Bucket sort com 10 baldes. Cada número da entrada (em cima) vai para o balde $\floor{10x}$; cada balde é ordenado separadamente (aqui, já ordenados), e a saída é a concatenação dos baldes da esquerda para a direita.\label{fig:bucket}]
+\begin{tikzpicture}[x=1.2cm,y=0.62cm, item/.style={draw, font=\scriptsize, minimum width=9mm, minimum height=4.6mm, inner sep=1pt, fill=white}]
+\foreach \pos/\val/\bal in {0/{0{,}42}/4,1/{0{,}07}/0,2/{0{,}93}/9,3/{0{,}15}/1,4/{0{,}48}/4,5/{0{,}61}/6,6/{0{,}11}/1,7/{0{,}88}/8,8/{0{,}44}/4,9/{0{,}35}/3} {
+  \node[item] (e\pos) at (\pos,3.2) {\val};
+  \draw[-{Stealth[length=1.4mm]}, gray!70] (e\pos.south) -- (\bal,0.45);}
+\foreach \bal in {0,...,9} {\node[cel, fill=azul, minimum width=9mm] at (\bal,0) {\bal};}
+\foreach \bal/\lista in {0/{0{,}07},1/{0{,}11,0{,}15},3/{0{,}35},4/{0{,}42,0{,}44,0{,}48},6/{0{,}61},8/{0{,}88},9/{0{,}93}} {
+  \foreach \val [count=\k] in \lista {\node[item, fill=feito] at (\bal,-\k*0.85) {\val};}}
+\node[rot, anchor=east] at (-0.6,3.2) {entrada};
+\node[rot, anchor=east] at (-0.6,0) {baldes};
+\end{tikzpicture}
+\end{figura}
+\end{exemplo}
+
+Com entrada uniforme, cada balde recebe em média $n/r$ elementos; com $r=\Theta(n)$, o tempo \textbf{esperado} é $\Theta(n)$. Sendo $n_i$ o número de elementos no balde $i$, a ordenação por inserção desse balde custa $O(n_i^2)$, e o que importa é a média de $n_i^2$, e não a de $n_i$. Com $r=n$ baldes, cada elemento cai no balde $i$ com probabilidade $1/n$, de modo que $n_i$ tem distribuição binomial de parâmetros $n$ e $1/n$, com média $1$ e variância $1-1/n$. Portanto
+\[
+E[n_i^2]=\operatorname{Var}(n_i)+E[n_i]^2=\Bigl(1-\frac1n\Bigr)+1=2-\frac1n,
+\qquad\text{e}\qquad \sum_{i}E[O(n_i^2)]=O(n).
+\]
+O pior caso, quando todos os elementos caem no mesmo balde, é o do algoritmo usado dentro dos baldes.
+
+\begin{intuicao}
+Jogue $n$ bolinhas, ao acaso, em $n$ baldes. Alguns baldes ficam vazios, a maioria recebe uma ou duas bolinhas, e é raríssimo um balde receber muitas. Ordenar um balde com $n_i$ bolinhas por inserção custa cerca de $n_i^2$, mas, como os baldes cheios são raros, a soma desses custos fica em torno de $2n$. O algoritmo aposta na distribuição dos dados: se ela não for uniforme --- por exemplo, se quase todos os números estiverem perto de 0 ---, a aposta falha.
+\end{intuicao}
+
+% ------------------------------------------------------------------
 \section{American Flag sort}
-O American Flag sort é um radix sort que começa pelo dígito \textbf{mais} significativo e trabalha \textbf{in-place}. Ele conta quantos elementos há com cada valor do dígito (um vetor $C$ de tamanho $b$), calcula onde começa o bloco de cada valor e \emph{permuta no próprio vetor} cada elemento para o seu bloco, por meio de trocas; depois, chama a si mesmo recursivamente em cada bloco, com o dígito seguinte. A memória auxiliar se resume aos contadores: $O(b)$ por nível de recursão, $O(b\cdot d)$ no total, independente de $n$. As trocas mudam a ordem relativa de elementos iguais, de modo que o algoritmo \textbf{não é estável} --- e não precisa ser, porque cada bloco é ordenado pelos dígitos seguintes de forma independente.
+O American Flag sort é um radix sort que começa pelo dígito \textbf{mais} significativo e trabalha \textbf{in-place}. Ele conta quantos elementos há com cada valor do dígito (um vetor $C$ de tamanho $b$), calcula onde começa o bloco de cada valor e \emph{permuta no próprio vetor} cada elemento para o seu bloco, por meio de trocas; depois, chama a si mesmo recursivamente em cada bloco, com o dígito seguinte. O nome vem da imagem do vetor, depois da primeira passada, dividido em faixas, como uma bandeira listrada.
+
+A permutação é feita bloco a bloco. Para cada valor de dígito $\delta$, mantém-se um ponteiro $prox[\delta]$ para a primeira posição do bloco de $\delta$ que ainda não recebeu o seu elemento definitivo. Enquanto o bloco de $\delta$ não estiver completo, olha-se o elemento $x$ na posição $prox[\delta]$: se o dígito de $x$ é $\delta$, ele já está no bloco certo e o ponteiro avança; se é outro valor $\varepsilon$, troca-se $x$ com o elemento da posição $prox[\varepsilon]$, e $prox[\varepsilon]$ avança. Cada troca põe pelo menos um elemento no seu bloco definitivo, e por isso uma passada faz menos de $n$ trocas.
+
+\begin{exemplo}[Uma passada do American Flag sort]\label{ex:flag}
+Vamos ordenar pelo dígito das dezenas o vetor $A=(52,17,\allowbreak34,19,\allowbreak58,31,\allowbreak12,36)$ (Figura~\ref{fig:flag}). As contagens são três números com dezena 1, três com dezena 3 e dois com dezena 5; os blocos começam, portanto, nas posições 1, 4 e 7. Começando pelo bloco do 1: a posição 1 tem 52, que pertence ao bloco do 5, e é trocado com o elemento da posição 7, o 12; o 12 já está no bloco certo, assim como o 17; na posição 3 está 34, trocado com o 19 da posição 4. O bloco do 1 está completo. No bloco do 3, o 58 da posição 5 é trocado com o 36 da posição 8, e todos os elementos já ocupam os seus blocos. Foram três trocas. Depois, cada bloco é ordenado recursivamente pelo dígito das unidades.
+\begin{figura}[American Flag sort sobre $(52,17,34,19,58,31,12,36)$. Depois da passada pelas dezenas, o vetor fica dividido em faixas (dezena 1, 3 e 5); cada faixa é então ordenada recursivamente pelas unidades. As setas indicam as três trocas da primeira passada.\label{fig:flag}]
+\begin{tikzpicture}[x=7mm,y=7mm]
+\foreach \lin/\vals/\txt in {0/{52,17,34,19,58,31,12,36}/{entrada},2/{12,17,19,34,36,31,52,58}/{depois da passada pelas dezenas},3.3/{12,17,19,31,34,36,52,58}/{depois da recursão em cada faixa}} {
+  \foreach \pos/\cor in {1/azul,2/azul,3/azul,4/feito,5/feito,6/feito,7/destaque,8/destaque} {
+    \ifdim\lin pt>0pt \fill[\cor] (\pos-0.5,-\lin-0.3) rectangle (\pos+0.5,-\lin+0.3); \fi}
+  \foreach \xx [count=\k] in \vals {\node[cel] at (\k,-\lin) {\xx};}
+  \node[rot,anchor=west] at (8.8,-\lin) {\txt};}
+\foreach \k in {1,...,8} {\node[idx] at (\k,0.55) {\k};}
+\draw[seta, BrickRed!70, bend left=30] (1,0.85) to node[above, font=\tiny] {1ª} (7,0.85);
+\draw[seta, BrickRed!70, bend right=50] (3,-0.3) to node[below, font=\tiny] {2ª} (4,-0.3);
+\draw[seta, BrickRed!70, bend right=40] (5,-0.3) to node[below, font=\tiny] {3ª} (8,-0.3);
+\end{tikzpicture}
+\end{figura}
+Note que a faixa da dezena 3 ficou $(34,36,31)$, embora na entrada o 31 viesse antes do 36: as trocas não preservam a ordem relativa. Isso não atrapalha, porque a recursão reordena a faixa pelas unidades.
+\end{exemplo}
+
+A memória auxiliar se resume aos contadores: $O(b)$ por nível de recursão, $O(b\cdot d)$ no total, independente de $n$. As trocas mudam a ordem relativa de elementos iguais, de modo que o algoritmo \textbf{não é estável} --- e não precisa ser, porque cada bloco é ordenado pelos dígitos seguintes de forma independente.
+
+\begin{center}\small
+\begin{tabular}{@{}lccccc@{}}
+\toprule
+algoritmo & hipótese sobre as chaves & tempo & memória extra & estável?\\
+\midrule
+counting sort & inteiros em $[0,k]$ & $\Theta(n+k)$ & $\Theta(n+k)$ & sim\\
+radix sort & $d$ dígitos na base $b$ & $\Theta(d(n+b))$ & $\Theta(n+b)$ & sim\\
+bucket sort & reais uniformes em $[0,1)$ & $\Theta(n)$ esperado & $\Theta(n)$ & sim, com inserção\\
+American Flag & $d$ dígitos na base $b$ & $\Theta(d(n+b))$ & $O(b\cdot d)$ & não\\
+\bottomrule
+\end{tabular}
+\end{center}
 
 % ------------------------------------------------------------------
 \section{Qual algoritmo de ordenação usar?}\label{sec:escolhasort}
@@ -81,9 +237,26 @@ Dados em lista encadeada ou em arquivos externos & \textbf{Mergesort}\\
 \end{tabularx}
 \end{center}
 
+\begin{roteiro}[Três perguntas antes de ordenar]
+\begin{enumerate}
+  \item \textbf{As chaves são inteiros (ou podem ser vistas como inteiros)?} Se sim, qual o tamanho do intervalo? Intervalo comparável a $n$: counting sort. Intervalo enorme, mas com poucos dígitos: radix sort.
+  \item \textbf{São reais com distribuição conhecida e uniforme?} Bucket sort. Se a distribuição é desconhecida, não aposte nela.
+  \item \textbf{Nada disso?} Só resta comparar: escolha entre mergesort, heapsort e quicksort pela memória disponível, pela necessidade de estabilidade e pelo tipo de garantia exigida (pior caso ou média).
+\end{enumerate}
+\end{roteiro}
+
 \begin{exemplo}[Escolhendo o algoritmo]
-(A) $10^7$ notas inteiras entre 0 e 100: \textbf{counting sort}, com 101 contadores e tempo $\Theta(n)$; uma ordenação por comparação faria cerca de $n\log_2n\approx2{,}3\cdot10^8$ comparações. (B) $10^6$ números reais uniformes em $[0,1)$: \textbf{bucket sort}, $\Theta(n)$ esperado; counting e radix não se aplicam a reais. (C) $10^5$ registros com chaves arbitrárias: só resta comparar, e o \textbf{mergesort} dá garantia de $\Theta(n\log n)$ e estabilidade.
+(A) Os horários de embarque de $10^7$ passageiros de um dia, em minutos desde a meia-noite (inteiros de 0 a 1439): \textbf{counting sort}, com 1440 contadores e tempo $\Theta(n)$; uma ordenação por comparação faria cerca de $n\log_2n\approx2{,}3\cdot10^8$ comparações. (B) $10^6$ números de telefone de 11 dígitos: o intervalo tem $10^{11}$ valores, e o counting sort direto é inviável; o \textbf{radix sort} com 11 passadas na base 10 (ou 4 passadas na base $10^3$) é linear. (C) Os tempos de chegada de $10^5$ clientes, sorteados uniformemente em $[0,60)$ minutos: dividindo por 60, são reais uniformes em $[0,1)$, e o \textbf{bucket sort} ordena em tempo esperado linear. (D) $10^5$ nomes de clientes, que precisam ficar em ordem alfabética e, nos empates, na ordem de cadastro: são chaves arbitrárias e a estabilidade importa, e o \textbf{mergesort} dá as duas coisas.
 \end{exemplo}
+
+\begin{cuidado}[Armadilhas da ordenação linear]
+\begin{itemize}
+  \item Dizer que o counting sort é ``sempre linear'': ele é $\Theta(n+k)$, e só é linear quando $k=O(n)$.
+  \item Esquecer a memória: counting e radix sort usam vetores auxiliares de tamanho $\Theta(n+k)$ ou $\Theta(n+b)$; ``linear'' se refere ao tempo, e não dispensa essa memória.
+  \item Começar o radix sort (com passadas estáveis) pelo dígito \emph{mais} significativo: a última passada desfaria o trabalho das anteriores. Pelo dígito mais significativo, só com a recursão em blocos do American Flag sort.
+  \item Usar o bucket sort sem garantia de distribuição uniforme: o tempo linear é apenas \emph{esperado}, e só sob essa hipótese.
+\end{itemize}
+\end{cuidado}
 
 \begin{chave}
 Counting sort: $\Theta(n+k)$, estável (último laço de trás para frente), linear se $k=O(n)$. Radix sort (do menos para o mais significativo): $\Theta(d(n+b))$, exige passadas estáveis. Bucket sort: $\Theta(n)$ esperado para entrada uniforme. American Flag sort: radix pelo dígito mais significativo, in-place e não estável. Para chaves arbitrárias, o limite $\Omega(n\log n)$ continua valendo.
