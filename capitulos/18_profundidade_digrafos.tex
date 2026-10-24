@@ -142,11 +142,15 @@ Uma outra forma de ver a correção: o vértice de menor $PS$ é um \emph{sumido
 \begin{exemplo}\label{ex:topo}
 No digrafo acíclico com as arestas $a{\to}c$, $a{\to}d$, $d{\to}c$, $b{\to}c$, $e{\to}b$, $e{\to}f$, $e{\to}g$, $f{\to}g$, $h{\to}f$, $i{\to}h$, $i{\to}j$, $j{\to}h$ e $j{\to}g$, uma busca com as raízes em ordem alfabética dá, por $PS$ decrescente, a ordem $i,j,h,e,f,g,b,a,d,c$ (Figura~\ref{fig:topo}). Com as raízes na ordem $i,c,b,e,d,a$, obtém-se $a,d,e,b,c,i,j,h,f,g$. As duas são válidas: a ordenação topológica não é única.
 \begin{figura}[O digrafo acíclico do exemplo, com os vértices na ordem topológica $i,j,h,e,f,g,b,a,d,c$ (por $PS$ decrescente; os números são os $PS$). Todas as arestas apontam para a direita.\label{fig:topo}]
-\begin{tikzpicture}[x=1.15cm,y=1cm]
+\begin{tikzpicture}[x=1.4cm,y=1cm]
+\path[use as bounding box] (-0.3,-1.45) rectangle (9.3,1.25); % sem os pontos de controle das curvas
 \foreach \nome/\ps [count=\k from 0] in {i/20,j/19,h/16,e/14,f/13,g/12,b/8,a/6,d/5,c/3} {
-  \node[vtxs] (o\nome) at (\k,0) {$\nome$}; \node[idx] at (\k,-0.45) {\ps};}
-\foreach \pp/\qq/\dobra in {i/j/0,j/h/0,e/f/0,f/g/0,a/d/0,d/c/0,i/h/40,h/f/40,e/g/40,j/g/30,e/b/30,a/c/40,b/c/30} {
-  \draw[arco] (o\pp) to[bend left=\dobra] (o\qq);}
+  \node[vtx] (o\nome) at (\k,0) {$\nome$}; \node[idx] at (\k,-0.52) {\ps};}
+% vizinhas: retas; as demais acima ou abaixo da linha, escolhidas para não se cruzarem
+\foreach \pp/\qq in {i/j,j/h,e/f,f/g,a/d,d/c} {\draw[arco] (o\pp) -- (o\qq);}
+\foreach \pp/\qq/\dobra in {i/h/45,e/g/35,e/b/50,b/c/40} {\draw[arco] (o\pp) to[bend left=\dobra] (o\qq);}
+\draw[arco] (oj) to[out=-42, in=-138, looseness=1.1] (og);
+\foreach \pp/\qq in {h/f,a/c} {\draw[arco] (o\pp) to[out=-50, in=-130, looseness=1.4] (o\qq);}
 \end{tikzpicture}
 \end{figura}
 \end{exemplo}

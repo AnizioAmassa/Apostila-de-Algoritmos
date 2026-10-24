@@ -49,22 +49,23 @@ $e$ (5) & & & & & \textbf{5} & ---
 \end{tabular}
 \end{center}
 Os ponteiros $pai$ formam a \textbf{árvore de caminhos mínimos}: $a\to b\to c\to d\to e$. Por exemplo, o caminho mínimo de $a$ a $e$ é $a,b,c,d,e$, com custo $L(e)=5$, embora a aresta direta custe 6. A primeira linha da matriz de distâncias calculada pelo Floyd-Warshall (Capítulo~\ref{cap:fw}) confirma os valores $0,1,2,3,5$. A Figura~\ref{fig:dijkstra} mostra o estado do algoritmo em três momentos: o rótulo de $c$ começa em 3, pela aresta direta, e cai para 2 quando $b$ é processado; o de $e$ começa em 6 e só cai para 5 no fim, quando $d$ é processado.
-\begin{figura}[O algoritmo de Dijkstra a partir de $a$. Em verde, os vértices já removidos (com rótulo definitivo); em vermelho, os rótulos $L$; em azul, as arestas $pai(w)\to w$ atuais. À direita, a árvore de caminhos mínimos final.\label{fig:dijkstra}]
-\tikzset{rotL/.style={font=\scriptsize\bfseries, text=BrickRed}}
-\begin{tabular}{@{}c@{\hspace{2mm}}c@{\hspace{2mm}}c@{}}
-\begin{tikzpicture}[x=0.64cm, y=0.74cm, v1/.style={fill=feito}, a12/.style={MidnightBlue, line width=1.6pt}, a13/.style={MidnightBlue, line width=1.6pt}, a15/.style={MidnightBlue, line width=1.6pt}]
-\digrafoFW{$a$}{$b$}{$c$}{$d$}{$e$}
-\node[rotL, left=1pt of n1] {0}; \node[rotL, above=1pt of n2] {1}; \node[rotL, above right=-1pt and 1pt of n3] {3}; \node[rotL, right=1pt of n4] {$\infty$}; \node[rotL, below=1pt of n5] {6};
+\begin{figura}[O algoritmo de Dijkstra a partir de $a$. Em verde, os vértices já removidos (com rótulo definitivo); em vermelho, os rótulos $L$; em azul, as arestas $pai(w)\to w$ atuais. Em (c), a árvore de caminhos mínimos final.\label{fig:dijkstra}]
+\tikzset{rotL/.style={font=\small\bfseries, text=BrickRed}, pai/.style={MidnightBlue, line width=1.7pt}}
+% \rotulosL{L(a)}{L(b)}{L(c)}{L(d)}{L(e)}
+\newcommand{\rotulosL}[5]{\node[rotL, left=2pt of n1] {#1}; \node[rotL, above=2pt of n2] {#2};
+  \node[rotL, below=2pt of n3] {#3}; \node[rotL, right=2pt of n4] {#4}; \node[rotL, left=3pt of n5] {#5};}
+\begin{tabular}{@{}c@{\hspace{8mm}}c@{}}
+\begin{tikzpicture}[x=1.05cm, y=0.82cm, v1/.style={fill=feito}, a12/.style=pai, a13/.style=pai, a15/.style=pai]
+\digrafoFW{$a$}{$b$}{$c$}{$d$}{$e$}\rotulosL{0}{1}{3}{$\infty$}{6}
 \end{tikzpicture} &
-\begin{tikzpicture}[x=0.64cm, y=0.74cm, v1/.style={fill=feito}, v2/.style={fill=feito}, a12/.style={MidnightBlue, line width=1.6pt}, a23/.style={MidnightBlue, line width=1.6pt}, a24/.style={MidnightBlue, line width=1.6pt}, a15/.style={MidnightBlue, line width=1.6pt}]
-\digrafoFW{$a$}{$b$}{$c$}{$d$}{$e$}
-\node[rotL, left=1pt of n1] {0}; \node[rotL, above=1pt of n2] {1}; \node[rotL, above right=-1pt and 1pt of n3] {2}; \node[rotL, right=1pt of n4] {4}; \node[rotL, below=1pt of n5] {6};
-\end{tikzpicture} &
-\begin{tikzpicture}[x=0.64cm, y=0.74cm, v1/.style={fill=feito}, v2/.style={fill=feito}, v3/.style={fill=feito}, v4/.style={fill=feito}, v5/.style={fill=feito}, a12/.style={MidnightBlue, line width=1.6pt}, a23/.style={MidnightBlue, line width=1.6pt}, a34/.style={MidnightBlue, line width=1.6pt}, a45/.style={MidnightBlue, line width=1.6pt}]
-\digrafoFW{$a$}{$b$}{$c$}{$d$}{$e$}
-\node[rotL, left=1pt of n1] {0}; \node[rotL, above=1pt of n2] {1}; \node[rotL, above right=-1pt and 1pt of n3] {2}; \node[rotL, right=1pt of n4] {3}; \node[rotL, below=1pt of n5] {5};
-\end{tikzpicture}\\
-\small (a) depois de remover $a$ & \small (b) depois de remover $b$ & \small (c) no final
+\begin{tikzpicture}[x=1.05cm, y=0.82cm, v1/.style={fill=feito}, v2/.style={fill=feito}, a12/.style=pai, a23/.style=pai, a24/.style=pai, a15/.style=pai]
+\digrafoFW{$a$}{$b$}{$c$}{$d$}{$e$}\rotulosL{0}{1}{2}{4}{6}
+\end{tikzpicture}\\[1mm]
+\small (a) depois de remover $a$ & \small (b) depois de remover $b$\\[3mm]
+\multicolumn{2}{c}{\begin{tikzpicture}[x=1.05cm, y=0.82cm, v1/.style={fill=feito}, v2/.style={fill=feito}, v3/.style={fill=feito}, v4/.style={fill=feito}, v5/.style={fill=feito}, a12/.style=pai, a23/.style=pai, a34/.style=pai, a45/.style=pai]
+\digrafoFW{$a$}{$b$}{$c$}{$d$}{$e$}\rotulosL{0}{1}{2}{3}{5}
+\end{tikzpicture}}\\[1mm]
+\multicolumn{2}{c}{\small (c) no final}
 \end{tabular}
 \end{figura}
 \end{exemplo}

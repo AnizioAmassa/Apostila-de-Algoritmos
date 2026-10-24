@@ -70,31 +70,31 @@ Considere o grafo da Figura~\ref{fig:matpequena}: um triângulo com as arestas $
 
 Agora tome os vetores de $\R^3$ $a=(1,0,0)$, $b=(0,1,0)$, $c=(1,1,0)$ e $d=(0,0,1)$. Na \textbf{matroide linear}, os independentes são os conjuntos linearmente independentes. Como $c=a+b$, o conjunto $\{a,b,c\}$ é dependente, e qualquer conjunto que o contenha também; todos os outros são independentes. É \emph{a mesma} família de independentes: duas situações muito diferentes, ciclos num grafo e dependência linear, têm a mesma estrutura combinatória. É isso que a definição de matroide captura.
 \begin{figura}[À esquerda, o grafo do Exemplo~\ref{ex:matpequena}; as arestas são os elementos da matroide. À direita, as suas três bases, que são as árvores geradoras.\label{fig:matpequena}]
-\begin{tikzpicture}[x=1.1cm,y=1.1cm, baseline={(0,0.5)}]
+\begin{tikzpicture}[x=1.35cm,y=1.35cm, baseline={(0,0.5)}]
 \node[vtxs] (u1) at (0,1) {1}; \node[vtxs] (u2) at (1.2,1) {2}; \node[vtxs] (u3) at (0.6,0) {3}; \node[vtxs] (u4) at (1.8,0) {4};
-\draw[aresta] (u1) -- node[above, font=\scriptsize] {$a$} (u2);
-\draw[aresta] (u2) -- node[right, font=\scriptsize] {$b$} (u3);
-\draw[aresta] (u1) -- node[left, font=\scriptsize] {$c$} (u3);
-\draw[aresta] (u3) -- node[below, font=\scriptsize] {$d$} (u4);
+\draw[aresta] (u1) -- node[above, font=\small] {$a$} (u2);
+\draw[aresta] (u2) -- node[right, font=\small] {$b$} (u3);
+\draw[aresta] (u1) -- node[left, font=\small] {$c$} (u3);
+\draw[aresta] (u3) -- node[below, font=\small] {$d$} (u4);
 \end{tikzpicture}
-\hspace{1.2cm}
-\begin{tikzpicture}[x=0.8cm,y=0.8cm, baseline={(0,0.5)}]
+\hspace{1cm}
+\begin{tikzpicture}[x=1cm,y=1cm, baseline={(0,0.5)}]
 \node[vtxs] (u1) at (0,1) {1}; \node[vtxs] (u2) at (1.2,1) {2}; \node[vtxs] (u3) at (0.6,0) {3}; \node[vtxs] (u4) at (1.8,0) {4};
 \draw[gray!30, thick] (u1)--(u2) (u2)--(u3) (u1)--(u3);
 \draw[aresta, MidnightBlue] (u1)--(u2) (u2)--(u3) (u3)--(u4);
-\node[font=\scriptsize] at (0.9,-0.6) {$\{a,b,d\}$};
-\end{tikzpicture}\hspace{4mm}
-\begin{tikzpicture}[x=0.8cm,y=0.8cm, baseline={(0,0.5)}]
+\node[font=\small] at (0.9,-0.6) {$\{a,b,d\}$};
+\end{tikzpicture}\hspace{5mm}
+\begin{tikzpicture}[x=1cm,y=1cm, baseline={(0,0.5)}]
 \node[vtxs] (u1) at (0,1) {1}; \node[vtxs] (u2) at (1.2,1) {2}; \node[vtxs] (u3) at (0.6,0) {3}; \node[vtxs] (u4) at (1.8,0) {4};
 \draw[gray!30, thick] (u1)--(u2) (u2)--(u3) (u1)--(u3);
 \draw[aresta, MidnightBlue] (u1)--(u2) (u1)--(u3) (u3)--(u4);
-\node[font=\scriptsize] at (0.9,-0.6) {$\{a,c,d\}$};
-\end{tikzpicture}\hspace{4mm}
-\begin{tikzpicture}[x=0.8cm,y=0.8cm, baseline={(0,0.5)}]
+\node[font=\small] at (0.9,-0.6) {$\{a,c,d\}$};
+\end{tikzpicture}\hspace{5mm}
+\begin{tikzpicture}[x=1cm,y=1cm, baseline={(0,0.5)}]
 \node[vtxs] (u1) at (0,1) {1}; \node[vtxs] (u2) at (1.2,1) {2}; \node[vtxs] (u3) at (0.6,0) {3}; \node[vtxs] (u4) at (1.8,0) {4};
 \draw[gray!30, thick] (u1)--(u2) (u2)--(u3) (u1)--(u3);
 \draw[aresta, MidnightBlue] (u2)--(u3) (u1)--(u3) (u3)--(u4);
-\node[font=\scriptsize] at (0.9,-0.6) {$\{b,c,d\}$};
+\node[font=\small] at (0.9,-0.6) {$\{b,c,d\}$};
 \end{tikzpicture}
 \end{figura}
 \end{exemplo}

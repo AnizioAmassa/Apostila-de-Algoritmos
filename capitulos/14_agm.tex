@@ -77,7 +77,7 @@ No algoritmo de Kruskal, a solução parcial é uma \textbf{floresta}. As aresta
 \textbf{Correção.} Ao aceitar $e=uv$, tome como $S$ a árvore atual de $u$. Nenhuma aresta aceita atravessa esse corte, e $e$ é a mais leve que o atravessa: uma aresta mais leve que o atravessasse teria sido examinada antes, quando os seus extremos já estavam em árvores diferentes (as árvores só crescem), e teria sido aceita. Pelo Lema~\ref{lema:corte}, por indução, o conjunto de arestas aceitas está sempre contido numa AGM. O algoritmo de Kruskal também é o Teorema~\ref{teo:gulosomat} aplicado à matroide gráfica.
 
 \begin{figura}[O grafo dos exemplos deste capítulo. As arestas em azul formam uma AGM, de custo 37.\label{fig:agmgrafo}]
-\begin{tikzpicture}[x=1cm,y=1cm, agm/.style={very thick,MidnightBlue}, nao/.style={thin,gray}]
+\begin{tikzpicture}[x=1.3cm,y=1.2cm, agm/.style={very thick,MidnightBlue}, nao/.style={thin,gray}]
 \node[vtx] (a) at (0,1.2) {$a$}; \node[vtx] (b) at (1.6,2.4) {$b$}; \node[vtx] (c) at (3.4,2.4) {$c$}; \node[vtx] (d) at (5.2,2.4) {$d$};
 \node[vtx] (e) at (6.8,1.2) {$e$}; \node[vtx] (f) at (5.2,0) {$f$}; \node[vtx] (g) at (3.4,0) {$g$}; \node[vtx] (h) at (1.6,0) {$h$};
 \node[vtx] (i) at (2.5,1.2) {$i$};

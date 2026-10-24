@@ -258,16 +258,16 @@ Num heap de Fibonacci vazio, inserimos $3,8,5,12,6,9,2$. Cada inserção apenas 
 Restam duas raízes, 8 (grau 2) e 9 (grau 1), e o novo máximo é 9 (Figura~\ref{fig:consolida}). A remoção custou bem mais que uma inserção, mas pagou de uma vez a ``preguiça'' das sete inserções.
 \begin{figura}[A consolidação do Exemplo~\ref{ex:consolida}: antes, sete raízes; depois de remover o 12 e consolidar, duas árvores de graus distintos.\label{fig:consolida}]
 \begin{tabular}{@{}c@{\hspace{14mm}}c@{}}
-\begin{tikzpicture}[x=0.75cm]
-\foreach \v [count=\i] in {3,8,5,12,6,9,2} {\node[vtxs] (q\i) at (\i,0) {\v};}
-\node[vtxs, fill=ruim] at (q4) {12};
-\foreach \i [evaluate=\i as \j using int(\i+1)] in {1,...,6} {\draw[{Stealth[length=1.2mm]}-{Stealth[length=1.2mm]}, gray] (q\i) -- (q\j);}
+\begin{tikzpicture}[x=1.25cm]
+\foreach \v [count=\i] in {3,8,5,12,6,9,2} {\node[vtx] (q\i) at (\i,0) {\v};}
+\node[vtx, fill=ruim] at (q4) {12};
+\foreach \i [evaluate=\i as \j using int(\i+1)] in {1,...,6} {\draw[{Stealth[length=1.5mm]}-{Stealth[length=1.5mm]}, gray] (q\i) -- (q\j);}
 \node[font=\scriptsize\sffamily, MidnightBlue] (mx) at (4,0.9) {max};
 \draw[seta, MidnightBlue] (mx) -- (q4);
 \end{tikzpicture}
 &
-\begin{forest} bstp, baseline [8 [6 [5]] [3]] \end{forest}\quad
-\begin{forest} bstp, baseline [9,feito [2]] \end{forest}\\[3pt]
+\begin{forest} bst, baseline [8 [6 [5]] [3]] \end{forest}\quad
+\begin{forest} bst, baseline [9,feito [2]] \end{forest}\\[3pt]
 \small (a) após 7 inserções & \small (b) após remover o máximo
 \end{tabular}
 \end{figura}
@@ -286,13 +286,13 @@ Ao final, $X$ e $Y$ estão na lista de raízes, desmarcados, e $Z$ continua no s
 \begin{figura}[Cortes em cascata. (a) $Y=30$ está marcado (escuro) e $Z=40$, não; a chave de $X$ passa de 10 a 60. (b) $X$ e $Y$ são cortados, um após o outro, e vão para a lista de raízes desmarcados; $Z$ perde um filho e passa a ser marcado. O novo máximo é 60.\label{fig:cascata}]
 \forestset{marc/.style={fill=black!70, text=white}}
 \begin{tabular}{@{}c@{\hspace{14mm}}c@{}}
-\begin{forest} bstp, baseline
-[50 [45] [40,label={[font=\tiny]left:$Z$} [38] [30,marc,label={[font=\tiny]left:$Y$} [25] [60,novo,label={[font=\tiny]left:$X$}]]]]
+\begin{forest} bst, baseline
+[50 [45] [40,label={[font=\scriptsize]right:$Z$} [38] [30,marc,label={[font=\scriptsize]right:$Y$} [25] [60,novo,label={[font=\scriptsize]right:$X$}]]]]
 \end{forest}
 &
-\begin{forest} bstp, baseline [50 [45] [40,marc,label={[font=\tiny]left:$Z$} [38]]] \end{forest}\
-\begin{forest} bstp, baseline [60,novo] \end{forest}\
-\begin{forest} bstp, baseline [30 [25]] \end{forest}\\[3pt]
+\begin{forest} bst, baseline [50 [45] [40,marc,label={[font=\scriptsize]right:$Z$} [38]]] \end{forest}\quad
+\begin{forest} bst, baseline [60,novo] \end{forest}\quad
+\begin{forest} bst, baseline [30 [25]] \end{forest}\\[3pt]
 \small (a) antes dos cortes & \small (b) depois: três raízes, e $Z$ marcado
 \end{tabular}
 \end{figura}

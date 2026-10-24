@@ -119,15 +119,16 @@ O grafo da Figura~\ref{fig:bipbfs} é um quadrado $1,2,3,4$ com duas arestas pen
 \begin{exemplo}[O mesmo esquema, duas estruturas]\label{ex:pilhafila}
 No grafo com as arestas $12$, $13$, $24$, $34$, $36$ e $45$, executamos o esquema a partir de 1, com os vizinhos em ordem crescente (Figura~\ref{fig:pilhafila}). Com \textbf{fila}, o vértice consultado é sempre o mais antigo ainda com vizinhos desmarcados: 1 marca 2 e 3; depois 2 marca 4; 3 marca 6; e 4 marca 5. A ordem de marcação é $1,2,3,4,6,5$. Com \textbf{pilha}, o consultado é sempre o mais recente: 1 marca 2; 2 marca 4; 4 marca 3; 3 marca 6; 6 não tem vizinhos desmarcados e sai da pilha, e o mesmo acontece com 3; de volta a 4, ele marca 5. A ordem é $1,2,4,3,6,5$, e a árvore é bem diferente: ``funda'', em vez de ``larga''.
 \begin{figura}[As árvores produzidas pelo esquema genérico com fila (à esquerda) e com pilha (à direita) no mesmo grafo. Em azul, as arestas da árvore; em cinza, as demais. Os números pequenos dão a ordem de marcação.\label{fig:pilhafila}]
-\begin{tikzpicture}[x=1.1cm,y=1cm]
-\foreach \xo/\tit/\arv/\ordem in {0/{fila (largura)}/{1/2,1/3,2/4,3/6,4/5}/{1/1,2/2,3/3,4/4,6/5,5/6},5/{pilha (profundidade)}/{1/2,2/4,4/3,3/6,4/5}/{1/1,2/2,4/3,3/4,6/5,5/6}} {
+\begin{tikzpicture}[x=1.3cm,y=1.05cm]
+\foreach \xo/\tit/\arv/\ordem in {0/{fila (largura)}/{1/2,1/3,2/4,3/6,4/5}/{1/1/45,2/2/135,3/3/45,4/4/180,6/5/45,5/6/0},6.2/{pilha (profundidade)}/{1/2,2/4,4/3,3/6,4/5}/{1/1/45,2/2/135,4/3/180,3/4/45,6/5/45,5/6/0}} {
   \begin{scope}[xshift=\xo cm]
-  \node[vtxs] (k1) at (1,2) {1}; \node[vtxs] (k2) at (0,1) {2}; \node[vtxs] (k3) at (2,1) {3};
-  \node[vtxs] (k4) at (1,0) {4}; \node[vtxs] (k6) at (3,0) {6}; \node[vtxs] (k5) at (1,-1) {5};
+  \node[vtx] (k1) at (1,2) {1}; \node[vtx] (k2) at (0,1) {2}; \node[vtx] (k3) at (2,1) {3};
+  \node[vtx] (k4) at (1,0) {4}; \node[vtx] (k6) at (3,0) {6}; \node[vtx] (k5) at (1,-1) {5};
   \draw[gray!50, thick] (k1)--(k2) (k1)--(k3) (k2)--(k4) (k3)--(k4) (k3)--(k6) (k4)--(k5);
   \foreach \pp/\qq in \arv {\draw[aresta, MidnightBlue, very thick] (k\pp)--(k\qq);}
-  \foreach \nn/\oo in \ordem {\node[font=\tiny, text=BrickRed, above right=-1pt and -1pt of k\nn] {\oo};}
-  \node[rot] at (1.5,-1.7) {\tit};
+  % ordem de marcação, num ângulo livre de arestas em volta de cada vértice
+  \foreach \nn/\oo/\ang in \ordem {\node[font=\scriptsize\bfseries, text=BrickRed] at ($(k\nn)+(\ang:5mm)$) {\oo};}
+  \node[rot, font=\small] at (1.5,-1.75) {\tit};
   \end{scope}}
 \end{tikzpicture}
 \end{figura}

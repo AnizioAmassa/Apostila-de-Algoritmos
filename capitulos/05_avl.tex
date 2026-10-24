@@ -99,11 +99,11 @@ a altura da subárvore direita menos a da esquerda; um balanço $-1$ indica que 
 Na árvore da esquerda da Figura~\ref{fig:avlsimnao}, o nó 10 não tem filho esquerdo (altura 0) e tem o filho direito 12 (altura 1): $\bal(10)=1-0=+1$. Na raiz, as duas subárvores têm altura 2, e $\bal(8)=0$. Todos os balanços estão em $\{-1,0,1\}$: é uma AVL, embora não seja completa. Na árvore da direita, a subárvore direita de 10 tem altura 2 (o caminho $12\to14$) e a esquerda é vazia: $\bal(10)=+2$, e a árvore \textbf{não} é AVL, ainda que todos os outros nós, inclusive a raiz, estejam regulados.
 \begin{figura}[Balanços em vermelho. À esquerda, uma AVL; à direita, uma ABB que não é AVL por causa do nó 10.\label{fig:avlsimnao}]
 \begin{tabular}{@{}c@{\hspace{18mm}}c@{}}
-\begin{forest} bstp
+\begin{forest} bstp, for tree={s sep=5.2mm}
 [8,bb=0 [4,bb=0 [2,bb=0] [6,bb=0]] [10,bb=+1 [,vazio] [12,bb=0]]]
 \end{forest}
 &
-\begin{forest} bstp
+\begin{forest} bstp, for tree={s sep=5.2mm}
 [8,bb=0 [4,bb=-1 [2,bb=-1 [1,bb=0] [,vazio]] [6,bb=0]] [10,desreg,bb=+2 [,vazio] [12,bb=+1 [,vazio] [14,bb=0]]]]
 \end{forest}
 \end{tabular}
@@ -164,15 +164,15 @@ Na árvore $20^{+1}(10,\ 30^{+1}(\cdot,40))$ (Figura~\ref{fig:avlupd}(a)):
 \end{itemize}
 \begin{figura}[Atualização de balanços na inserção (Exemplo~\ref{ex:avlupd}). O nó novo está em destaque.\label{fig:avlupd}]
 \begin{tabular}{@{}c@{\hspace{12mm}}c@{\hspace{12mm}}c@{}}
-\begin{forest} bstp
+\begin{forest} bstp, for tree={s sep=5.2mm}
 [20,bb=+1 [10,bb=0] [30,bb=+1 [,vazio] [40,bb=0]]]
 \end{forest}
 &
-\begin{forest} bstp
+\begin{forest} bstp, for tree={s sep=5.2mm}
 [20,bb=0 [10,bb=-1 [5,novo,bb=0] [,vazio]] [30,bb=+1 [,vazio] [40,bb=0]]]
 \end{forest}
 &
-\begin{forest} bstp
+\begin{forest} bstp, for tree={s sep=5.2mm}
 [20,bb=0 [10,bb=-1 [5,bb=0] [,vazio]] [40,bb=0 [30,bb=0] [50,novo,bb=0]]]
 \end{forest}\\[3pt]
 \small (a) inicial & \small (b) após inserir 5 & \small (c) após inserir 50
@@ -201,16 +201,16 @@ Uma regra fácil de lembrar: \textbf{balanço positivo pede rotações à esquer
 A menor situação de cada caso aparece ao inserir 10, 20 e 30 numa árvore vazia, em ordens diferentes (Figura~\ref{fig:quatrocasos}). Nos quatro casos o resultado é o mesmo, $20(10,30)$: a rotação sempre leva para a raiz a chave do meio.
 \begin{figura}[Os quatro casos de rotação. Na linha de cima, a árvore logo após a terceira inserção, com o nó desregulado em vermelho; na de baixo, depois da rotação.\label{fig:quatrocasos}]
 \begin{tabular}{@{}c@{\hspace{9mm}}c@{\hspace{9mm}}c@{\hspace{9mm}}c@{}}
-\begin{forest} bstp [30,desreg,bb=-2 [20,bb=-1 [10,novo] [,vazio]] [,vazio]] \end{forest} &
-\begin{forest} bstp [30,desreg,bb=-2 [10,bb=+1 [,vazio] [20,novo]] [,vazio]] \end{forest} &
-\begin{forest} bstp [10,desreg,bb=+2 [,vazio] [20,bb=+1 [,vazio] [30,novo]]] \end{forest} &
-\begin{forest} bstp [10,desreg,bb=+2 [,vazio] [30,bb=-1 [20,novo] [,vazio]]] \end{forest}\\
+\begin{forest} bstp, for tree={s sep=5.2mm} [30,desreg,bb=-2 [20,bb=-1 [10,novo] [,vazio]] [,vazio]] \end{forest} &
+\begin{forest} bstp, for tree={s sep=5.2mm} [30,desreg,bb=-2 [10,bb=+1 [,vazio] [20,novo]] [,vazio]] \end{forest} &
+\begin{forest} bstp, for tree={s sep=5.2mm} [10,desreg,bb=+2 [,vazio] [20,bb=+1 [,vazio] [30,novo]]] \end{forest} &
+\begin{forest} bstp, for tree={s sep=5.2mm} [10,desreg,bb=+2 [,vazio] [30,bb=-1 [20,novo] [,vazio]]] \end{forest}\\
 \small $30,20,10$: esq.-esq. & \small $30,10,20$: esq.-dir. & \small $10,20,30$: dir.-dir. & \small $10,30,20$: dir.-esq.\\
 \small simples à direita & \small dupla à direita & \small simples à esquerda & \small dupla à esquerda\\[4pt]
-\begin{forest} bstp [20,bb=0 [10,bb=0] [30,bb=0]] \end{forest} &
-\begin{forest} bstp [20,bb=0 [10,bb=0] [30,bb=0]] \end{forest} &
-\begin{forest} bstp [20,bb=0 [10,bb=0] [30,bb=0]] \end{forest} &
-\begin{forest} bstp [20,bb=0 [10,bb=0] [30,bb=0]] \end{forest}
+\begin{forest} bstp, for tree={s sep=5.2mm} [20,bb=0 [10,bb=0] [30,bb=0]] \end{forest} &
+\begin{forest} bstp, for tree={s sep=5.2mm} [20,bb=0 [10,bb=0] [30,bb=0]] \end{forest} &
+\begin{forest} bstp, for tree={s sep=5.2mm} [20,bb=0 [10,bb=0] [30,bb=0]] \end{forest} &
+\begin{forest} bstp, for tree={s sep=5.2mm} [20,bb=0 [10,bb=0] [30,bb=0]] \end{forest}
 \end{tabular}
 \end{figura}
 \end{exemplo}
@@ -358,12 +358,12 @@ As funções \textsc{RotaçõesDireita} e \textsc{RotaçõesEsquerda} acima test
 \begin{figura}[As duas remoções do Exemplo~\ref{ex:avlrem}. O nó removido está tracejado; o desregulado, em vermelho.\label{fig:avlrem}]
 \forestset{rem/.style={draw=gray, dashed, text=gray}}
 \begin{tabular}{@{}c@{\hspace{4mm}}c@{\hspace{4mm}}c@{\hspace{14mm}}c@{\hspace{4mm}}c@{\hspace{4mm}}c@{}}
-\begin{forest} bstp [20,desreg,bb=+2 [10,rem] [40,bb=0 [30] [50]]] \end{forest} &
+\begin{forest} bstp, for tree={s sep=5.2mm} [20,desreg,bb=+2 [10,rem] [40,bb=0 [30] [50]]] \end{forest} &
 \raisebox{-4ex}{$\Rightarrow$} &
-\begin{forest} bstp [40,bb=-1 [20,bb=+1 [,vazio] [30]] [50]] \end{forest} &
-\begin{forest} bstp [20,desreg,bb=-2 [10,bb=+1 [,vazio] [15]] [30,rem]] \end{forest} &
+\begin{forest} bstp, for tree={s sep=5.2mm} [40,bb=-1 [20,bb=+1 [,vazio] [30]] [50]] \end{forest} &
+\begin{forest} bstp, for tree={s sep=5.2mm} [20,desreg,bb=-2 [10,bb=+1 [,vazio] [15]] [30,rem]] \end{forest} &
 \raisebox{-4ex}{$\Rightarrow$} &
-\begin{forest} bstp [15,bb=0 [10] [20]] \end{forest}\\[3pt]
+\begin{forest} bstp, for tree={s sep=5.2mm} [15,bb=0 [10] [20]] \end{forest}\\[3pt]
 \multicolumn{3}{c}{\small filho com balanço 0: simples, altura mantida} & \multicolumn{3}{c}{\small sinais opostos: dupla, altura diminui}
 \end{tabular}
 \end{figura}
@@ -409,10 +409,10 @@ Numa ABB comum, inserções em ordem desfavorável (crescente, decrescente ou em
 Depois de $20$ e $40$, temos $20^{+1}(\cdot,40)$. Inserir $60$ deixa $\bal(20)=+2$ com o filho $40$ de balanço $+1$: rotação simples à esquerda em 20, resultando em $40^{0}(20,60)$. Inserir $30$ dá $40^{-1}(20^{+1}(\cdot,30),\ 60)$. Inserir $25$ (à esquerda de 30) deixa $\bal(30)=-1$ e $\bal(20)=+2$: o primeiro desregulado é \textbf{20}, com filho direito $30$ de balanço $-1$, e a rotação é \textbf{dupla à esquerda} (à direita em 30, à esquerda em 20). A árvore final é $40^{-1}(25^{0}(20^{0},30^{0}),\ 60^{0})$.
 \begin{figura}[As inserções do Exemplo~\ref{ex:avl4020}: uma rotação simples e uma dupla, ambas à esquerda.\label{fig:avl4020}]
 \begin{tabular}{@{}c@{\hspace{9mm}}c@{\hspace{9mm}}c@{\hspace{9mm}}c@{}}
-\begin{forest} bstp [20,desreg,bb=+2 [,vazio] [40,bb=+1 [,vazio] [60,novo]]] \end{forest} &
-\begin{forest} bstp [40,bb=-1 [20,bb=+1 [,vazio] [30,novo]] [60]] \end{forest} &
-\begin{forest} bstp [40 [20,desreg,bb=+2 [,vazio] [30,bb=-1 [25,novo] [,vazio]]] [60]] \end{forest} &
-\begin{forest} bstp [40,bb=-1 [25,bb=0 [20] [30]] [60]] \end{forest}\\[3pt]
+\begin{forest} bstp, for tree={s sep=5.2mm} [20,desreg,bb=+2 [,vazio] [40,bb=+1 [,vazio] [60,novo]]] \end{forest} &
+\begin{forest} bstp, for tree={s sep=5.2mm} [40,bb=-1 [20,bb=+1 [,vazio] [30,novo]] [60]] \end{forest} &
+\begin{forest} bstp, for tree={s sep=6.6mm} [40 [20,desreg,bb=+2 [,vazio] [30,bb=-1 [25,novo] [,vazio]]] [60]] \end{forest} &
+\begin{forest} bstp, for tree={s sep=5.2mm} [40,bb=-1 [25,bb=0 [20] [30]] [60]] \end{forest}\\[3pt]
 \small (a) 60 desregula 20 & \small (b) após a rotação e o 30 & \small (c) 25 desregula 20 & \small (d) após a dupla
 \end{tabular}
 \end{figura}

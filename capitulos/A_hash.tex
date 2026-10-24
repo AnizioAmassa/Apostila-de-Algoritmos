@@ -22,7 +22,7 @@ Uma turma tem alunos com matrículas de 0 a 9, e estão presentes os de matrícu
 \begin{tabular}{@{}c@{\hspace{8mm}}c@{}}
 \vetorz[2,5,7]{-,-,2,-,-,5,-,7,-,-} &
 \begin{tikzpicture}[baseline=-0.6ex, x=10mm]
-\foreach \pos/\val in {0/{},1/{},2/{\tiny\ldots006},3/{},4/{\tiny\ldots016},5/{\tiny\ldots002},6/{}} {
+\foreach \pos/\val in {0/{},1/{},2/{\scriptsize\ldots006},3/{},4/{\scriptsize\ldots016},5/{\scriptsize\ldots002},6/{}} {
   \node[cel, minimum width=10mm] (t\pos) at (\pos,0) {\val}; \node[idx] at (\pos,0.48) {\pos};}
 \end{tikzpicture}\\[2pt]
 \scriptsize vetor de 10 posições & \scriptsize tabela de 7 posições, $h(k)=k\bmod7$
@@ -77,11 +77,11 @@ Inserimos $18,41,22,44,59,32,31,73$, nessa ordem, numa tabela de $m=13$ posiçõ
 
 Se outras funções de sondagem fossem usadas, a chave 31 seguiria outro caminho: com a sondagem quadrática $h(k,i)=(h(k)+i^2)\bmod13$, a sequência seria $5,6,9,1,\dots$; com o duplo hashing de $h_2(k)=1+(k\bmod11)=10$, seria $5,2,12,9,6,3,\dots$ --- saltos que espalham as tentativas e evitam o agrupamento.
 \begin{figura}[Sondagem linear com $m=13$ depois das oito inserções do Exemplo~\ref{ex:linear}. O número abaixo de cada chave é a quantidade de sondagens que a sua inserção fez; as posições 5 a 11 formam um agrupamento.\label{fig:sondagem}]
-\begin{tikzpicture}[x=8mm,y=7mm]
+\begin{tikzpicture}[x=9mm,y=7mm]
 \fill[destaque] (4.5,-0.3) rectangle (11.5,0.3);
-\foreach \val [count=\k from 0] in {{},{},41,{},{},18,44,59,32,22,31,73,{}} {\node[cel, minimum width=8mm] at (\k,0) {\val}; \node[idx] at (\k,0.55) {\k};}
-\foreach \pos/\sd in {2/1,5/1,6/2,7/1,8/3,9/1,10/6,11/4} {\node[font=\tiny, text=BrickRed] at (\pos,-0.6) {\sd};}
-\draw[seta, BrickRed!70, bend left=40] (5,0.85) to node[above, font=\tiny] {31: 5, 6, 7, 8, 9, 10} (10,0.85);
+\foreach \val [count=\k from 0] in {{},{},41,{},{},18,44,59,32,22,31,73,{}} {\node[cel, minimum width=9mm] at (\k,0) {\val}; \node[idx] at (\k,0.55) {\k};}
+\foreach \pos/\sd in {2/1,5/1,6/2,7/1,8/3,9/1,10/6,11/4} {\node[font=\scriptsize\bfseries, text=BrickRed] at (\pos,-0.7) {\sd};}
+\draw[seta, BrickRed!70, bend left=40] (5,0.85) to node[above, font=\scriptsize] {31: 5, 6, 7, 8, 9, 10} (10,0.85);
 \end{tikzpicture}
 \end{figura}
 \end{exemplo}

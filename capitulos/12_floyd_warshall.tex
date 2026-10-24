@@ -73,24 +73,24 @@ $W$ & 1\,($a$) & 2\,($b$) & 3\,($c$) & 4\,($d$) & 5\,($e$)\\ \hline
 % opcionais v1,...,v5 (vértices) e a12, a13, ... (arestas) permitem destacá-los.
 \newcommand{\digrafoFW}[5]{%
   \node[vtx, v1/.try] (n1) at (0,0) {#1};
-  \node[vtx, v2/.try] (n2) at (2.4,1.5) {#2};
+  \node[vtx, v2/.try] (n2) at (2.4,1.8) {#2};
   \node[vtx, v3/.try] (n3) at (2.4,0) {#3};
   \node[vtx, v4/.try] (n4) at (4.8,0) {#4};
-  \node[vtx, v5/.try] (n5) at (2.4,-2.1) {#5};
+  \node[vtx, v5/.try] (n5) at (2.4,-1.8) {#5};
   \draw[arco, a12/.try] (n1) -- node[peso] {1} (n2);
-  \draw[arco, a13/.try] (n1) to[bend left=14] node[peso] {3} (n3);
-  \draw[arco, a31/.try] (n3) to[bend left=14] node[peso] {1} (n1);
+  \draw[arco, a13/.try] (n1) to[bend left=22] node[peso] {3} (n3);
+  \draw[arco, a31/.try] (n3) to[bend left=22] node[peso] {1} (n1);
   \draw[arco, a15/.try] (n1) -- node[peso] {6} (n5);
-  \draw[arco, a23/.try] (n2) to[bend left=18] node[peso] {1} (n3);
-  \draw[arco, a32/.try] (n3) to[bend left=18] node[peso] {2} (n2);
+  \draw[arco, a23/.try] (n2) to[bend left=32] node[peso] {1} (n3);
+  \draw[arco, a32/.try] (n3) to[bend left=32] node[peso] {2} (n2);
   \draw[arco, a24/.try] (n2) -- node[peso] {3} (n4);
   \draw[arco, a34/.try] (n3) -- node[peso] {1} (n4);
-  \draw[arco, a41/.try] (n4) to[out=-150, in=-30] node[peso, pos=0.62] {3} (n1);
-  \draw[arco, a45/.try] (n4) to[bend left=14] node[peso] {2} (n5);
-  \draw[arco, a54/.try] (n5) to[bend left=14] node[peso] {1} (n4);}
+  \draw[arco, a41/.try] (n4) to[out=-90, in=0] (2.4,-2.8) node[peso] {3} to[out=180, in=-90] (n1);
+  \draw[arco, a45/.try] (n4) to[bend left=20] node[peso] {2} (n5);
+  \draw[arco, a54/.try] (n5) to[bend left=20] node[peso] {1} (n4);}
 
 \begin{figura}[O digrafo de exemplo deste capítulo e do Capítulo~\ref{cap:dijkstra}. Os números nas arestas são os pesos; entre 1 e 3, entre 2 e 3 e entre 4 e 5 há arestas nos dois sentidos, com pesos diferentes.\label{fig:digrafofw}]
-\begin{tikzpicture}[x=1.3cm, y=1.15cm]
+\begin{tikzpicture}[x=1.35cm, y=1.05cm]
 \digrafoFW{1}{2}{3}{4}{5}
 \end{tikzpicture}
 \end{figura}

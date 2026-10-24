@@ -56,10 +56,12 @@ Se o caminho mais curto de Belo Horizonte a Curitiba passa por São Paulo, entã
 \end{pseudo}
 
 \begin{figura}[À esquerda, o grafo de dependências dos subproblemas de Fibonacci: cada $F_k$ depende de $F_{k-1}$ e de $F_{k-2}$. Há só $n+1$ nós, e qualquer ordem que respeite as setas (por exemplo, $F_0,F_1,\dots,F_6$) serve para preencher a tabela, à direita.\label{fig:fibdag}]
-\begin{tikzpicture}[x=1.05cm,y=1cm, baseline=(f0.base)]
-\foreach \k in {0,...,6} {\node[vtxs] (f\k) at (6-\k,0) {$F_{\k}$};}
+\begin{tikzpicture}[x=1.15cm,y=1cm, baseline=(f0.base)]
+\foreach \k in {0,...,6} {\node[vtx] (f\k) at (6-\k,0) {$F_{\k}$};}
 \foreach \k [evaluate=\k as \um using int(\k-1)] in {1,...,6} {\draw[arco] (f\k) -- (f\um);}
-\foreach \k [evaluate=\k as \dois using int(\k-2)] in {2,...,6} {\draw[arco, gray, bend left=45] (f\k) to (f\dois);}
+% as arestas F_k -> F_{k-2} alternam acima (k par) e abaixo (k ímpar), sem se cruzar
+\foreach \k [evaluate=\k as \dois using int(\k-2)] in {2,4,6} {\draw[arco, gray, bend left=50] (f\k) to (f\dois);}
+\foreach \k [evaluate=\k as \dois using int(\k-2)] in {3,5} {\draw[arco, gray, bend right=50] (f\k) to (f\dois);}
 \end{tikzpicture}
 \qquad
 \raisebox{-0.5ex}{\small $F$:\ \vetorz{0,1,1,2,3,5,8}}
@@ -181,17 +183,17 @@ m[i,j]=\begin{cases}0 & i=j\\[2pt] \min\limits_{i\le k<j}\big\{\,m[i,k]+m[k+1,j]
 O termo $r_{i-1}r_kr_j$ é o custo da última multiplicação: o produto $M_i\cdots M_k$ tem dimensões $r_{i-1}\times r_k$, e o produto $M_{k+1}\cdots M_j$, dimensões $r_k\times r_j$. Há $O(n^2)$ subproblemas e cada um testa $O(n)$ valores de $k$: o algoritmo custa \textbf{$\Theta(n^3)$ de tempo e $\Theta(n^2)$ de memória}. Como $m[i,j]$ depende de intervalos \emph{mais curtos}, a tabela é preenchida \textbf{por diagonais}, com $d=j-i=1,2,\dots,n-1$; a diagonal principal é toda zero (Figura~\ref{fig:diagonais}).
 
 \begin{figura}[A ordem de preenchimento da tabela $m$ para $n=4$, por diagonais $d=j-i$. A célula $m[1,4]$ (em vermelho) usa a linha 1 à sua esquerda e a coluna 4 abaixo dela, que pertencem a diagonais anteriores.\label{fig:diagonais}]
-\begin{tikzpicture}[x=9mm,y=7mm]
+\begin{tikzpicture}[x=11mm,y=8mm]
 \foreach \ii in {1,...,4} {\foreach \jj in {\ii,...,4} {
   \pgfmathtruncatemacro{\dd}{\jj-\ii}
   \ifcase\dd \def\cor{gray!15}\or \def\cor{azul}\or \def\cor{feito}\or \def\cor{ruim}\fi
   \fill[\cor] (\jj-0.5,-\ii-0.5) rectangle (\jj+0.5,-\ii+0.5);
   \draw (\jj-0.5,-\ii-0.5) rectangle (\jj+0.5,-\ii+0.5);
-  \node[font=\scriptsize] at (\jj,-\ii) {$d{=}\dd$};}}
+  \node[font=\small] at (\jj,-\ii) {$d{=}\dd$};}}
 \foreach \k in {1,...,4} {\node[idx] at (\k,-0.25) {$j{=}\k$}; \node[idx] at (0.2,-\k) {$i{=}\k$};}
 \draw[very thick, MidnightBlue, rounded corners=2pt] (0.55,-1.45) rectangle (3.45,-0.55);
 \draw[very thick, MidnightBlue, rounded corners=2pt] (3.55,-4.45) rectangle (4.45,-1.55);
-\node[rot, anchor=west, align=left] at (5,-2.5) {$m[1,4]=\min$ de\\ $m[1,1]+m[2,4]+r_0r_1r_4$\\ $m[1,2]+m[3,4]+r_0r_2r_4$\\ $m[1,3]+m[4,4]+r_0r_3r_4$};
+\node[font=\small, text=gray!60!black, anchor=west, align=left] at (5,-2.5) {$m[1,4]=\min$ de\\ $m[1,1]+m[2,4]+r_0r_1r_4$\\ $m[1,2]+m[3,4]+r_0r_2r_4$\\ $m[1,3]+m[4,4]+r_0r_3r_4$};
 \end{tikzpicture}
 \end{figura}
 
@@ -289,9 +291,9 @@ A tabela tem uma coluna por item e uma linha por capacidade (Figura~\ref{fig:moc
 \foreach \ww/\vals in {0/{0,0,0,0},1/{0,0,0,1},2/{0,3,3,3},3/{0,3,5,5},4/{0,3,5,6},5/{0,3,8,8}} {
   \foreach \xx [count=\k from 0] in \vals {\node[cel, minimum width=10mm, minimum height=6.5mm] at (\k,-\ww) {\xx};}
   \node[idx] at (-0.9,-\ww) {$w{=}\ww$};}
-\foreach \k/\itm in {0/{--},1/{(2,3)},2/{(3,5)},3/{(1,1)}} {\node[idx] at (\k,1.25) {$i{=}\k$}; \node[font=\tiny] at (\k,0.8) {$\itm$};}
+\foreach \k/\itm in {0/{--},1/{(2,3)},2/{(3,5)},3/{(1,1)}} {\node[idx] at (\k,1.25) {$i{=}\k$}; \node[font=\scriptsize] at (\k,0.75) {$\itm$};}
 \draw[seta, BrickRed, bend right=60] (1,-5.5) to node[below, font=\scriptsize] {fora} (2,-5.5);
-\draw[seta, MidnightBlue] (1.25,-2.25) -- node[right, font=\scriptsize] {$+5$} (1.75,-4.75);
+\draw[seta, MidnightBlue] (1.25,-2.25) -- node[peso, font=\scriptsize] {$+5$} (1.75,-4.75);
 \end{tikzpicture}
 \end{figura}
 \end{exemplo}

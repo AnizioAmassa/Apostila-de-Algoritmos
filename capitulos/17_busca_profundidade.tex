@@ -128,10 +128,10 @@ Os blocos, na ordem em que a pilha de arestas os imprime, são $\{e,f,g\}$, $\{d
 \coordinate (base) at (0,-0.6);
 \end{tikzpicture}
 \hspace{2cm}
-\begin{tikzpicture}[x=1cm,y=0.72cm, baseline=(base), lab/.style={font=\scriptsize,text=gray!70!black}]
+\begin{tikzpicture}[x=1cm,y=0.85cm, baseline=(base), lab/.style={font=\small,text=gray!70!black}]
 \foreach \nome/\yy/\rot in {a/0/{1/1},b/-1/{2/1},c/-2/{3/1},d/-3/{4/1},e/-4/{5/5},f/-5/{6/5},g/-6/{7/5}} {
-  \node[vtxs] (t\nome) at (0,\yy) {$\nome$}; \node[lab, right=2pt of t\nome] {\rot};}
-\node[vtxs] (th) at (1.6,-2) {$h$}; \node[lab, right=2pt of th] {13/13};
+  \node[vtx] (t\nome) at (0,\yy) {$\nome$}; \node[lab, right=2pt of t\nome] {\rot};}
+\node[vtx] (th) at (1.8,-2) {$h$}; \node[lab, right=2pt of th] {13/13};
 \draw[aresta, MidnightBlue] (ta)--(tb)--(tc)--(td)--(te)--(tf)--(tg); \draw[aresta, MidnightBlue] (tb)--(th);
 \draw[thick, dashed, BrickRed] (td) to[bend left=50] (ta);
 \draw[thick, dashed, BrickRed] (tg) to[bend left=50] (te);

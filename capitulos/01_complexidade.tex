@@ -129,7 +129,7 @@ A definição de $O$ tem duas constantes, e cada uma tem um papel: $c$ absorve a
 \addplot[thick, MidnightBlue] {x^2+10*x+20}; \addlegendentry{$f(n)=n^2+10n+20$}
 \addplot[thick, BrickRed, dashed] {2*x^2}; \addlegendentry{$c_2\,g(n)=2n^2$}
 \addplot[thick, ForestGreen, dashed] {x^2}; \addlegendentry{$c_1\,g(n)=n^2$}
-\draw[gray, densely dotted] (axis cs:11.66,0) -- (axis cs:11.66,1000);
+\draw[gray, densely dotted] (axis cs:11.71,0) -- (axis cs:11.71,1000);
 \node[font=\scriptsize, anchor=south west, fill=white, inner sep=1pt] at (axis cs:11.8,30) {$n_0\approx 12$};
 \end{axis}
 \end{tikzpicture}
@@ -189,7 +189,7 @@ Também valem $\log(n!)=\Theta(n\log n)$, $(\log n)^c=o(n^\varepsilon)$ para qua
   axis lines=left, xlabel={$n$}, ylabel={$f(n)$}, tick label style={font=\scriptsize},
   xlabel style={font=\small}, ylabel style={font=\small}, clip=true,
   every axis plot/.append style={thick}]
-\addplot[gray] {log2(x)} node[pos=0.97, below, font=\scriptsize] {$\log n$};
+\addplot[gray] {log2(x)} node[pos=0.97, above=1pt, font=\scriptsize] {$\log n$};
 \addplot[ForestGreen] {x} node[pos=0.97, above=1pt, font=\scriptsize] {$n$};
 \addplot[MidnightBlue] {x*log2(x)} node[pos=0.93, above left, font=\scriptsize] {$n\log n$};
 \addplot[Plum, domain=1:12.2] {x^2} node[pos=1, left, font=\scriptsize] {$n^2$};

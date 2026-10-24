@@ -51,9 +51,11 @@ A sequência $(4,1,3,2)$ tem 4 inversões: os pares $(4,1)$, $(4,3)$, $(4,2)$ e 
 
 Agora, duas amigas ordenam cinco filmes por preferência. Numerando os filmes pela ordem da primeira, a segunda escolheu $(2,1,4,5,3)$. As inversões são $(2,1)$, $(4,3)$ e $(5,3)$: as duas discordam sobre 3 dos $\binom52=10$ pares de filmes. Quanto menos inversões, mais parecidos os gostos.
 \begin{figura}[As 4 inversões de $(4,1,3,2)$: cada arco liga um par em que o elemento da esquerda é maior.\label{fig:inversoes}]
-\begin{tikzpicture}[x=9mm,y=9mm]
+\begin{tikzpicture}[x=13mm,y=9mm]
 \foreach \xx [count=\k] in {4,1,3,2} {\node[cel] (n\k) at (\k,0) {\xx};}
-\foreach \pa/\pb in {1/2,1/3,1/4,3/4} {\draw[thick, BrickRed!70] (n\pa.north) to[out=70, in=110] (n\pb.north);}
+% cada arco sai e chega num ponto diferente do topo da célula, para não se sobreporem
+\foreach \pa/\da/\pb/\db in {1/1.8/2/0,1/0/3/0,1/-1.8/4/1.8,3/1.8/4/-1.8} {
+  \draw[thick, BrickRed!70] ($(n\pa.north)+(\da mm,0)$) to[out=75, in=105, looseness=1.1] ($(n\pb.north)+(\db mm,0)$);}
 \end{tikzpicture}
 \end{figura}
 \end{exemplo}
@@ -308,7 +310,7 @@ A correção do último algoritmo vem de uma observação simples: se $x$ é maj
 \begin{exemplo}[Elemento majoritário]\label{ex:majoritario}
 Em $V=(3,1,3,3,\,2,3,1,3)$, o 3 aparece 5 vezes, mais que $8/2$. A Figura~\ref{fig:maj} mostra a recursão. A metade direita, $(2,3,1,3)$, não tem majoritário: o 3 aparece só 2 vezes em 4. Mesmo assim, o 3 é majoritário na metade esquerda, $(3,1,3,3)$, e chega à raiz como candidato; a contagem no vetor todo confirma as 5 ocorrências. Note também que $(3,1)$ não tem majoritário: aparecer \emph{metade} das vezes não basta.
 \begin{figura}[A recursão do elemento majoritário em $(3,1,3,3,2,3,1,3)$. Cada nó mostra o trecho e o majoritário encontrado (ou ``--'', se não há).\label{fig:maj}]
-\forestset{majf/.style={for tree={draw, rounded corners=2pt, font=\scriptsize, inner sep=2pt, s sep=2mm, l sep=3mm, edge={thick}, align=center}}}
+\forestset{majf/.style={for tree={draw, rounded corners=2pt, font=\small, inner sep=2.5pt, s sep=5mm, l sep=6mm, edge={thick}, align=center}}}
 \begin{forest} majf
 [{$3,1,3,3,2,3,1,3$\\ \textbf{3}}, fill=feito
   [{$3,1,3,3$\\ \textbf{3}}, fill=feito [{$3,1$\\ --}] [{$3,3$\\ \textbf{3}}, fill=feito]]
