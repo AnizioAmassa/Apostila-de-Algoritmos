@@ -13,7 +13,7 @@
 O algoritmo de Floyd-Warshall é mais uma aplicação da programação dinâmica, agora sobre um grafo: queremos o custo do caminho mais barato entre \emph{todos} os pares de vértices. Por ser o primeiro algoritmo em grafos do livro, o capítulo começa fixando a notação e as representações de grafos usadas daqui em diante.
 
 \section{Grafos: notação e representação}\label{sec:buscas}
-Um grafo é um par $G=(V,E)$, em que $V$ é o conjunto de vértices e $E$ o de arestas; escrevemos $n=|V|$ e $m=|E|$. A \textbf{vizinhança} de um vértice $v$, $N(v)$, é o conjunto dos vértices ligados a $v$ por uma aresta. Num \textbf{digrafo} (grafo direcionado), cada aresta $v\to w$ tem uma direção, e $N_{out}(v)$ é o conjunto dos vértices $w$ com uma aresta $v\to w$. Há duas formas usuais de representar um grafo na memória:
+Um grafo é um par $G=(V,E)$, em que $V$ é o conjunto de vértices e $E$ o de arestas; escrevemos $n=|V|$ e $m=|E|$. A \textbf{vizinhança} de um vértice $v$, $N(v)$, é o conjunto dos vértices ligados a $v$ por uma aresta, e o seu \textbf{grau} é $|N(v)|$. Num \textbf{digrafo} (grafo direcionado), cada aresta $v\to w$ tem uma direção, e $N_{out}(v)$ é o conjunto dos vértices $w$ com uma aresta $v\to w$. Há duas formas usuais de representar um grafo na memória:
 \begin{center}\small
 \begin{tabular}{@{}lccc@{}}
 \toprule
@@ -24,12 +24,39 @@ Listas de adjacência & $\Theta(n+m)$ & $O(\text{grau}(v))$ & $\Theta(\text{grau
 \bottomrule
 \end{tabular}
 \end{center}
+
+\begin{exemplo}[As duas representações]\label{ex:repgrafo}
+O grafo da Figura~\ref{fig:repgrafo} tem $n=4$ vértices e $m=4$ arestas: $12$, $13$, $23$ e $34$. Na matriz de adjacência, a posição $(v,w)$ vale 1 se $vw$ é aresta; como o grafo não é direcionado, a matriz é simétrica, e cada aresta aparece duas vezes. Nas listas de adjacência, cada vértice guarda só os seus vizinhos: $N(3)=\{1,2,4\}$, e o grau de 3 é 3. Para saber se $24$ é aresta, a matriz responde com uma consulta, à posição $(2,4)$; as listas precisam percorrer $N(2)=\{1,3\}$. Em compensação, as listas ocupam espaço proporcional a $n+2m=12$ entradas, contra $n^2=16$ da matriz --- uma diferença que, num grafo esparso com um milhão de vértices, separa alguns megabytes de terabytes.
+\begin{figura}[Um grafo com 4 vértices, a sua matriz de adjacência e as suas listas de adjacência.\label{fig:repgrafo}]
+\begin{tikzpicture}[x=1.1cm,y=1.1cm, baseline=(c.base)]
+\node[vtx] (a) at (0,1) {1}; \node[vtx] (b) at (1.4,1) {2}; \node[vtx] (c) at (0.7,0) {3}; \node[vtx] (d) at (2.1,0) {4};
+\draw[aresta] (a)--(b) (a)--(c) (b)--(c) (c)--(d);
+\end{tikzpicture}
+\qquad
+\small
+$\begin{array}{c|cccc}
+ & 1 & 2 & 3 & 4\\ \hline
+1 & 0 & 1 & 1 & 0\\
+2 & 1 & 0 & 1 & 0\\
+3 & 1 & 1 & 0 & 1\\
+4 & 0 & 0 & 1 & 0
+\end{array}$
+\qquad
+$\begin{array}{l}
+1\colon\ 2,\ 3\\
+2\colon\ 1,\ 3\\
+3\colon\ 1,\ 2,\ 4\\
+4\colon\ 3
+\end{array}$
+\end{figura}
+\end{exemplo}
+
 A matriz é adequada a grafos densos, com $m$ próximo de $n^2$, e a testes frequentes de adjacência; as listas, a grafos esparsos e a algoritmos que percorrem vizinhanças. Uma \textbf{busca}, que visita todos os vértices e arestas do grafo examinando cada vizinhança uma vez, custa $\Theta(n+m)$ com listas e $\Theta(n^2)$ com matriz; as buscas em largura e em profundidade são estudadas nos Capítulos~\ref{cap:bfs} e~\ref{cap:dfs}.
 
 \section{Matriz de pesos}\label{sec:fwmatriz}
 Em problemas de caminhos mínimos, cada aresta tem um peso (um custo, uma distância, um tempo), e o grafo é dado por uma \textbf{matriz de pesos} $W$: $W(x,x)=0$; $W(x,y)$ é o peso da aresta $xy$, se ela existe; e $W(x,y)=\infty$ se não existe. O custo de um caminho é a soma dos pesos das suas arestas, e a \textbf{distância} $\operatorname{dist}(x,y)$ é o menor custo de um caminho de $x$ a $y$. Um grafo não direcionado é tratado como um digrafo em que cada aresta $xy$ de peso $p$ dá origem às arestas $x\to y$ e $y\to x$, ambas de peso $p$.
 
-Usaremos como exemplo, neste capítulo e no Capítulo~\ref{cap:dijkstra}, o digrafo de cinco vértices dado pela matriz abaixo; os vértices são chamados $1,\dots,5$ aqui e $a,\dots,e$ no capítulo do algoritmo de Dijkstra.
+Usaremos como exemplo, neste capítulo e no Capítulo~\ref{cap:dijkstra}, o digrafo de cinco vértices dado pela matriz abaixo e desenhado na Figura~\ref{fig:digrafofw}; os vértices são chamados $1,\dots,5$ aqui e $a,\dots,e$ no capítulo do algoritmo de Dijkstra.
 \begin{center}\small
 \begin{tabular}{c|ccccc}
 $W$ & 1\,($a$) & 2\,($b$) & 3\,($c$) & 4\,($d$) & 5\,($e$)\\ \hline
@@ -41,6 +68,33 @@ $W$ & 1\,($a$) & 2\,($b$) & 3\,($c$) & 4\,($d$) & 5\,($e$)\\ \hline
 \end{tabular}
 \end{center}
 
+% Desenho do digrafo de exemplo, reaproveitado no capítulo de Dijkstra.
+% Os argumentos são os nomes dos vértices; dentro do tikzpicture, os estilos
+% opcionais v1,...,v5 (vértices) e a12, a13, ... (arestas) permitem destacá-los.
+\newcommand{\digrafoFW}[5]{%
+  \node[vtx, v1/.try] (n1) at (0,0) {#1};
+  \node[vtx, v2/.try] (n2) at (2.4,1.5) {#2};
+  \node[vtx, v3/.try] (n3) at (2.4,0) {#3};
+  \node[vtx, v4/.try] (n4) at (4.8,0) {#4};
+  \node[vtx, v5/.try] (n5) at (2.4,-2.1) {#5};
+  \draw[arco, a12/.try] (n1) -- node[peso] {1} (n2);
+  \draw[arco, a13/.try] (n1) to[bend left=14] node[peso] {3} (n3);
+  \draw[arco, a31/.try] (n3) to[bend left=14] node[peso] {1} (n1);
+  \draw[arco, a15/.try] (n1) -- node[peso] {6} (n5);
+  \draw[arco, a23/.try] (n2) to[bend left=18] node[peso] {1} (n3);
+  \draw[arco, a32/.try] (n3) to[bend left=18] node[peso] {2} (n2);
+  \draw[arco, a24/.try] (n2) -- node[peso] {3} (n4);
+  \draw[arco, a34/.try] (n3) -- node[peso] {1} (n4);
+  \draw[arco, a41/.try] (n4) to[out=-150, in=-30] node[peso, pos=0.62] {3} (n1);
+  \draw[arco, a45/.try] (n4) to[bend left=14] node[peso] {2} (n5);
+  \draw[arco, a54/.try] (n5) to[bend left=14] node[peso] {1} (n4);}
+
+\begin{figura}[O digrafo de exemplo deste capítulo e do Capítulo~\ref{cap:dijkstra}. Os números nas arestas são os pesos; entre 1 e 3, entre 2 e 3 e entre 4 e 5 há arestas nos dois sentidos, com pesos diferentes.\label{fig:digrafofw}]
+\begin{tikzpicture}[x=1.3cm, y=1.15cm]
+\digrafoFW{1}{2}{3}{4}{5}
+\end{tikzpicture}
+\end{figura}
+
 \section{O algoritmo de Floyd-Warshall}
 \textbf{Problema:} dado um digrafo com vértices $1,\dots,n$ e matriz de pesos $W$, calcular $\operatorname{dist}(i,j)$ para todos os pares ordenados $(i,j)$. A ideia é limitar, passo a passo, quais vértices podem aparecer \emph{no meio} dos caminhos:
 \[
@@ -48,12 +102,25 @@ D^k(i,j)=\text{custo do caminho mínimo de }i\text{ a }j\text{ cujos vértices \
 \]
 Então $D^0=W$, pois sem intermediários só valem as arestas diretas, e $D^n$ é a matriz das distâncias.
 
-\textbf{Decomposição.} Um caminho mínimo de $i$ a $j$ com intermediários em $\{1,\dots,k\}$ ou \textbf{não passa} por $k$, e custa $D^{k-1}(i,j)$, ou passa \textbf{exatamente uma vez} por $k$ --- voltar a $k$ formaria um ciclo, que não ajuda --- e se divide num caminho mínimo de $i$ a $k$ e num de $k$ a $j$, ambos com intermediários em $\{1,\dots,k-1\}$:
+\begin{intuicao}
+Imagine que as cidades $1,\dots,n$ abrem, uma por vez, para servir de conexão. No começo, só há voos diretos ($D^0=W$). Quando a cidade 1 abre, alguns trajetos ficam mais baratos fazendo escala nela; quando a 2 abre, trajetos com escala em 2 --- e possivelmente também em 1 --- entram em jogo; e assim por diante. Cada abertura é testada para todos os pares de uma vez, e depois que todas as cidades abriram, todos os trajetos possíveis foram considerados.
+\end{intuicao}
+
+\textbf{Decomposição.} Um caminho mínimo de $i$ a $j$ com intermediários em $\{1,\dots,k\}$ ou \textbf{não passa} por $k$, e custa $D^{k-1}(i,j)$, ou passa \textbf{exatamente uma vez} por $k$ --- voltar a $k$ formaria um ciclo, que não ajuda --- e se divide num caminho mínimo de $i$ a $k$ e num de $k$ a $j$, ambos com intermediários em $\{1,\dots,k-1\}$ (Figura~\ref{fig:fwdecomp}):
 \[
 D^k(i,j)=\begin{cases}W(i,j) & k=0\\ \min\{\,D^{k-1}(i,j),\ D^{k-1}(i,k)+D^{k-1}(k,j)\,\} & k\ge1.\end{cases}
 \]
 
-\textbf{Por que só ``prefixos'' $\{1,\dots,k\}$?} Uma formulação mais livre usaria, para cada conjunto $S\subseteq V$ de intermediários permitidos, $D(i,j,S)=\min_{v\in S}\{D(i,v,S\setminus\{v\})+D(v,j,S\setminus\{v\})\}$. Ela também é correta, mas tem $n^2\,2^n$ subproblemas. Fixando uma ordem dos vértices e usando só os $n+1$ prefixos, sobram $O(n^2)$ subproblemas por valor de $k$, e $O(n^3)$ no total.
+\begin{figura}[As duas possibilidades para um caminho mínimo de $i$ a $j$ com intermediários em $\{1,\dots,k\}$: ou ele não usa $k$ (em cima), ou passa por $k$ uma única vez, e os dois trechos só usam intermediários em $\{1,\dots,k-1\}$ (embaixo).\label{fig:fwdecomp}]
+\begin{tikzpicture}[x=1cm,y=1cm]
+\node[vtx] (i) at (0,0) {$i$}; \node[vtx] (j) at (6,0) {$j$}; \node[vtx, fill=destaque] (k) at (3,-1.4) {$k$};
+\draw[seta, gray!70!black, densely dashed] (i) to[bend left=20] node[above, rot] {intermediários em $\{1,\dots,k-1\}$: custo $D^{k-1}(i,j)$} (j);
+\draw[seta, MidnightBlue, densely dashed] (i) -- node[below left, rot] {$D^{k-1}(i,k)$} (k);
+\draw[seta, MidnightBlue, densely dashed] (k) -- node[below right, rot] {$D^{k-1}(k,j)$} (j);
+\end{tikzpicture}
+\end{figura}
+
+\textbf{Por que só ``prefixos'' $\{1,\dots,k\}$?} Uma formulação mais livre usaria, para cada conjunto $S\subseteq V$ de intermediários permitidos, $D(i,j,S)=\min_{v\in S}\{D(i,v,S\setminus\{v\})+D(v,j,S\setminus\{v\})\}$. Ela também é correta, mas tem $n^2\,2^n$ subproblemas. Fixando uma ordem dos vértices e usando só os $n+1$ prefixos, sobram $O(n^2)$ subproblemas por valor de $k$, e $O(n^3)$ no total. Com $n=20$, por exemplo, são $20^2\cdot2^{20}\approx4{,}2\cdot10^8$ subproblemas na formulação por subconjuntos, contra $20^3=8000$ passos do Floyd-Warshall.
 
 \begin{pseudo}{Floyd-Warshall com matriz de predecessores $P$: $\Theta(n^3)$ de tempo e $\Theta(n^2)$ de memória}
 \begin{algorithmic}
@@ -66,7 +133,7 @@ D^k(i,j)=\begin{cases}W(i,j) & k=0\\ \min\{\,D^{k-1}(i,j),\ D^{k-1}(i,k)+D^{k-1}
     \For{$i:=1$ \textbf{até} $n$}
       \For{$j:=1$ \textbf{até} $n$}
         \If{$D[i,k]+D[k,j]<D[i,j]$}
-          \State $D[i,j]:=D[i,k]+D[k,j]$;\ $P[i,j]:=P[k,j]$ \Comment{o penúltimo vértice vem do trecho de $k$ a $j$}
+          \State $D[i,j]:=D[i,k]+D[k,j]$;\ $P[i,j]:=P[k,j]$ \Comment{penúltimo vértice do trecho $k\to j$}
         \EndIf
       \EndFor
     \EndFor
@@ -83,16 +150,36 @@ D^k(i,j)=\begin{cases}W(i,j) & k=0\\ \min\{\,D^{k-1}(i,j),\ D^{k-1}(i,k)+D^{k-1}
 \end{pseudo}
 A matriz $P$ guarda, em $P^k(i,j)$, o \textbf{penúltimo} vértice do caminho mínimo de $i$ a $j$ com intermediários em $\{1,\dots,k\}$. Se o caminho não melhora ao permitir $k$, $P^k(i,j)=P^{k-1}(i,j)$; se melhora, o novo caminho termina com o trecho de $k$ a $j$, e $P^k(i,j)=P^{k-1}(k,j)$. Uma única matriz $D$ basta, com atualizações ``no lugar'': na iteração $k$, a linha e a coluna $k$ não mudam, pois $D(k,k)=0$.
 
+\begin{exemplo}[A primeira iteração, $k=1$]\label{ex:fwk1}
+Na iteração $k=1$, cada entrada $D(i,j)$ é comparada com $D(i,1)+D(1,j)$: o caminho de $i$ a $j$ com escala em 1. Só interessam os $i$ que chegam a 1 (os finitos da coluna 1: $i=3$, com custo 1, e $i=4$, com custo 3) e os $j$ alcançados a partir de 1 (os finitos da linha 1: $j=2$, 3 e 5). As candidatas são, portanto, $D(3,2)$, $D(3,5)$, $D(4,2)$, $D(4,3)$ e $D(4,5)$ (Figura~\ref{fig:fwk1}):
+\begin{itemize}
+  \item $D(3,5)=\min\{\infty,\ D(3,1)+D(1,5)\}=\min\{\infty,\,1+6\}=7$: o caminho $3\to1\to5$;
+  \item $D(4,2)=\min\{\infty,\,3+1\}=4$ e $D(4,3)=\min\{\infty,\,3+3\}=6$;
+  \item $D(3,2)=\min\{2,\,1+1\}=2$ e $D(4,5)=\min\{2,\,3+6\}=2$ não mudam: o caminho direto já é tão bom quanto o que passa por 1.
+\end{itemize}
+\begin{figura}[A iteração $k=1$ sobre $D^0=W$. A linha e a coluna do vértice 1 (em azul) não mudam; cada entrada $(i,j)$ é comparada com a soma da entrada da coluna 1 na sua linha com a da linha 1 na sua coluna. As três entradas que diminuem estão em amarelo.\label{fig:fwk1}]
+\begin{tikzpicture}[x=9mm,y=6.5mm]
+\foreach \pos in {1,...,5} {\fill[azul] (\pos-0.5,-1-0.5) rectangle (\pos+0.5,-1+0.5); \fill[azul] (1-0.5,-\pos-0.5) rectangle (1+0.5,-\pos+0.5);}
+\foreach \ii/\jj in {3/5,4/2,4/3} {\fill[destaque] (\jj-0.5,-\ii-0.5) rectangle (\jj+0.5,-\ii+0.5);}
+\foreach \lin/\vals in {1/{0,1,3,\infty,6},2/{\infty,0,1,3,\infty},3/{1,2,0,1,7},4/{3,4,6,0,2},5/{\infty,\infty,\infty,1,0}} {
+  \foreach \xx [count=\k] in \vals {\node[cel, minimum width=9mm, minimum height=6.5mm] at (\k,-\lin) {$\xx$};}
+  \node[idx] at (0.2,-\lin) {\lin};}
+\foreach \k in {1,...,5} {\node[idx] at (\k,-0.25) {\k};}
+\node[rot, anchor=west] at (5.8,-3) {$D^1$};
+\end{tikzpicture}
+\end{figura}
+\end{exemplo}
+
 \begin{exemplo}[O digrafo da §\ref{sec:fwmatriz}]\leavevmode
 \begin{center}\small
-\begin{tabular}{c|l}
+\begin{tabularx}{\linewidth}{c|X}
 $k$ & entradas que diminuem ao permitir $k$ como intermediário\\ \hline
 1 & $D(3,5)\!:\infty\to7$;\ $D(4,2)\!:\infty\to4$;\ $D(4,3)\!:\infty\to6$\\
 2 & $D(1,3)\!:3\to2$;\ $D(1,4)\!:\infty\to4$;\ $D(4,3)\!:6\to5$\\
 3 & $D(1,4)\!:4\to3$;\ $D(2,1)\!:\infty\to2$;\ $D(2,4)\!:3\to2$;\ $D(2,5)\!:\infty\to8$\\
 4 & $D(1,5)\!:6\to5$;\ $D(2,5)\!:8\to4$;\ $D(3,5)\!:7\to3$;\ $D(5,1)\!:\infty\to4$;\ $D(5,2)\!:\infty\to5$;\ $D(5,3)\!:\infty\to6$\\
 5 & nenhuma
-\end{tabular}
+\end{tabularx}
 \end{center}
 \begin{center}\small
 \begin{tabular}{c|ccccc}
@@ -119,6 +206,12 @@ O caminho de 5 a 3 sai da matriz $P$ de trás para frente: $P(5,3)=2$, $P(5,2)=1
   \item \textbf{Pesos negativos.} O algoritmo funciona com arestas de peso negativo desde que \textbf{não haja ciclo negativo}, pois então o caminho mínimo nunca repete vértices. Há um ciclo negativo se e somente se, ao final, algum $D(i,i)$ é negativo.
   \item \textbf{Floyd-Warshall ou $n$ execuções do Dijkstra?} O Floyd-Warshall custa $\Theta(n^3)$ e é muito simples. Executar o algoritmo de Dijkstra (Capítulo~\ref{cap:dijkstra}) a partir de cada vértice custa $O(n\,(n+m)\log n)$ com heap binário, ou $O(n^3)$ com vetor. Em grafos esparsos e sem pesos negativos, as $n$ execuções do Dijkstra são mais rápidas; em grafos densos, ou com pesos negativos, o Floyd-Warshall é preferível.
 \end{itemize}
+
+\begin{exemplo}[Pesos negativos, com e sem ciclo negativo]
+No digrafo com as arestas $1\to2$ (4), $2\to3$ ($-2$) e $1\to3$ (3), a aresta direta de 1 a 3 custa 3, mas o caminho $1\to2\to3$ custa $4-2=2$. O algoritmo encontra isso na iteração $k=2$: $D(1,3)=\min\{3,\,D(1,2)+D(2,3)\}=\min\{3,2\}=2$. Não há ciclos, e a diagonal termina toda nula.
+
+Já no digrafo com as arestas $1\to2$ (1), $2\to3$ ($-4$) e $3\to1$ (2), o ciclo $1\to2\to3\to1$ pesa $1-4+2=-1$: dando voltas nele, o custo diminui sem limite, e ``caminho mínimo'' deixa de fazer sentido. Ao final do algoritmo, os três elementos da diagonal são negativos (por exemplo, $D(1,1)=-1$, o peso do ciclo), e é por esse sinal que o ciclo negativo é detectado.
+\end{exemplo}
 
 \begin{cuidado}[Armadilhas do Floyd-Warshall]
 \begin{itemize}
