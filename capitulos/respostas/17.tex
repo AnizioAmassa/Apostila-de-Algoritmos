@@ -1,0 +1,40 @@
+\respcap{cap:dfs}
+\resp{bp-arv} Numa árvore de profundidade de um grafo não direcionado, toda aresta fora de $T$ liga um vértice a um ancestral (Exercício~\ref{ex:bp-cruz}). Reciprocamente, se para alguma raiz $r$ toda aresta de $G$ liga ancestral e descendente em $T$ enraizada em $r$, a busca que, em cada vértice, explora primeiro os filhos que ele tem em $T$ reproduz $T$. Algoritmo: para cada raiz candidata, calcule $PE$ e $PS$ de $T$ e teste, para cada aresta $uv$ de $G$, se um intervalo contém o outro: $O(n+m)$ por raiz.
+
+\resp{bp-pilha} Empilham-se $ec$, $ca$, $ab$, $bc$ (retorno), $bd$, $dc$ (retorno) e $de$ (retorno). Ao voltar de $c$ para $e$, $back(c)=1\ge PE(e)=1$: desempilha-se até $ec$, e o bloco tem os vértices $\{a,b,c,d,e\}$. Depois empilham-se $ef$, $fg$ e $ge$ (retorno); ao voltar de $f$, $back(f)=1\ge PE(e)$, e o bloco é $\{e,f,g\}$.
+
+\resp{bp-pontes} Depois da chamada \textsc{P}$(w)$ pela aresta de árvore $vw$: se $v$ não é a raiz e $back(w)\ge PE(v)$, marque $v$ como articulação; se $back(w)>PE(v)$, a aresta $vw$ é ponte. Para a raiz, conte os filhos e marque-a se forem pelo menos dois.
+
+\resp{bp-demarc} Sim. Cada bloco é impresso exatamente quando a busca volta de um demarcador $w$ para o seu pai, e cada demarcador imprime um único bloco; há, portanto, uma bijeção entre demarcadores e blocos (contando os filhos da raiz, que são sempre demarcadores).
+
+\resp{bp-apl} (a) Conte as chamadas do laço externo. (b) Execute \textsc{P}$(v)$; se $PE(w)\ne0$, suba de $w$ até $v$ pelos pais. (c) Sem aresta de retorno, é acíclico; uma aresta de retorno $vw$ fecha o ciclo formado pelo caminho de $w$ a $v$ na árvore e pela aresta $vw$. (d) Faça $cor(w):=1-cor(v)$ nas arestas de árvore; uma aresta de retorno com cores iguais revela um ciclo ímpar.
+
+\resp{bp-sim} A busca desce $1,2,\dots,7$ em linha: $PE=1,\dots,7$ e $PS(7),\dots,PS(1)=8,\dots,14$. Retornos: $31$ e $64$. $back$: 1 para os vértices 1, 2 e 3; 4 para 4, 5 e 6; 7 para o 7. Articulações: 3, 4 e 6. Pontes: $34$ e $67$. Blocos: $\{1,2,3\}$, $\{3,4\}$, $\{4,5,6\}$ e $\{6,7\}$.
+
+\resp{bp-cruz} Seja $vw$ uma aresta, com $v$ alcançado antes de $w$. Enquanto $v$ está ativo, ele examina a aresta $vw$; se $w$ ainda não tiver sido alcançado nesse momento, ele será alcançado dentro da chamada de $v$. Em ambos os casos, $w$ é alcançado entre $PE(v)$ e $PS(v)$, e é descendente de $v$.
+
+\resp{bp-m} Uma floresta com $n$ vértices tem no máximo $n-1$ arestas; logo $m\ge n$ implica ciclo. Se $m\ge n$, a resposta é ``sim''; senão, $m<n$ e a busca custa $O(n+m)=O(n)$.
+
+\resp{bp-iter} Empilhe pares (vértice, próximo índice na lista de adjacência). Olhe o topo $(v,i)$: se $i$ passou do grau de $v$, desempilhe e faça $PS(v)$; senão, avance o índice e, se o $i$-ésimo vizinho $w$ não foi alcançado, faça $pai(w):=v$, $PE(w)$ e empilhe $(w,1)$. Os tempos coincidem com os da versão recursiva.
+
+\resp{bp-trace} $PE$ de 1 a 8: $1,2,8,3,5,9,7,4$; $PS$: $16,15,11,14,6,10,12,13$. Arestas de árvore: $12$, $24$, $48$, $85$, $87$, $73$ e $36$. Retornos: $52$, $31$ e $67$. Não há articulações: todo filho $w$ de um vértice não raiz tem $back(w)<PE(v)$, e a raiz tem um único filho.
+
+\resp{bp-parenteses} Suponha $PE(u)<PE(v)$. Se $PE(v)<PS(u)$, então $v$ foi alcançado enquanto $u$ estava ativo e é descendente de $u$; a chamada de $v$ termina antes da de $u$, e $I(v)\subset I(u)$. Senão, $PS(u)<PE(v)$, e os intervalos são disjuntos.
+
+\resp{bp-branco} Se $v$ é descendente de $u$, o caminho de $u$ a $v$ na árvore só tem vértices alcançados depois de $PE(u)$. Reciprocamente, se no instante $PE(u)$ há um caminho de vértices não alcançados até $v$ e $v$ não fosse descendente, tome o primeiro vértice do caminho que não é descendente de $u$; o anterior a ele é descendente e o examina antes de terminar, tornando-o descendente também, uma contradição.
+
+\resp{bp-comp} Três componentes: $\{1,2,3\}$, $\{4,5\}$ e $\{6,7,8,9\}$. As raízes são 1, 4 e 6.
+
+\resp{bp-cicloex} A primeira aresta de retorno é $52$: subindo de 5 por $pai$ até 2 ($5\to8\to4\to2$) e fechando com $52$, obtém-se o ciclo $2,4,8,5,2$.
+
+\resp{bp-bipex} A partir de 1: $cor(1)=0$, $cor(2)=1$, $cor(3)=0$, $cor(4)=1$. A aresta de retorno $13$ liga dois vértices de cor 0: o ciclo $1,2,3,1$ é ímpar, e o grafo não é bipartido.
+
+\resp{bp-arvore} Numa árvore, todas as arestas são pontes, e as articulações são os vértices de grau pelo menos 2. Num ciclo, não há pontes nem articulações. Num caminho com $n\ge3$ vértices, todas as arestas são pontes, e as articulações são os vértices internos.
+
+\resp{bp-blocos} Articulações: 3 e 4. Pontes: $34$ e $47$. Blocos: $\{1,2,3\}$, $\{3,4\}$, $\{4,5,6\}$ e $\{4,7\}$.
+
+\resp{bp-biconexo} Faça uma busca em profundidade: o grafo é biconexo se ela alcança todos os vértices e não encontra articulações, em $O(n+m)$. Num grafo biconexo com pelo menos 3 vértices não há pontes, e uma aresta que não é ponte está em algum ciclo.
+
+\resp{bp-labirinto} No ciclo $1,2,3,4$ com a aresta $14$, a busca a partir de 1 com vizinhos em ordem crescente percorre $1\to2\to3\to4$, encontrando o caminho de 1 a 4 com 3 arestas, enquanto a aresta $14$ é um caminho com uma aresta.
+
+\resp{bp-euler} Algoritmo de Hierholzer: a partir de um vértice, siga arestas ainda não usadas, marcando-as, até não haver saída (como todos os graus são pares, isso só acontece no vértice inicial); ao voltar na recursão, insira cada vértice no início do circuito. Os subciclos encontrados ao retroceder são encaixados automaticamente. Cada aresta é usada uma vez: $O(n+m)$.

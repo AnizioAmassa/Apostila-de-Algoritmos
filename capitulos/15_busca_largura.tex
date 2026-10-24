@@ -1,0 +1,156 @@
+% ================================================================
+\chapter{Busca em largura}\label{cap:bfs}\label{sec:bfs}
+% ================================================================
+\begin{objetivos}
+\begin{itemize}
+  \item O que é uma busca em grafos e como a busca em largura percorre o grafo em camadas.
+  \item A classificação das arestas em relação à floresta de largura.
+  \item A propriedade fundamental dos níveis e suas consequências: distâncias e bipartição.
+  \item A relação entre a estrutura de dados usada e o tipo de busca.
+\end{itemize}
+\end{objetivos}
+
+Uma \textbf{busca} é um procedimento sistemático para visitar todos os vértices e todas as arestas de um grafo, com o objetivo de resolver um problema ou extrair informação da sua estrutura. Na busca em largura, os vértices são visitados em camadas: primeiro a raiz, depois os vizinhos dela, depois os vizinhos dos vizinhos, e assim por diante. Por isso ela calcula distâncias em número de arestas e reconhece grafos bipartidos. A notação de grafos está na §\ref{sec:buscas}.
+
+\section{O algoritmo}
+A regra da busca em largura é ``\emph{esgotar o pai antes de processar os filhos}'': a próxima aresta examinada parte sempre do vértice \textbf{mais antigo} na busca. A estrutura que realiza essa regra é uma \textbf{fila} $F$. Cada vértice recebe um rótulo $L(v)$, com a ordem em que foi alcançado, e um nível $nivel(v)$, a sua profundidade na floresta de largura; os ponteiros $pai(v)$ definem a floresta.
+\begin{pseudo}{Busca em largura com classificação das arestas}
+\begin{algorithmic}
+\Procedure{BuscaLargura}{$G$}
+  \State $t:=0$;\ $F:=\emptyset$;\ para todo $v$: $L(v):=0$;\ $pai(v):=\nil$
+  \While{existe $v$ com $L(v)=0$} \Comment{nova raiz, se o grafo for desconexo}
+    \State $nivel(v):=0$;\ $t:=t+1$;\ $L(v):=t$;\ insira $v$ no fim de $F$
+    \While{$F\ne\emptyset$}
+      \State $v:=$ primeiro elemento de $F$;\ retire $v$ de $F$
+      \For{\textbf{cada} $w\in N(v)$}
+        \If{$L(w)=0$} \Comment{aresta-\textbf{pai}}
+          \State $pai(w):=v$;\ $nivel(w):=nivel(v)+1$;\ $t:=t+1$;\ $L(w):=t$;\ insira $w$ no fim de $F$
+        \ElsIf{$nivel(w)=nivel(v)$ \textbf{e} $w\in F$} \Comment{$w\in F$: para não classificar duas vezes}
+          \State se $pai(w)=pai(v)$, $vw$ é uma aresta-\textbf{irmão}; senão, uma aresta-\textbf{primo}
+        \ElsIf{$nivel(w)=nivel(v)+1$} \State $vw$ é uma aresta-\textbf{tio}
+        \EndIf
+      \EndFor
+    \EndWhile
+  \EndWhile
+\EndProcedure
+\end{algorithmic}
+\end{pseudo}
+
+\begin{center}
+\begin{tikzpicture}[v/.style={circle,draw,fill=yellow!40,inner sep=1.2pt,minimum size=5mm,font=\small},
+  pai/.style={very thick,MidnightBlue}, irm/.style={thick,BrickRed}, pri/.style={thick,dotted,orange!85!black}, tio/.style={thick,dashed,ForestGreen},
+  lab/.style={font=\scriptsize,text=gray!70!black}]
+\node[v] (a) at (0.9,3.6) {$a$};
+\node[v] (b) at (0,2.4) {$b$}; \node[v] (c) at (1.8,2.4) {$c$};
+\node[v] (d) at (0,1.2) {$d$}; \node[v] (e) at (1.8,1.2) {$e$};
+\node[v] (f) at (0,0) {$f$}; \node[v] (g) at (1.4,0) {$g$}; \node[v] (h) at (2.8,0) {$h$};
+\draw[pai] (a)--(b); \draw[pai] (a)--(c); \draw[pai] (b)--(d); \draw[pai] (c)--(e); \draw[pai] (d)--(f); \draw[pai] (d)--(g); \draw[pai] (e)--(h);
+\draw[irm] (b)--(c); \draw[irm] (f)--(g); \draw[pri] (d)--(e); \draw[pri] (g)--(h); \draw[tio] (c)--(d); \draw[tio] (e)--(f);
+\node[lab,right=1pt of a] {1/0}; \node[lab,left=1pt of b] {2/1}; \node[lab,right=1pt of c] {3/1}; \node[lab,left=1pt of d] {4/2};
+\node[lab,right=1pt of e] {5/2}; \node[lab,below=1pt of f] {6/3}; \node[lab,below=1pt of g] {7/3}; \node[lab,below=1pt of h] {8/3};
+\end{tikzpicture}
+\qquad
+\begin{minipage}[b]{0.5\linewidth}\small
+\textbf{Exemplo.} Busca a partir de $a$, com os vizinhos em ordem alfabética; os rótulos são $L/nivel$. Em azul grosso, as arestas-pai; em vermelho, as arestas-irmão ($bc$ e $fg$); em amarelo pontilhado, as arestas-primo ($de$ e $gh$); em verde tracejado, as arestas-tio ($cd$ e $ef$).
+As distâncias a partir de $a$ são 1 para $b,c$; 2 para $d,e$; e 3 para $f,g,h$. O grafo não é bipartido: o triângulo $abc$ é um ciclo ímpar, e isso aparece nas arestas-irmão e primo.
+\end{minipage}
+\end{center}
+
+\section{Propriedades e aplicações}
+A floresta de largura alcança todos os vértices, e somente as arestas-pai pertencem a ela. As demais arestas são caracterizadas pelos níveis:
+\begin{itemize}
+  \item $vw$ é aresta-\textbf{pai} se e somente se $nivel(w)=nivel(v)+1$ e $L(w)=0$ no momento da visita;
+  \item $vw$ é aresta-\textbf{tio} se e somente se $nivel(w)=nivel(v)+1$ e $L(w)\ne0$ no momento da visita;
+  \item $vw$ é aresta-\textbf{irmão} se e somente se $nivel(w)=nivel(v)$ e $pai(w)=pai(v)$;
+  \item $vw$ é aresta-\textbf{primo} se e somente se $nivel(w)=nivel(v)$ e $pai(w)\ne pai(v)$.
+\end{itemize}
+
+\begin{teo}[Propriedade fundamental]
+Para toda aresta $vw$ de um grafo e toda floresta de largura, $|nivel(v)-nivel(w)|\le1$.
+\end{teo}
+A demonstração se reduz ao caso das arestas-tio e usa uma observação sobre a fila: em qualquer momento da busca, os vértices na fila pertencem a no máximo dois níveis consecutivos, em ordem não decrescente de nível. Desse teorema decorrem as principais aplicações.
+\begin{itemize}
+  \item \textbf{Distâncias.} Numa busca com raiz $x$, $\operatorname{dist}(x,v)=nivel(v)$ para todo $v$, e o caminho de $x$ a $v$ na árvore é um caminho \textbf{mínimo} em número de arestas. Por exemplo, o menor caminho da entrada à saída de um labirinto, dado por uma matriz de casas livres e paredes, é obtido por uma busca em largura no grafo das casas livres.
+  \item \textbf{Bipartição.} Um grafo é bipartido se e somente se a sua floresta de largura não tem arestas-irmão nem arestas-primo, que fecham ciclos ímpares. Uma 2-coloração é dada pela paridade do nível.
+  \item \textbf{Complexidade.} $O(n+m)$ com listas de adjacência, pois cada vértice entra na fila uma vez e cada lista é percorrida uma vez; $O(n^2)$ com matriz de adjacência.
+\end{itemize}
+
+\paragraph{Pilha ou fila.} Considere o seguinte esquema genérico: marque a raiz e insira-a numa estrutura $D$; enquanto $D$ não estiver vazia, seja $v$ o primeiro elemento de $D$; se $v$ tem um vizinho desmarcado $w$, marque $w$, faça $pai(w):=v$ e insira $w$ em $D$; senão, remova $v$ de $D$. Se $D$ é uma \textbf{pilha}, esse esquema é a busca em profundidade (Capítulo~\ref{cap:dfs}); se $D$ é uma \textbf{fila}, é a busca em largura; e, com uma \textbf{fila de prioridades}, chega-se ao algoritmo de Dijkstra (Capítulo~\ref{cap:dijkstra}).
+
+\begin{cuidado}[Armadilhas da busca em largura]
+\begin{itemize}
+  \item Esquecer o laço externo: num grafo desconexo, a busca a partir de um vértice só alcança a sua componente.
+  \item O caminho da busca em largura é mínimo apenas em \emph{número de arestas}; com pesos, é preciso o algoritmo de Dijkstra.
+  \item Uma aresta entre vértices do mesmo nível deve ser classificada uma única vez; daí o teste ``$w\in F$'' no pseudocódigo.
+\end{itemize}
+\end{cuidado}
+
+\begin{chave}
+Fila; ``esgotar o pai antes de processar os filhos''. Arestas-pai (árvore), irmão, primo e tio. Para toda aresta, $|nivel(v)-nivel(w)|\le1$. $nivel(v)=\operatorname{dist}(raiz,v)$ em arestas, e o caminho na árvore é mínimo. Bipartido $\iff$ sem arestas-irmão e primo. $O(n+m)$ com listas.
+\end{chave}
+
+% ----------------------------------------------------------------
+\section{Exercícios}
+\excurso
+\begin{exercicio}{bl-arv}[Slides]
+Dado um grafo conexo $G$ e uma árvore geradora $T$ de $G$, decida se $T$ é uma árvore de largura de $G$, isto é, se existe uma busca em largura em $G$ que produz $T$.
+\end{exercicio}
+\begin{exercicio}{bl-pilha}[Slides]
+Mostre que o esquema genérico da §\ref{sec:bfs} funciona como uma busca em profundidade se $D$ for uma pilha e como uma busca em largura se $D$ for uma fila.
+\end{exercicio}
+\begin{exercicio}{bl-apl}[Slides]
+Descreva, usando a busca em largura: (a) o cálculo das distâncias de um vértice $x$ a todos os demais; (b) o menor caminho da entrada à saída de um labirinto dado por uma matriz; (c) o teste de bipartição e a 2-coloração.
+\end{exercicio}
+
+\excompl
+\begin{exercicio}{bl-sim}[Complementar]
+Execute a busca em largura a partir de $s$ no grafo com as arestas $rs$, $rv$, $sw$, $wt$, $wx$, $tx$, $tu$, $xu$, $xy$ e $uy$ (vizinhos em ordem alfabética). Dê a ordem de visita, os níveis, os pais e a classificação das arestas que não são de árvore. O grafo é bipartido?
+\end{exercicio}
+\begin{exercicio}{bl-diam}[Complementar]
+O \emph{diâmetro} de uma árvore é o maior número de arestas de um caminho entre dois vértices. Mostre que duas buscas em largura bastam: a partir de qualquer vértice, encontre o vértice $a$ mais distante; a partir de $a$, o mais distante, $b$; o diâmetro é $\operatorname{dist}(a,b)$. Aplique à árvore com as arestas $12$, $13$, $24$, $25$, $36$ e $57$.
+\end{exercicio}
+\begin{exercicio}{bl-num}[Complementar]
+Adapte a busca em largura para contar, para cada vértice $v$, \emph{quantos} caminhos mínimos (em número de arestas) existem da raiz até $v$.
+\end{exercicio}
+\begin{exercicio}{bl-prova}[Complementar]
+Prove a propriedade fundamental: para toda aresta $vw$, $|nivel(v)-nivel(w)|\le1$. Conclua que $nivel(v)=\operatorname{dist}(raiz,v)$.
+\end{exercicio}
+\begin{exercicio}{bl-grade}[Complementar]
+Num labirinto $4\times4$ com as linhas \texttt{S..\#}, \texttt{\#\#.\#}, \texttt{....} e \texttt{\#.\#E} (\texttt{\#} é parede; anda-se na horizontal ou na vertical), qual o menor número de passos de \texttt{S} a \texttt{E}? Dê o caminho e a distância de \texttt{S} a cada casa livre.
+\end{exercicio}
+\begin{exercicio}{bl-dig}[Complementar]
+Como fica a busca em largura num digrafo, percorrendo $N_{out}(v)$? Ela ainda calcula distâncias? Que tipos de arestas podem aparecer entre níveis?
+\end{exercicio}
+\begin{exercicio}{bl-cam}[Complementar]
+Escreva um procedimento que, depois de uma busca em largura com raiz $x$, imprime um caminho mínimo de $x$ até um vértice $y$, ou informa que não há caminho.
+\end{exercicio}
+\begin{exercicio}{bl-custo}[Complementar]
+Justifique os custos $O(n+m)$ da busca em largura com listas de adjacência e $O(n^2)$ com matriz de adjacência. Em que tipo de grafo as duas representações dão o mesmo custo assintótico?
+\end{exercicio}
+\begin{exercicio}{bl-01}[Complementar \estrela]
+Num grafo cujas arestas têm peso 0 ou 1, mostre como calcular as distâncias a partir de uma raiz em $O(n+m)$, usando uma fila de duas pontas (inserindo no início os vértices alcançados por arestas de peso 0 e no fim os alcançados por arestas de peso 1).
+\end{exercicio}
+\begin{exercicio}{bl-multi}[Complementar]
+Num mapa, há várias saídas de emergência. Calcule, para cada local, a distância (em número de passos) até a saída mais próxima, com uma única busca em largura.
+\end{exercicio}
+\begin{exercicio}{bl-bip}[Complementar]
+Use a busca em largura para decidir se o ciclo com 5 vértices e o ciclo com 6 vértices são bipartidos, mostrando as arestas-irmão ou primo encontradas.
+\end{exercicio}
+\begin{exercicio}{bl-comp}[Complementar]
+Mostre como contar as componentes conexas de um grafo e rotular cada vértice com o número da sua componente usando a busca em largura, em $O(n+m)$.
+\end{exercicio}
+\begin{exercicio}{bl-cavalo}[Complementar]
+Num tabuleiro de xadrez $8\times8$, qual o menor número de movimentos de um cavalo para ir da casa a1 à casa h8? Modele como um grafo e use a busca em largura.
+\end{exercicio}
+\begin{exercicio}{bl-jarros}[Complementar]
+Com um jarro de 3 litros e outro de 5 litros, sem marcações, pode-se encher um jarro, esvaziá-lo ou despejar o conteúdo de um no outro até esvaziar o primeiro ou encher o segundo. Qual o menor número de operações para obter exatamente 4 litros num dos jarros? Modele os estados como vértices de um grafo.
+\end{exercicio}
+\begin{exercicio}{bl-impar}[Complementar]
+Mostre que toda aresta-irmão ou aresta-primo fecha um ciclo de comprimento ímpar com os caminhos da floresta de largura. Por que uma aresta-tio não fecha, necessariamente, um ciclo ímpar?
+\end{exercicio}
+\begin{exercicio}{bl-girth}[Complementar \estrela]
+A \emph{cintura} de um grafo não direcionado é o comprimento do menor ciclo. Mostre como calculá-la em $O(n(n+m))$ com buscas em largura.
+\end{exercicio}
+\begin{exercicio}{bl-k33}[Complementar]
+Execute a busca em largura no grafo bipartido completo $K_{3,3}$ (lados $\{a,b,c\}$ e $\{x,y,z\}$) a partir de $a$. Quais são os níveis? Que tipos de arestas aparecem?
+\end{exercicio}

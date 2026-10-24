@@ -1,0 +1,120 @@
+% ================================================================
+\chapter{Tabelas hash}\label{cap:hash}\label{sec:hash}
+% ================================================================
+\begin{objetivos}
+\begin{itemize}
+  \item Dicionários, endereçamento direto e a ideia de uma função hash.
+  \item Funções hash clássicas e o problema inevitável das colisões.
+  \item Tratamento de colisões por encadeamento e por endereçamento aberto.
+  \item A complexidade em função do fator de carga, e quando preferir uma tabela hash a uma árvore de busca.
+\end{itemize}
+\end{objetivos}
+
+Um \textbf{dicionário} guarda pares (chave, valor) e oferece inserção, busca e remoção por chave. As árvores AVL do Capítulo~\ref{cap:avl} implementam dicionários com todas as operações em $O(\log n)$ e ainda mantêm as chaves em ordem. Quando a ordem não importa, é possível fazer melhor: as \textbf{tabelas hash} transformam a chave diretamente num endereço e realizam as operações em tempo $O(1)$ esperado.
+
+\section{Endereçamento direto e funções hash}
+Se as chaves são inteiros de um universo pequeno $U=\{0,\dots,M-1\}$, basta um vetor de tamanho $M$ indexado pela própria chave: é o \textbf{endereçamento direto}, com todas as operações em $O(1)$. Mas o universo de chaves costuma ser enorme ou infinito (todos os inteiros de 64 bits, todas as strings), e a memória é finita. Uma \textbf{função hash} $h:U\to\{0,\dots,m-1\}$ transforma cada chave num endereço de uma tabela de $m$ posições, com $m$ da ordem do número de chaves efetivamente guardadas.
+
+\paragraph{Funções clássicas.}
+\begin{itemize}
+  \item \emph{Divisão}: $h(k)=k\bmod m$, com $m$ primo e longe de potências de 2, para que o resultado dependa de todos os bits da chave.
+  \item \emph{Multiplicação}: $h(k)=\floor{m\,(kA\bmod1)}$, com uma constante $0<A<1$; um valor muito usado é $A\approx(\sqrt5-1)/2$. Aqui o valor de $m$ é pouco crítico, e pode ser uma potência de 2.
+  \item \emph{Dobra} e \emph{meio do quadrado}: combinam partes da chave, ou extraem os dígitos centrais de $k^2$.
+  \item Para \emph{strings}, a função polinomial $h(s)=\big(\sum_is_i\,b^{i}\big)\bmod m$, calculada pela regra de Horner.
+  \item \emph{Hashing universal}: a função é sorteada, no início, de uma família, como $h_{a,b}(k)=((ak+b)\bmod p)\bmod m$ com $p$ primo. Isso garante bom desempenho esperado para \emph{qualquer} conjunto de chaves, sem depender de a entrada ser ``aleatória''.
+\end{itemize}
+
+\section{Colisões}
+Uma \textbf{colisão} ocorre quando duas chaves diferentes recebem o mesmo endereço: $h(k_1)=h(k_2)$ com $k_1\ne k_2$. Colisões são inevitáveis, pelo princípio da casa dos pombos, pois $|U|>m$. Há duas famílias de soluções.
+
+\paragraph{Encadeamento.} No \textbf{encadeamento exterior}, cada posição da tabela aponta para uma lista com as chaves que receberam aquele endereço. Inserir é colocar a chave no início da lista, em $O(1)$; buscar e remover percorrem a lista. No \textbf{encadeamento interior}, as listas são formadas dentro da própria tabela, usando uma área de colisões ou ligando posições livres por ponteiros.
+
+\paragraph{Endereçamento aberto.} Todas as chaves ficam na própria tabela. Em caso de colisão, examina-se uma sequência de posições, chamada sequência de \emph{sondagem}, até encontrar uma livre:
+\begin{itemize}
+  \item \emph{sondagem linear}: $h(k,i)=(h(k)+i)\bmod m$, simples, mas sujeita a \textbf{agrupamento primário}: longas sequências de posições ocupadas, que tendem a crescer;
+  \item \emph{sondagem quadrática}: $h(k,i)=(h(k)+c_1i+c_2i^2)\bmod m$, que reduz o agrupamento;
+  \item \emph{duplo hashing}: $h(k,i)=(h_1(k)+i\,h_2(k))\bmod m$, com $h_2(k)$ primo com $m$, para que a sequência visite todas as posições.
+\end{itemize}
+No endereçamento aberto, uma remoção não pode simplesmente esvaziar a posição, pois isso interromperia as sequências de sondagem de outras chaves; a posição é marcada como ``removida''.
+
+\section{Complexidade}
+Seja $\alpha=n/m$ o \textbf{fator de carga}. Supondo que a função hash espalha as chaves de modo uniforme:
+\begin{itemize}
+  \item com encadeamento, a busca custa $\Theta(1+\alpha)$ em média;
+  \item com endereçamento aberto ($\alpha<1$), uma busca sem sucesso faz no máximo $\frac1{1-\alpha}$ sondagens em média.
+\end{itemize}
+Mantendo $\alpha=O(1)$ --- por exemplo, dobrando o tamanho da tabela e reinserindo as chaves sempre que $\alpha$ passa de um limite, o que custa $O(1)$ amortizado por inserção (Capítulo~\ref{cap:heapav}) ---, todas as operações custam $O(1)$ \textbf{esperado}. O \textbf{pior caso}, porém, é $\Theta(n)$: todas as chaves podem cair no mesmo endereço.
+
+\begin{roteiro}[Tabela hash ou árvore de busca?]
+Use uma \textbf{tabela hash} quando só forem necessárias inserção, busca e remoção por chave exata e o desempenho médio importar mais que a garantia de pior caso. Use uma \textbf{árvore balanceada} (AVL ou rubro-negra) quando for preciso manter a ordem das chaves --- mínimo, máximo, sucessor, percurso em ordem, consultas por intervalo --- ou quando for exigida uma garantia de $O(\log n)$ no pior caso.
+\end{roteiro}
+
+\begin{chave}
+Função hash: chave $\to$ endereço. Colisões são inevitáveis; tratam-se por encadeamento (listas) ou por endereçamento aberto (sondagem linear, quadrática ou duplo hashing). Com fator de carga $\alpha=O(1)$, as operações custam $O(1)$ esperado; o pior caso é $\Theta(n)$. Tabelas hash não mantêm ordem.
+\end{chave}
+
+% ----------------------------------------------------------------
+\section{Exercícios}
+\excurso
+\begin{exercicio}{hs-pesq}[Pesquisa]
+Disserte sobre: a definição e a motivação das tabelas hash; definição e exemplos de funções de dispersão clássicas; o problema das colisões; o tratamento de colisões por encadeamento exterior e interior e por endereçamento aberto; e a complexidade de pior caso da busca por uma chave.
+\end{exercicio}
+
+\excompl
+\begin{exercicio}{hs-abertos}[Complementar]
+Insira as chaves $10,22,31,4,15,28,17,88,59$, nessa ordem, numa tabela de tamanho $m=11$ com $h(k)=k\bmod11$, usando (a) sondagem linear; (b) sondagem quadrática com $h(k,i)=(h(k)+i+3i^2)\bmod11$; (c) duplo hashing com $h_2(k)=1+(k\bmod10)$.
+\end{exercicio}
+\begin{exercicio}{hs-encad}[Complementar]
+Insira $5,28,19,15,20,33,12,17,10$ numa tabela com encadeamento exterior, $m=9$ e $h(k)=k\bmod9$. Qual o tamanho da maior lista?
+\end{exercicio}
+\begin{exercicio}{hs-primo}[Complementar]
+Por que, no método da divisão, convém escolher $m$ primo e longe de potências de 2? Dê um exemplo do que dá errado com $m=2^r$.
+\end{exercicio}
+\begin{exercicio}{hs-remove}[Complementar]
+No endereçamento aberto, por que a remoção não pode simplesmente esvaziar a posição? Como contornar o problema?
+\end{exercicio}
+\begin{exercicio}{hs-carga}[Complementar]
+Uma tabela com encadeamento tem $m=500$ posições e guarda $n=1000$ chaves. Qual o fator de carga e o comprimento médio das listas? Quantas comparações, em média, faz uma busca sem sucesso?
+\end{exercicio}
+\begin{exercicio}{hs-sondagens}[Complementar]
+Com endereçamento aberto e hashing uniforme, quantas sondagens, em média, faz uma busca sem sucesso quando a tabela está com fator de carga $0{,}5$? E com $0{,}9$? O que isso sugere sobre quando redimensionar a tabela?
+\end{exercicio}
+\begin{exercicio}{hs-mult}[Complementar]
+Calcule $h(k)=\floor{m\,(kA\bmod1)}$ com $m=1000$, $A=(\sqrt5-1)/2\approx0{,}6180339887$, para $k=123456$ e $k=123457$.
+\end{exercicio}
+\begin{exercicio}{hs-universal}[Complementar]
+O que é uma família universal de funções hash? Por que sortear a função de uma família universal protege contra entradas escolhidas para causar muitas colisões?
+\end{exercicio}
+\begin{exercicio}{hs-string}[Complementar]
+Escreva o cálculo de $h(s)=\big(\sum_{i=0}^{L-1}s_i\,b^{L-1-i}\big)\bmod m$ pela regra de Horner, sem calcular potências grandes. Por que $b$ e $m$ não devem ter fatores em comum?
+\end{exercicio}
+\begin{exercicio}{hs-doissoma}[Complementar]
+Dado um vetor de $n$ inteiros e um valor $x$, decida em $O(n)$ esperado se há dois elementos com soma $x$.
+\end{exercicio}
+\begin{exercicio}{hs-repetido}[Complementar]
+Encontre, em $O(n)$ esperado, o primeiro elemento que se repete numa sequência de $n$ valores.
+\end{exercicio}
+\begin{exercicio}{hs-ordem}[Complementar]
+Mostre que encontrar o sucessor de uma chave numa tabela hash pode custar $\Theta(n)$, enquanto numa AVL custa $O(\log n)$. Que outras operações têm a mesma limitação?
+\end{exercicio}
+\begin{exercicio}{hs-rehash}[Complementar]
+Uma tabela dobra de tamanho e reinsere todas as chaves sempre que o fator de carga passa de $1/2$. Mostre que cada inserção custa $O(1)$ amortizado.
+\end{exercicio}
+\begin{exercicio}{hs-agrup}[Complementar]
+Explique o agrupamento primário da sondagem linear e por que, quando uma posição fica no fim de um grupo de $k$ posições ocupadas, ela tem probabilidade maior de ser ocupada na próxima inserção.
+\end{exercicio}
+\begin{exercicio}{hs-duplo}[Complementar]
+No duplo hashing, por que $h_2(k)$ precisa ser primo com $m$? O que acontece se $m=10$ e $h_2(k)=5$?
+\end{exercicio}
+\begin{exercicio}{hs-remencad}[Complementar]
+Com encadeamento exterior, como remover uma chave em $O(1)$, dado um ponteiro para o seu nó? Que tipo de lista é necessário?
+\end{exercicio}
+\begin{exercicio}{hs-perfeito}[Complementar \estrela]
+Para um conjunto \emph{fixo} de $n$ chaves, descreva a ideia do \emph{hashing perfeito} em dois níveis, que garante buscas em $O(1)$ no pior caso com memória $O(n)$ esperada.
+\end{exercicio}
+\begin{exercicio}{hs-distintos}[Complementar]
+Conte quantos valores distintos há numa sequência de $n$ inteiros arbitrários, em $O(n)$ esperado. Como fazer em $O(n\log n)$ no pior caso?
+\end{exercicio}
+\begin{exercicio}{hs-tamanho}[Complementar]
+Uma tabela com endereçamento aberto vai guardar $10^6$ chaves, e o fator de carga não deve passar de $0{,}75$. Qual o tamanho mínimo da tabela? Que valor de $m$ você escolheria para usar o método da divisão?
+\end{exercicio}

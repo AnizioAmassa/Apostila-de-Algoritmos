@@ -1,0 +1,40 @@
+\respcap{cap:revisao}
+\resp{rv-maior} Cada iteração custa $\Theta(n)$ só para achar o máximo, e o total é $\Theta(n^2)$. Com um \textbf{heap} de máximo, achar e remover custa $O(\log n)$, e inserir também: $O(n\log n)$ no total.
+
+\resp{rv-kesimo} Cada consulta custa $\Theta(n\log n)$. Se $q$ é pequeno, use \textbf{seleção linear} (quickselect ou mediana das medianas) sobre a cópia: $O(n)$ por consulta. Se $q$ é grande, \textbf{ordene uma única vez}, em $O(n\log n)$, e responda cada consulta em $O(1)$: total $O(n\log n+q)$.
+
+\resp{rv-grupos} Cada busca em largura custa $O(n+m)$, o que é inviável para $10^8$ perguntas. Use \textbf{Union-Find}: cada amizade é uma \Union{} e cada pergunta compara \Find$(u)$ com \Find$(v)$. Com rank e compressão, o custo é praticamente $O(1)$ por operação; com listas e ponteiro ao representante, \Find{} é $O(1)$ no pior caso.
+
+\resp{rv-dic} Inserir ou remover num vetor ordenado custa $\Theta(n)$. Use uma \textbf{AVL} (ou rubro-negra): inserção e remoção em $O(\log n)$, e a consulta por intervalo em $O(\log n+k)$, sendo $k$ o número de códigos no intervalo (desça até $a$ e percorra em ordem até passar de $b$). Uma tabela hash não serve, pois não mantém a ordem.
+
+\resp{rv-idades} Uma ordenação por comparação custa $\Theta(n\log n)$, cerca de $2{,}7\cdot10^9$ comparações. As chaves são inteiros num intervalo pequeno ($k=121$): \textbf{counting sort}, em $\Theta(n+k)$, com 121 contadores.
+
+\resp{rv-filas} No heap binário a fusão custa $\Theta(n)$. Use o \textbf{heap binomial}: fusão em $O(\log n)$ no pior caso de \emph{cada} operação. O heap de Fibonacci faria a fusão em $O(1)$, mas só amortizado --- uma remoção pode consolidar tudo de uma vez ---, o que fere a previsibilidade exigida.
+
+\resp{rv-emerg} \textbf{Heap binário em vetor}: inserção e remoção do mais grave em $O(\log n)$, sem fusões, com as raras alterações de gravidade em $O(\log n)$ (com um vetor de posições), e sem gastar memória com ponteiros.
+
+\resp{rv-cancel} \textbf{Heap} com um vetor (ou tabela) de posições indexado pelo número do evento, para encontrar o evento cancelado e removê-lo de uma posição qualquer em $O(\log n)$ (Exercício~\ref{ex:hp-remi}). Uma \textbf{AVL} indexada por (horário, número) também resolve, com todas as operações em $O(\log n)$.
+
+\resp{rv-palavras} \textbf{Tabela hash}: cada verificação custa $O(1)$ esperado (mais o custo de calcular o hash da palavra). Um vetor ordenado com busca binária também serviria, em $O(\log n)$ por consulta, já que o dicionário é fixo.
+
+\resp{rv-posicao} Uma \textbf{AVL aumentada}: cada nó guarda o tamanho da sua subárvore, atualizado nas inserções, remoções e rotações em $O(1)$ por nó afetado. A posição de $x$ se calcula descendo da raiz e somando os tamanhos das subárvores à esquerda do caminho; o elemento da posição $r$ se encontra descendo e comparando $r$ com esses tamanhos. Tudo em $O(\log n)$.
+
+\resp{rv-mediana} Dois heaps: um de máximo com a metade menor das medições e um de mínimo com a metade maior, com tamanhos que diferem de no máximo 1. Cada medição é inserida em $O(\log n)$, com um rebalanceamento eventual, e a mediana é lida no topo de um dos heaps em $O(1)$.
+
+\resp{rv-externo} \textbf{Mergesort externo}: leia o arquivo em blocos que cabem na memória (por exemplo, de 12 GB), ordene cada bloco e grave-o; depois intercale os cerca de 42 blocos ordenados com um heap de mínimo de tamanho 42 (intercalação de $k$ listas), lendo e gravando sequencialmente. O custo é dominado pelas duas passadas pelo disco.
+
+\resp{rv-quase} \textbf{Ordenação por inserção}: cada elemento se desloca no máximo 10 posições, então o custo é $O(10n)=O(n)$. Um heap de mínimo de tamanho 11 percorrendo o vetor também ordena em $O(n\log 11)$.
+
+\resp{rv-dup} \textbf{Tabela hash}: insira as strings uma a uma e verifique se já estão presentes, em $O(1)$ esperado cada, mais o custo de calcular os hashes. Ordenar (por exemplo, com radix sort de strings ou mergesort) e comparar vizinhas também resolve.
+
+\resp{rv-remocoes} \textbf{Union-Find offline, de trás para frente}: comece com a malha sem as estradas que serão interditadas em algum momento, una as regiões ligadas pelas estradas restantes e conte as componentes; depois percorra as interdições da última para a primeira, transformando cada uma numa \Union{} e atualizando o contador. Guarde as respostas e apresente-as na ordem original.
+
+\resp{rv-topk} Um \textbf{heap de mínimo de tamanho 100}: para cada requisição, se ela for mais demorada que o mínimo do heap, substitua o mínimo. Memória $O(100)$ e tempo $O(n\log100)$.
+
+\resp{rv-reais} O bucket sort perde a garantia sem distribuição uniforme: pode cair no pior caso, com quase tudo num balde. Use uma ordenação por comparação com garantia, como o \textbf{mergesort} ou o \textbf{heapsort}, em $\Theta(n\log n)$; ou converta os reais para inteiros de 64 bits preservando a ordem e use radix sort.
+
+\resp{rv-prefixo} Cada pergunta custa $O(n)$. Pré-calcule as \textbf{somas de prefixo} $P[i]=V[1]+\cdots+V[i]$ em $O(n)$; cada pergunta passa a custar $O(1)$: $P[j]-P[i-1]$.
+
+\resp{rv-busca} Uma \textbf{AVL} indexada pela chave: busca, inserção e remoção em $O(\log n)$ e listagem em ordem em $O(n)$. Uma tabela hash daria buscas em $O(1)$ esperado, mas a listagem em ordem exigiria ordenar a cada vez.
+
+\resp{rv-desfazer} \textbf{Union-Find sem compressão}, com união por rank ou tamanho e uma pilha das alterações: cada ligação empilha o ponteiro e o rank alterados; desfazer é desempilhar e restaurar em $O(1)$; a consulta custa $O(\log n)$.

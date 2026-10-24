@@ -1,0 +1,398 @@
+% ================================================================
+\chapter{Ordenação por comparação e limite inferior}\label{cap:sortcomp}\label{sec:ordenacao}
+% ================================================================
+\begin{objetivos}
+\begin{itemize}
+  \item Ferramentas para resolver recorrências: árvore de recursão, substituição e Teorema Mestre.
+  \item Os algoritmos clássicos de ordenação por comparação: mergesort, quicksort e heapsort.
+  \item Estabilidade e ordenação in-place.
+  \item A prova de que toda ordenação por comparação faz $\Omega(n\log n)$ comparações.
+\end{itemize}
+\end{objetivos}
+
+Ordenar é o problema algorítmico mais estudado: aparece sozinho e como passo de quase tudo, da busca binária à eliminação de repetidos e ao algoritmo de Kruskal. Este capítulo apresenta os algoritmos que ordenam \emph{comparando} pares de elementos e prova que nenhum algoritmo desse tipo pode fazer menos de $\Omega(n\log n)$ comparações no pior caso. Como o mergesort e o quicksort são recursivos, começamos pelas ferramentas para analisar algoritmos recursivos.
+
+\section{O problema da ordenação}
+Dada uma sequência $S$, queremos uma permutação $s_1,\dots,s_n$ de seus elementos com $s_i\le s_{i+1}$ para todo $i$. Duas propriedades de um algoritmo de ordenação importam além do tempo:
+\begin{itemize}
+  \item ele é \textbf{estável} se elementos de chaves iguais aparecem na saída na mesma ordem relativa da entrada. A estabilidade é essencial para ordenar por várias chaves (primeiro pela secundária, depois pela principal) e para o radix sort do Capítulo~\ref{cap:sortlin};
+  \item ele é \textbf{in-place} se usa memória adicional que não depende de $n$, ou no máximo $O(\log n)$ para a pilha de recursão. O quicksort e o heapsort são in-place; o mergesort não é.
+\end{itemize}
+
+\begin{exemplo}[Estabilidade e ordenação por duas chaves]\label{ex:estavel}
+Uma turma está em ordem alfabética: (Ana, 8), (Bia, 7), (Caio, 8), (Davi, 7). Ordenando por nota com um algoritmo \textbf{estável}, os empates mantêm a ordem de entrada, e o resultado é (Bia, 7), (Davi, 7), (Ana, 8), (Caio, 8): dentro de cada nota, os nomes continuam em ordem alfabética. Um algoritmo não estável poderia devolver (Davi, 7), (Bia, 7), (Caio, 8), (Ana, 8), que também está ordenado por nota, mas perdeu a ordem dos nomes.
+
+É assim que se ordena por duas chaves: para obter a lista por nota e, nos empates, por nome, ordena-se \emph{primeiro pelo nome} (a chave secundária) e \emph{depois, de forma estável, pela nota} (a principal).
+\end{exemplo}
+
+% ------------------------------------------------------------------
+\section{Recorrências}\label{sec:recorrencias}
+O custo de um algoritmo recursivo é descrito por uma \textbf{recorrência}. Um algoritmo que divide uma entrada de tamanho $n$ em $a$ subproblemas de tamanho $n/b$ e gasta $f(n)$ para dividir e combinar tem custo
+\[
+T(n)=a\,T(n/b)+f(n).
+\]
+Por exemplo, o mergesort (§\ref{sec:sortcomp}) resolve $a=2$ subproblemas de tamanho $n/2$ e gasta $f(n)=\Theta(n)$ para intercalar: $T(n)=2T(n/2)+\Theta(n)$. A busca binária resolve $a=1$ subproblema de tamanho $n/2$ e gasta $O(1)$: $T(n)=T(n/2)+O(1)$.
+
+\paragraph{Árvore de recursão.} Desenha-se a árvore das chamadas e soma-se o custo nível a nível. Para $T(n)=2T(n/2)+cn$, há $\log_2n$ níveis, e cada um custa $cn$ no total, pois os subproblemas de um nível somam $n$; logo $T(n)=\Theta(n\log n)$ (Figura~\ref{fig:arvrec}). É o custo do mergesort e de vários algoritmos de divisão e conquista do Capítulo~\ref{cap:dc}.
+
+\begin{figura}[Árvore de recursão de $T(n)=2T(n/2)+cn$. Cada nó mostra o custo da chamada fora das chamadas recursivas; à direita, a soma de cada nível. Há $\log_2 n$ níveis de custo $cn$ e mais $n$ folhas de custo $c$.\label{fig:arvrec}]
+\begin{tikzpicture}[x=1cm,y=1.05cm, every node/.style={font=\small}]
+\node (r) at (0,0) {$cn$};
+\node (a1) at (-2.4,-1) {$c\frac n2$}; \node (a2) at (2.4,-1) {$c\frac n2$};
+\foreach \x [count=\i] in {-3.6,-1.2,1.2,3.6} {\node (b\i) at (\x,-2) {$c\frac n4$};}
+\draw (r)--(a1) (r)--(a2) (a1)--(b1) (a1)--(b2) (a2)--(b3) (a2)--(b4);
+\foreach \i in {1,...,4} {\draw[densely dotted] (b\i) -- ++(-0.35,-0.6); \draw[densely dotted] (b\i) -- ++(0.35,-0.6);}
+\node at (0,-3) {$\vdots$};
+\foreach \x in {-4.2,-3.6,-3,-2.4,-1.8,-1.2,-0.6,0,0.6,1.2,1.8,2.4,3,3.6,4.2} {\node[font=\scriptsize] at (\x,-3.8) {$c$};}
+\foreach \y/\t in {0/{$cn$},-1/{$cn$},-2/{$cn$},-3.8/{$cn$}} {\node[anchor=west, MidnightBlue] at (5.2,\y) {\t};}
+\draw[gray] (5.05,0.3) -- (5.05,-4.1);
+\draw[decorate, decoration={brace, amplitude=5pt, mirror}, gray] (-4.8,0.2) -- (-4.8,-2.3) node[midway, left=6pt, font=\scriptsize, text=black] {$\log_2 n$ níveis};
+\node[anchor=west, MidnightBlue, font=\small\bfseries] at (5.2,-4.6) {total $\Theta(n\log n)$};
+\end{tikzpicture}
+\end{figura}
+
+\paragraph{Substituição.} Chuta-se a forma da solução, por exemplo $T(n)\le c\,g(n)$, e prova-se o chute por indução forte, ajustando a constante. É assim que se mostra, no Capítulo~\ref{cap:selecao}, que a seleção pela mediana das medianas é linear.
+
+\begin{exemplo}[Substituição: $T(n)=T(n/2)+T(n/4)+n$ é linear]\label{ex:substituicao}
+Chutamos $T(n)\le c\,n$ e supomos, por indução, que isso vale para todos os valores menores que $n$. Então
+\[
+T(n)=T(n/2)+T(n/4)+n\ \le\ c\,\frac n2+c\,\frac n4+n=\Bigl(\frac{3c}4+1\Bigr)n .
+\]
+Para fechar a indução, precisamos de $\frac{3c}4+1\le c$, isto é, $c\ge4$. Com $c=4$ (e escolhendo a base de modo que $T(n)\le4n$ para $n$ pequeno), temos $T(n)\le4n=O(n)$. A ideia por trás: os dois subproblemas somam $\frac34$ da entrada, menos que o todo, e os custos dos níveis da árvore de recursão formam uma progressão geométrica decrescente, $n+\frac34n+\frac9{16}n+\cdots\le4n$.
+\end{exemplo}
+
+\begin{teo}[Teorema Mestre]
+Seja $T(n)=a\,T(n/b)+f(n)$, com $a\ge1$ e $b>1$, e seja $E=\log_b a$ o \emph{expoente crítico}.
+\begin{enumerate}
+  \item Se $f(n)=O(n^{E-\varepsilon})$ para algum $\varepsilon>0$, então $T(n)=\Theta(n^{E})$: as folhas dominam.
+  \item Se $f(n)=\Theta(n^{E})$, então $T(n)=\Theta(n^{E}\log n)$: todos os níveis pesam o mesmo.
+  \item Se $f(n)=\Omega(n^{E+\varepsilon})$ para algum $\varepsilon>0$ e $a f(n/b)\le c f(n)$ para algum $c<1$, então $T(n)=\Theta(f(n))$: a raiz domina.
+\end{enumerate}
+\end{teo}
+A intuição vem da árvore de recursão: o nível $j$ tem $a^j$ subproblemas de tamanho $n/b^j$, e há $n^E$ folhas. O teorema compara o custo da raiz, $f(n)$, com o custo total das folhas, $n^E$ (Figura~\ref{fig:mestre}).
+
+\begin{figura}[Os três casos do Teorema Mestre vistos pelo custo de cada nível da árvore de recursão (barras, de cima para baixo). No caso 1 os custos crescem e o último nível domina; no caso 2 são iguais e o total é o custo de um nível vezes o número de níveis; no caso 3 decrescem e a raiz domina.\label{fig:mestre}]
+\begin{tikzpicture}[x=1cm,y=0.42cm]
+\foreach \col/\tit/\lens/\labs in {
+  0/{caso 1: $8T(\frac n2)+n^2$}/{0.35,0.7,1.4,2.8}/{$n^2$,$2n^2$,$4n^2$,$8n^2$},
+  4.6/{caso 2: $2T(\frac n2)+n$}/{1.4,1.4,1.4,1.4}/{$n$,$n$,$n$,$n$},
+  9.2/{caso 3: $2T(\frac n2)+n^2$}/{2.8,1.4,0.7,0.35}/{$n^2$,$\frac{n^2}2$,$\frac{n^2}4$,$\frac{n^2}8$}}{
+  \node[font=\small, anchor=west] at (\col,1.2) {\tit};
+  \foreach \l [count=\k] in \lens {\fill[azul, draw=MidnightBlue] (\col,-\k*1.25+1.25) rectangle ++(\l,-0.85);}
+  \foreach \t [count=\k] in \labs {\node[font=\scriptsize, anchor=west] at (\col+3.0,-\k*1.25+0.85) {\t};}
+}
+\node[font=\scriptsize, MidnightBlue] at (1.6,-5.2) {$\Rightarrow\Theta(n^3)$};
+\node[font=\scriptsize, MidnightBlue] at (6.2,-5.2) {$\Rightarrow\Theta(n\log n)$};
+\node[font=\scriptsize, MidnightBlue] at (10.8,-5.2) {$\Rightarrow\Theta(n^2)$};
+\end{tikzpicture}
+\end{figura}
+
+\begin{roteiro}[Como aplicar o Teorema Mestre]
+\begin{enumerate}
+  \item Identifique $a$ (número de subproblemas), $b$ (fator de redução do tamanho) e $f(n)$ (custo fora das chamadas).
+  \item Calcule o expoente crítico $E=\log_ba$.
+  \item Compare $f(n)$ com $n^E$: se $f$ é \emph{polinomialmente} menor, caso 1; se é da mesma ordem, caso 2; se é polinomialmente maior (e satisfaz a condição de regularidade), caso 3.
+  \item Se $f$ e $n^E$ diferem só por um fator logarítmico, o teorema, nesta forma, não se aplica: use a árvore de recursão.
+\end{enumerate}
+\end{roteiro}
+
+\begin{exemplo}[Aplicando o roteiro]\label{ex:mestre}\leavevmode
+\begin{itemize}
+  \item $T(n)=3T(n/2)+n$ (o algoritmo de Karatsuba para multiplicar inteiros): $a=3$, $b=2$, $E=\log_23\approx1{,}585$. Como $f(n)=n=O(n^{1{,}585-\varepsilon})$ com $\varepsilon=0{,}5$, é o caso 1: $T(n)=\Theta(n^{\log_23})$.
+  \item $T(n)=T(2n/3)+1$: $a=1$, $b=3/2$, $E=\log_{3/2}1=0$, e $f(n)=1=\Theta(n^0)$: caso 2, $T(n)=\Theta(\log n)$.
+  \item $T(n)=3T(n/4)+n\log n$: $E=\log_43\approx0{,}79$, e $f(n)=n\log n=\Omega(n^{0{,}79+\varepsilon})$ com $\varepsilon=0{,}2$. A regularidade vale: $3\cdot\frac n4\log\frac n4\le\frac34\,n\log n$, com $c=\frac34<1$. Caso 3: $T(n)=\Theta(n\log n)$.
+\end{itemize}
+\end{exemplo}
+
+\begin{center}
+\small
+\begin{tabular}{@{}lll@{}}
+\toprule
+Recorrência & Exemplo & Solução\\
+\midrule
+$T(n)=T(n/2)+O(1)$ & busca binária & $\Theta(\log n)$\\
+$T(n)=2T(n/2)+O(1)$ & máximo por divisão e conquista & $\Theta(n)$\\
+$T(n)=2T(n/2)+\Theta(n)$ & mergesort, contagem de inversões & $\Theta(n\log n)$\\
+$T(n)=8T(n/2)+\Theta(n^2)$ & produto de matrizes por blocos & $\Theta(n^3)$\\
+$T(n)=7T(n/2)+\Theta(n^2)$ & algoritmo de Strassen & $\Theta(n^{\log_2 7})\approx\Theta(n^{2{,}807})$\\
+$T(n)=T(n/5)+T(3n/4)+\Theta(n)$ & mediana das medianas & $\Theta(n)$, pois $\tfrac15+\tfrac34<1$\\
+$T(n)=T(n-1)+\Theta(n)$ & quicksort no pior caso & $\Theta(n^2)$\\
+$T(n)=T(9n/10)+T(n/10)+\Theta(n)$ & quicksort com divisão desbalanceada fixa & $\Theta(n\log n)$\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{teo}[Divisão e conquista balanceada]
+Se um algoritmo divide a instância em $k$ partes de tamanho no máximo $n/c$, com $c>1$ e tamanhos que diferem por uma constante, e gasta tempo linear para dividir e para combinar, então roda em $O(n\log n)$.
+\end{teo}
+\begin{proof}[Ideia]
+Na árvore de recursão, os subproblemas de um mesmo nível são partes disjuntas da entrada, então cada nível custa $O(n)$; como o tamanho cai por um fator $c$ a cada nível, há $O(\log_c n)$ níveis.
+\end{proof}
+
+\paragraph{Somatórios úteis.} $\sum_{i=1}^n i=\frac{n(n+1)}2$; $\sum_{k\ge0}x^k=\frac1{1-x}$ para $|x|<1$; $\sum_{k\ge0}\frac{k}{2^k}=2$; $\sum_{k=0}^{\log n}\frac{n}{2^k}\le 2n$; $\sum_{i=1}^n\frac1i=\Theta(\log n)$; $\log(n!)=\sum_{i=1}^n\log i=\Theta(n\log n)$.
+
+% ------------------------------------------------------------------
+\section{Ordenação por comparação}\label{sec:sortcomp}
+\subsection*{Mergesort}
+O mergesort divide o vetor ao meio, ordena recursivamente cada metade e \emph{intercala} as duas metades ordenadas, percorrendo-as com dois índices e copiando sempre o menor dos elementos apontados.
+
+\begin{intuicao}
+Intercalar é como juntar dois montes de provas, cada um já em ordem alfabética, num monte só: olhe a prova do topo de cada monte, pegue a que vem primeiro e repita. Cada comparação põe uma prova no lugar definitivo, então juntar montes com $m$ provas no total custa no máximo $m-1$ comparações.
+\end{intuicao}
+
+\begin{pseudo}{MergeSort e Intercala}
+\begin{algorithmic}
+\Procedure{MergeSort}{$V, ini, fim$}
+  \If{$ini<fim$}
+    \State $meio:=\floor{(ini+fim)/2}$
+    \State \Call{MergeSort}{$V,ini,meio$};\ \Call{MergeSort}{$V,meio+1,fim$}
+    \State \Call{Intercala}{$V,ini,meio,fim$}
+  \EndIf
+\EndProcedure
+\Procedure{Intercala}{$V,ini,meio,fim$}
+  \State $i:=ini$;\ $j:=meio+1$;\ $k:=1$ \Comment{$W$ é um vetor auxiliar}
+  \While{$i\le meio$ \textbf{e} $j\le fim$}
+    \If{$V[i]\le V[j]$} \State $W[k]:=V[i]$;\ $i:=i+1$ \Comment{``$\le$'' mantém a estabilidade}
+    \Else \State $W[k]:=V[j]$;\ $j:=j+1$
+    \EndIf
+    \State $k:=k+1$
+  \EndWhile
+  \State copie o que sobrou de $V[i..meio]$ ou de $V[j..fim]$ para o fim de $W$
+  \State copie $W[1..fim-ini+1]$ de volta para $V[ini..fim]$
+\EndProcedure
+\end{algorithmic}
+\end{pseudo}
+
+\begin{exemplo}[Mergesort de $(5,2,4,7,1,3,2,6)$]\label{ex:mergesort}
+A Figura~\ref{fig:mergesort} mostra a execução: a metade de cima divide o vetor até sobrarem elementos isolados (que já estão ordenados), e a de baixo intercala os pedaços, dois a dois. Na última intercalação, de $(2,4,5,7)$ com $(1,2,3,6)$, as comparações são: $2>1$ (sai 1); $2\le2$ (sai o 2 da esquerda, o que preserva a estabilidade); $4>2$ (sai 2); $4>3$ (sai 3); $4\le6$ (sai 4); $5\le6$ (sai 5); $7>6$ (sai 6); e a metade direita acabou, de modo que o 7 é copiado sem comparação. Foram 7 comparações para 8 elementos.
+\begin{figura}[Mergesort de $(5,2,4,7,1,3,2,6)$. As setas cinzas dividem; as azuis intercalam.\label{fig:mergesort}]
+\begin{tikzpicture}[x=1mm,y=1mm]
+\pic at (0,0) {arr={8}{5,2,4,7,1,3,2,6}};
+\pic at (-25,-10) {arr={4}{5,2,4,7}}; \pic at (25,-10) {arr={4}{1,3,2,6}};
+\pic at (-37.5,-20) {arr={2}{5,2}}; \pic at (-12.5,-20) {arr={2}{4,7}}; \pic at (12.5,-20) {arr={2}{1,3}}; \pic at (37.5,-20) {arr={2}{2,6}};
+\foreach \x/\v in {-43.75/5,-31.25/2,-18.75/4,-6.25/7,6.25/1,18.75/3,31.25/2,43.75/6} {\pic at (\x,-30) {arr={1}{\v}};}
+\pic at (-37.5,-40) {arr={2}{2,5}}; \pic at (-12.5,-40) {arr={2}{4,7}}; \pic at (12.5,-40) {arr={2}{1,3}}; \pic at (37.5,-40) {arr={2}{2,6}};
+\pic at (-25,-50) {arr={4}{2,4,5,7}}; \pic at (25,-50) {arr={4}{1,2,3,6}};
+\pic[fill=feito] at (0,-60) {arr={8}{1,2,2,3,4,5,6,7}};
+\begin{scope}[gray, -{Stealth[length=1.4mm]}]
+\draw (-6,-3) -- (-20,-7.5); \draw (6,-3) -- (20,-7.5);
+\foreach \p/\q in {-25/-37.5,-25/-12.5,25/12.5,25/37.5} {\draw (\p,-13) -- (\q,-17.5);}
+\foreach \p/\q in {-37.5/-43.75,-37.5/-31.25,-12.5/-18.75,-12.5/-6.25,12.5/6.25,12.5/18.75,37.5/31.25,37.5/43.75} {\draw (\p,-23) -- (\q,-27.5);}
+\end{scope}
+\begin{scope}[MidnightBlue!80, -{Stealth[length=1.4mm]}]
+\foreach \p/\q in {-43.75/-37.5,-31.25/-37.5,-18.75/-12.5,-6.25/-12.5,6.25/12.5,18.75/12.5,31.25/37.5,43.75/37.5} {\draw (\p,-33) -- (\q,-37.5);}
+\foreach \p/\q in {-37.5/-25,-12.5/-25,12.5/25,37.5/25} {\draw (\p,-43) -- (\q,-47.5);}
+\draw (-20,-53) -- (-6,-57.5); \draw (20,-53) -- (6,-57.5);
+\end{scope}
+\node[rot, anchor=west] at (52,-15) {dividir};
+\node[rot, anchor=west] at (52,-45) {intercalar};
+\end{tikzpicture}
+\end{figura}
+\end{exemplo}
+
+A intercalação de duas metades que somam $m$ elementos custa $\Theta(m)$, e portanto $T(n)=2T(n/2)+\Theta(n)=\Theta(n\log n)$ em todos os casos. O mergesort é \textbf{estável}, desde que, no empate, o elemento da metade esquerda seja copiado primeiro, e \textbf{não é in-place}, pois o vetor auxiliar ocupa $\Theta(n)$. Existe também uma versão iterativa, de baixo para cima, que intercala blocos de tamanho $1,2,4,\dots$ ao longo do vetor.
+
+\subsection*{Quicksort}
+O quicksort faz o trabalho na divisão, e não na combinação: escolhe um \textbf{pivô} $x$, particiona os elementos em $S_1=\{w<x\}$ e $S_2=\{w\ge x\}$, ordena cada parte recursivamente e concatena. Depois da partição, o pivô já está na sua posição definitiva: todos à sua esquerda são menores e todos à sua direita, maiores ou iguais.
+\begin{pseudo}{Quicksort com a partição de Lomuto}
+\begin{algorithmic}
+\Procedure{QuickSort}{$V,ini,fim$}
+  \If{$ini<fim$}
+    \State $q:=$ \Call{Particiona}{$V,ini,fim$}
+    \State \Call{QuickSort}{$V,ini,q-1$};\ \Call{QuickSort}{$V,q+1,fim$}
+  \EndIf
+\EndProcedure
+\Function{Particiona}{$V,ini,fim$}
+  \State $x:=V[fim]$;\ $i:=ini-1$ \Comment{o pivô fica no fim; troque-o para lá se escolher outro}
+  \For{$j:=ini$ \textbf{até} $fim-1$}
+    \If{$V[j]<x$} \State $i:=i+1$;\ $V[i]\Leftrightarrow V[j]$ \EndIf
+  \EndFor
+  \State $V[i+1]\Leftrightarrow V[fim]$;\ \Return $i+1$
+\EndFunction
+\end{algorithmic}
+\end{pseudo}
+
+\begin{exemplo}[A partição de Lomuto passo a passo]\label{ex:lomuto}
+Particionamos $(6,3,9,1,8,2,5)$ com pivô $x=5$, o último elemento. O índice $j$ percorre o vetor; as posições $ini..i$ guardam os elementos já vistos que são menores que o pivô (em verde), e as posições $i+1..j$, os já vistos maiores ou iguais (em amarelo). Quando $V[j]<x$, o índice $i$ avança e $V[j]$ é trocado para dentro da região verde (Figura~\ref{fig:lomuto}). No fim, o pivô é trocado com o primeiro elemento da região amarela, e fica na posição 4, que é devolvida.
+\begin{figura}[A partição de Lomuto sobre $(6,3,9,1,8,2,5)$. Verde: menores que o pivô; amarelo: maiores ou iguais; azul: o pivô.\label{fig:lomuto}]
+\begin{tikzpicture}[x=7mm,y=6.6mm]
+\foreach \lin/\vals/\i/\j/\txt in {
+  0/{6,3,9,1,8,2,5}/0/1/{$j=1$: $6\ge5$, nada muda},
+  1/{3,6,9,1,8,2,5}/1/2/{$j=2$: $3<5$: $i=1$, troca $V[1]\leftrightarrow V[2]$},
+  2/{3,6,9,1,8,2,5}/1/3/{$j=3$: $9\ge5$},
+  3/{3,1,9,6,8,2,5}/2/4/{$j=4$: $1<5$: $i=2$, troca $V[2]\leftrightarrow V[4]$},
+  4/{3,1,9,6,8,2,5}/2/5/{$j=5$: $8\ge5$},
+  5/{3,1,2,6,8,9,5}/3/6/{$j=6$: $2<5$: $i=3$, troca $V[3]\leftrightarrow V[6]$},
+  6/{3,1,2,5,8,9,6}/3/7/{fim: troca o pivô com $V[4]$; devolve $q=4$}}{
+  \foreach \x [count=\k] in \vals {
+    \ifnum\k>\j \else
+      \ifnum\k>\i \fill[destaque] (\k-0.5,-\lin-0.3) rectangle (\k+0.5,-\lin+0.3);
+      \else \fill[feito] (\k-0.5,-\lin-0.3) rectangle (\k+0.5,-\lin+0.3); \fi
+    \fi
+    \node[cel] at (\k,-\lin) {\x};}
+  \node[rot,anchor=west] at (7.8,-\lin) {\txt};}
+\foreach \lin in {0,...,5} {\fill[azul] (6.5,-\lin-0.3) rectangle (7.5,-\lin+0.3); \node[cel] at (7,-\lin) {5};}
+\fill[azul] (3.5,-6.3) rectangle (4.5,-5.7); \node[cel] at (4,-6) {5};
+\fill[destaque] (6.5,-6.3) rectangle (7.5,-5.7); \node[cel] at (7,-6) {6};
+\end{tikzpicture}
+\end{figura}
+O resultado, $(3,1,2,\,5,\,8,9,6)$, tem o pivô no lugar certo; resta ordenar $(3,1,2)$ e $(8,9,6)$ recursivamente.
+\end{exemplo}
+
+\begin{itemize}
+  \item \textbf{Pior caso}, $\Theta(n^2)$: quando as partições têm sempre tamanhos $0$ e $n-1$, como ao usar o primeiro elemento como pivô num vetor já ordenado ou invertido. A recorrência é $T(n)=T(n-1)+\Theta(n)$.
+  \item \textbf{Melhor caso e caso médio}, $\Theta(n\log n)$. Com um pivô aleatório, em metade das vezes a parte maior tem tamanho no máximo $3n/4$. Se isso acontecesse sempre, no nível $t$ da recursão os subproblemas teriam tamanho no máximo $(3/4)^tn$, e haveria $O(\log n)$ níveis de custo $O(n)$. Como acontece com probabilidade $1/2$, em média o tamanho cai por $3/4$ a cada dois níveis, e o custo esperado continua $O(n\log n)$.
+  \item \textbf{Escolha do pivô}: o primeiro elemento é ruim para entradas já ordenadas; boas opções são um elemento aleatório ou a \textbf{mediana de três} (primeiro, meio e último). Usar a \textbf{mediana exata}, calculada em tempo linear (Capítulo~\ref{cap:selecao}), garante $O(n\log n)$ no \emph{pior} caso, mas a constante é alta e na prática não compensa.
+  \item O quicksort é \textbf{in-place}: a partição é feita por trocas, e a pilha de recursão tem $O(\log n)$ níveis se a recursão for feita primeiro na parte menor. \textbf{Não é estável}, porque as trocas de longa distância embaralham elementos iguais; pode ser tornado estável com uma partição estável, ao custo de $O(n)$ de memória extra.
+\end{itemize}
+
+\begin{figura}[O trabalho do quicksort, nível a nível. Cada barra é um subproblema; a largura é o seu tamanho, e a área total é proporcional ao custo. À esquerda, o pivô é sempre o maior: $n$ níveis e área $\approx n^2/2$. À direita, o pivô divide ao meio: $\log_2n$ níveis de largura $n$ e área $\approx n\log n$.\label{fig:quickcasos}]
+\begin{tikzpicture}[x=4.5mm,y=3.6mm]
+\foreach \k in {0,...,7} {\fill[ruim, draw=BrickRed!70] (0,-\k) rectangle (8-\k,-\k-0.75);}
+\node[rot] at (4,1) {pivô sempre o maior};
+\draw[decorate, decoration={brace, amplitude=4pt, mirror}, gray] (-0.4,0) -- (-0.4,-7.75) node[midway, left=5pt, font=\scriptsize, text=black] {$n$ níveis};
+\begin{scope}[xshift=6.5cm]
+\foreach \k/\m in {0/1,1/2,2/4,3/8} {
+  \pgfmathsetmacro{\w}{8/\m}
+  \foreach \t in {1,...,\m} {\fill[feito, draw=ForestGreen!70!black] ({(\t-1)*\w+0.08},-\k) rectangle ({\t*\w-0.08},-\k-0.75);}}
+\node[rot] at (4,1) {pivô sempre a mediana};
+\draw[decorate, decoration={brace, amplitude=4pt}, gray] (8.4,0) -- (8.4,-3.75) node[midway, right=5pt, font=\scriptsize, text=black] {$\log_2 n$ níveis};
+\end{scope}
+\end{tikzpicture}
+\end{figura}
+
+\begin{exemplo}[O quicksort não é estável]
+Três alunos com a mesma nota, Ana, Bruno e Carla, nessa ordem. Na primeira partição, o pivô é Carla (o último); ninguém é estritamente menor, e a troca final leva Carla para a primeira posição: (Carla, Bruno, Ana). A partição seguinte, sobre (Bruno, Ana), troca os dois. A saída é (Carla, Ana, Bruno), embora a entrada estivesse na ordem (Ana, Bruno, Carla): elementos iguais mudaram de ordem relativa.
+\end{exemplo}
+
+\subsection*{Heapsort}
+O heapsort (Capítulo~\ref{cap:heap}) constrói um heap em $O(n)$ e remove o máximo $n$ vezes, em $\Theta(n\log n)$ em todos os casos. É in-place e não é estável.
+
+\subsection*{Algoritmos quadráticos}
+A \textbf{ordenação por inserção} insere $V[i]$ na parte já ordenada $V[1..i-1]$, deslocando os elementos maiores (veja o Exemplo~\ref{ex:inscasos}). Ela custa $\Theta(n^2)$ no pior caso e no caso médio, mas $\Theta(n)$ se o vetor já está ordenado; é estável e in-place, e é a melhor escolha para vetores pequenos ou quase ordenados. A \textbf{ordenação por bolha} também é $\Theta(n^2)$ e estável.
+
+\begin{center}\small
+\begin{tabular}{@{}lccccc@{}}
+\toprule
+algoritmo & melhor caso & caso médio & pior caso & estável? & in-place?\\
+\midrule
+inserção & $\Theta(n)$ & $\Theta(n^2)$ & $\Theta(n^2)$ & sim & sim\\
+mergesort & $\Theta(n\log n)$ & $\Theta(n\log n)$ & $\Theta(n\log n)$ & sim & não\\
+quicksort & $\Theta(n\log n)$ & $\Theta(n\log n)$ & $\Theta(n^2)$ & não & sim\\
+heapsort & $\Theta(n\log n)$ & $\Theta(n\log n)$ & $\Theta(n\log n)$ & não & sim\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+% ------------------------------------------------------------------
+\section{Limite inferior para ordenação por comparação}
+\begin{intuicao}
+Ordenar por comparações é como jogar ``adivinhe a permutação'' fazendo só perguntas de sim ou não do tipo ``$a_i\le a_j$?''. Cada resposta, no máximo, divide ao meio o conjunto de permutações ainda possíveis. Começando com $n!$ possibilidades, são necessárias pelo menos $\log_2(n!)$ perguntas para chegar a uma só.
+\end{intuicao}
+
+\begin{figura}[Árvore de decisão da ordenação por inserção para $n=3$. Cada nó interno compara dois elementos (``$i{:}j$'' pergunta se $a_i\le a_j$); cada folha é a ordem encontrada. Há $3!=6$ folhas e altura 3: no pior caso, três comparações.\label{fig:arvdecisao}]
+\forestset{dec/.style={for tree={draw, rounded corners=2pt, font=\scriptsize, inner sep=2pt, s sep=3mm, l sep=4mm, edge={thick}},
+  where n children=0{fill=feito, rounded corners=0pt}{fill=azul}}}
+\begin{forest} dec
+[1{:}2
+  [2{:}3, edge label={node[midway, left, font=\tiny]{$\le$}}
+    [{$\langle1,2,3\rangle$}, edge label={node[midway, left, font=\tiny]{$\le$}}]
+    [1{:}3, edge label={node[midway, right, font=\tiny]{$>$}}
+      [{$\langle1,3,2\rangle$}, edge label={node[midway, left, font=\tiny]{$\le$}}]
+      [{$\langle3,1,2\rangle$}, edge label={node[midway, right, font=\tiny]{$>$}}]]]
+  [1{:}3, edge label={node[midway, right, font=\tiny]{$>$}}
+    [{$\langle2,1,3\rangle$}, edge label={node[midway, left, font=\tiny]{$\le$}}]
+    [2{:}3, edge label={node[midway, right, font=\tiny]{$>$}}
+      [{$\langle2,3,1\rangle$}, edge label={node[midway, left, font=\tiny]{$\le$}}]
+      [{$\langle3,2,1\rangle$}, edge label={node[midway, right, font=\tiny]{$>$}}]]]]
+\end{forest}
+\end{figura}
+
+\begin{teo}
+Todo algoritmo de ordenação baseado em comparações faz $\Omega(n\log n)$ comparações no pior caso.
+\end{teo}
+\begin{proof}
+Para cada $n$, o algoritmo pode ser descrito por uma \textbf{árvore de decisão}: cada nó interno é uma comparação ``$a_i\le a_j$?'', com dois filhos, um para cada resposta; cada folha é um estado final, em que o algoritmo já sabe qual permutação ordena a entrada (Figura~\ref{fig:arvdecisao}). O número de comparações no pior caso é a altura $h$ da árvore. Como qualquer uma das $n!$ permutações pode ser a resposta, há pelo menos $n!$ folhas, e uma árvore binária de altura $h$ tem no máximo $2^h$ folhas. Logo
+\[
+2^h\ge n!\ge n(n-1)\cdots\bigl(\tfrac n2\bigr)\ge\bigl(\tfrac n2\bigr)^{n/2}
+\ \Rightarrow\ h\ge\tfrac n2\log_2\tfrac n2=\tfrac n2\log n-\tfrac n2=\Omega(n\log n).\qedhere
+\]
+\end{proof}
+
+\begin{exemplo}[O limite para $n=3$ e $n=4$]
+Com $n=3$, há $3!=6$ ordens possíveis; como $2^2=4<6$, duas comparações não bastam, e todo algoritmo precisa de pelo menos $\ceil{\log_26}=3$ comparações no pior caso. A árvore da Figura~\ref{fig:arvdecisao} atinge esse limite. Com $n=4$, há $24$ ordens, e $2^4=16<24\le32=2^5$: são necessárias pelo menos 5 comparações. O mergesort sobre 4 elementos faz no máximo $1+1+3=5$: é ótimo para $n=4$.
+\end{exemplo}
+
+\begin{cor}
+O heapsort e o mergesort são \textbf{ótimos} entre os algoritmos baseados em comparações, supondo que cada comparação custa $O(1)$. Para ordenar em $o(n\log n)$ é preciso usar a estrutura das chaves --- inteiros pequenos, dígitos, distribuição conhecida ---, e não apenas compará-las. É o assunto do próximo capítulo.
+\end{cor}
+
+\begin{chave}
+Recorrências se resolvem por árvore de recursão, substituição ou Teorema Mestre ($E=\log_ba$). Qualquer ordenação por comparação faz $\Omega(n\log n)$ comparações (árvore de decisão, $2^h\ge n!$). Mergesort: $\Theta(n\log n)$ sempre, estável, $\Theta(n)$ de memória extra. Quicksort: in-place, $\Theta(n\log n)$ em média e $\Theta(n^2)$ no pior caso, não estável. Heapsort: in-place, $\Theta(n\log n)$ sempre, não estável. Mergesort e heapsort são ótimos.
+\end{chave}
+
+% ----------------------------------------------------------------
+\section{Exercícios}
+\excurso
+\begin{exercicio}{sc-merge}[Slides]
+Escreva o pseudocódigo do procedimento de intercalação (\emph{Merge}) do mergesort.
+\end{exercicio}
+\begin{exercicio}{sc-iter}[Slides]
+Escreva uma versão iterativa, não recursiva, do mergesort.
+\end{exercicio}
+\begin{exercicio}{sc-semcomp}[Slides]
+Desenvolva uma estratégia para ordenar os elementos de um vetor que não seja baseada em comparações. Quais hipóteses sobre os elementos ela exige?
+\end{exercicio}
+\begin{exercicio}{sc-estavel}[Slides]
+(a) É possível implementar o mergesort de forma estável? (b) E o quicksort? Justifique.
+\end{exercicio}
+
+\excompl
+\begin{exercicio}{sc-mestre}[Complementar]
+Resolva pelo Teorema Mestre: (a) $T(n)=4T(n/2)+n$; (b) $T(n)=4T(n/2)+n^2$; (c) $T(n)=4T(n/2)+n^3$; (d) $T(n)=2T(n/4)+\sqrt n$; (e) $T(n)=9T(n/3)+n$; (f) $T(n)=T(n/2)+n$.
+\end{exercicio}
+\begin{exercicio}{sc-arvore}[Complementar]
+Use a árvore de recursão para resolver $T(n)=T(n/3)+T(2n/3)+n$.
+\end{exercicio}
+\begin{exercicio}{sc-pior8}[Complementar]
+Quantas comparações o mergesort faz no pior caso para $n=8$? Dê a recorrência para potências de 2 e a sua solução exata.
+\end{exercicio}
+\begin{exercicio}{sc-max}[Complementar]
+Mostre que todo algoritmo que encontra o máximo de $n$ elementos por comparações faz pelo menos $n-1$ comparações. Por que o argumento da árvore de decisão dá um limite pior aqui?
+\end{exercicio}
+\begin{exercicio}{sc-iguais}[Complementar]
+Qual o custo do quicksort com a partição de Lomuto (teste ``$V[j]<x$'') quando todos os elementos são iguais? Como corrigir?
+\end{exercicio}
+\begin{exercicio}{sc-insercao}[Complementar]
+Mostre que o número de deslocamentos feitos pela ordenação por inserção é exatamente o número de inversões do vetor (pares $i<j$ com $V[i]>V[j]$). Conclua que ela é $\Theta(n^2)$ no pior caso e no caso médio.
+\end{exercicio}
+\begin{exercicio}{sc-intercalar}[Complementar \estrela]
+Mostre que intercalar duas listas ordenadas de $n$ elementos cada exige $2n-1$ comparações no pior caso.
+\end{exercicio}
+\begin{exercicio}{sc-mtrace}[Complementar]
+Execute o mergesort sobre $[38,27,43,3,9,82,10]$, com $meio=\floor{(ini+fim)/2}$, e mostre o resultado de cada intercalação, na ordem em que acontecem.
+\end{exercicio}
+\begin{exercicio}{sc-lomuto}[Complementar]
+Execute a partição de Lomuto sobre $[2,8,7,1,3,5,6,4]$ (pivô 4) e dê o vetor resultante e a posição devolvida.
+\end{exercicio}
+\begin{exercicio}{sc-quickpior}[Complementar]
+Quantas comparações exatamente o quicksort com a partição de Lomuto faz para ordenar um vetor já ordenado de $n$ elementos distintos?
+\end{exercicio}
+\begin{exercicio}{sc-subst}[Complementar]
+Prove por indução que a solução de $T(1)=0$, $T(n)=2T(n/2)+n$ para $n$ potência de 2 é $T(n)=n\log_2n$.
+\end{exercicio}
+\begin{exercicio}{sc-selecao}[Complementar]
+A ordenação por seleção acha o menor elemento de $V[i..n]$ e o troca com $V[i]$, para $i=1,\dots,n-1$. Quantas comparações e quantas trocas ela faz? Ela é estável? E a ordenação por inserção?
+\end{exercicio}
+\begin{exercicio}{sc-cinco}[Complementar]
+Qual o número mínimo de comparações que um algoritmo baseado em comparações precisa fazer, no pior caso, para ordenar 5 elementos, segundo o argumento da árvore de decisão? E para 12 elementos?
+\end{exercicio}
+\begin{exercicio}{sc-kdist}[Complementar \estrela]
+Um vetor de $n$ elementos tem apenas $k$ valores distintos. Mostre que $\Omega(n\log k)$ comparações são necessárias para ordená-lo e dê um algoritmo com esse custo.
+\end{exercicio}
+\begin{exercicio}{sc-nlog2}[Complementar]
+Resolva $T(n)=2T(n/2)+n\log n$ pela árvore de recursão. Por que o Teorema Mestre, na forma apresentada, não se aplica?
+\end{exercicio}
+\begin{exercicio}{sc-lineares}[Complementar]
+Resolva: (a) $T(1)=1$, $T(n)=T(n-1)+n$; (b) $T(1)=1$, $T(n)=2T(n-1)+1$ (a recorrência das Torres de Hanói); (c) $T(1)=1$, $T(n)=T(n-1)+\log n$.
+\end{exercicio}

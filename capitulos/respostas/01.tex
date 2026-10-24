@@ -1,0 +1,44 @@
+\respcap{cap:complex}
+\resp{cx-slide} (a) Não: $(2n^2+1)/n\to\infty$. (b) Sim: $2n^2+1\le3n^2$ para $n\ge1$. (c) Sim: $2n^2+1\le3n^3$ para $n\ge1$. (d) Sim: $2n^2+1\ge n$ para $n\ge1$. (e) Não: $(2n^2+1)/n^3\to0$. (f) Sim, por (b) e porque $2n^2+1\ge n^2$.
+
+\resp{cx-tec} Se o tempo disponível permite $T$ passos na máquina antiga, a nova faz $10T$. Para $n$: o tamanho é multiplicado por 10. Para $n^2$: por $\sqrt{10}\approx3{,}16$. Para $2^n$: $2^{n'}=10\cdot2^n$, logo $n'=n+\log_210\approx n+3{,}3$ --- só se \emph{soma} uma constante. Algoritmos polinomiais aproveitam o avanço tecnológico multiplicando o tamanho tratável; os exponenciais quase não ganham.
+
+\resp{cx-k} O tamanho da entrada é o número de bits: $n$ números de até $\log_2k$ bits cada, ou seja, $\Theta(n\log k)$. Com $k=2^n$, a entrada tem $\Theta(n^2)$ bits, mas o algoritmo gasta $\Theta(2^n)$ (vetor de contagem de tamanho $k$): exponencial no tamanho da entrada. Com $k=O(n)$, o custo é $\Theta(n)$. Algoritmos assim, polinomiais no \emph{valor} dos números mas não no seu tamanho em bits, são \textbf{pseudopolinomiais}.
+
+\resp{cx-ordem} $\log^2n\ \prec\ \sqrt n\ \prec\ 2^{\log_2n}=n\ \prec\ n\log n\ \prec\ n^{\log_23}\approx n^{1{,}585}\ \prec\ n^{100}\ \prec\ 1{,}01^n\ \prec\ n!\ \prec\ 2^{2^n}$. Toda exponencial $a^n$ com $a>1$ supera qualquer polinômio, por menor que seja $a$.
+
+\resp{cx-vf} (a) V: $2^{n+1}=2\cdot2^n$. (b) F: $2^{2n}/2^n=2^n\to\infty$. (c) V: $\log(n^2)=2\log n$. (d) V: polilogaritmos são $o(n^\varepsilon)$ para todo $\varepsilon>0$. (e) V: $n^{\log n}=2^{\log^2n}$ e $\log^2n=o(n)$. (f) F: $f=2n$ e $g=n$ dão $2^{2n}\ne O(2^n)$.
+
+\resp{cx-fat} Cota superior: $n!\le n^n$, logo $\log n!\le n\log n$. Cota inferior: os $n/2$ maiores fatores de $n!$ são $\ge n/2$, então $n!\ge(n/2)^{n/2}$ e $\log n!\ge\frac n2\log\frac n2=\frac n2\log n-\frac n2=\Omega(n\log n)$.
+
+\resp{cx-incomp} $f(n)=n$ se $n$ é par e $1$ se $n$ é ímpar; $g(n)=1$ se $n$ é par e $n$ se $n$ é ímpar. Nos pares, $f/g=n\to\infty$; nos ímpares, $g/f\to\infty$. Outro exemplo: $f=n$ e $g=n^{1+\sin n}$.
+
+\resp{cx-lacos} (a) O laço interno roda $i$ vezes para $i=1,2,4,\dots,\le n$: o total é $1+2+4+\cdots+2^{\floor{\log n}}<2n$, isto é, $\Theta(n)$ --- e não $n\log n$. (b) Para cada $i$, o laço interno roda $\floor{\log_2n}+1$ vezes: $\Theta(n\log n)$.
+
+\resp{cx-primo} Não. A entrada é o número $N$, que ocupa $b=\Theta(\log N)$ bits. O algoritmo faz $\Theta(\sqrt N)=\Theta(2^{b/2})$ divisões: é exponencial em $b$ (pseudopolinomial). Existe algoritmo polinomial para testar primalidade, mas não é esse.
+
+\resp{cx-def3} Cota superior: $3n^3-100n^2+7\le3n^3+7\le4n^3$ para $n\ge2$. Cota inferior: $3n^3-100n^2+7\ge2n^3$ equivale a $n^3\ge100n^2-7$, que vale para $n\ge100$. Logo $2n^3\le3n^3-100n^2+7\le4n^3$ para $n\ge100$: constantes $c_1=2$, $c_2=4$, $n_0=100$.
+
+\resp{cx-nlogn} Se fosse, existiriam $c,n_0$ com $n^2\le c\,n\log n$, isto é, $n/\log n\le c$, para todo $n\ge n_0$. Mas $n/\log n\to\infty$. Contradição.
+
+\resp{cx-base} $\log_an=\log_bn/\log_ba$, e $1/\log_ba$ é uma constante positiva; logo cada um é constante vezes o outro. Já $a^n/b^n=(a/b)^n$ tende a 0 ou a $\infty$ quando $a\ne b$: a base de uma exponencial importa.
+
+\resp{cx-prop} (a) $f\le c_1g$ para $n\ge n_1$ e $g\le c_2h$ para $n\ge n_2$ dão $f\le c_1c_2h$ para $n\ge\max\{n_1,n_2\}$. (b) $\max\{f,g\}\le f+g\le2\max\{f,g\}$. (c) Se $c_1g\le f\le c_2g$, então $\frac1{c_2}f\le g\le\frac1{c_1}f$.
+
+\resp{cx-somak} Cota superior: cada termo é $\le n^k$, logo a soma é $\le n^{k+1}$. Cota inferior: os $\ceil{n/2}$ últimos termos são $\ge(n/2)^k$, logo a soma é $\ge\frac n2(n/2)^k=n^{k+1}/2^{k+1}$.
+
+\resp{cx-harm} Como $1/x$ é decrescente, $\int_i^{i+1}\frac{dx}x\le\frac1i\le\int_{i-1}^i\frac{dx}x$. Somando, $\ln(n+1)\le H_n\le1+\ln n$. Logo $H_n=\Theta(\log n)$.
+
+\resp{cx-busca} Pior caso: $n$ comparações ($x$ na última posição, ou ausente). Melhor caso: 1. Caso médio: $\sum_{i=1}^n\frac1n\cdot i=\frac{n+1}2$.
+
+\resp{cx-triplo} O corpo roda $j-i+1$ vezes para cada par $i\le j$: $\sum_{1\le i\le j\le n}(j-i+1)=\sum_{d=0}^{n-1}(n-d)(d+1)=\frac{n(n+1)(n+2)}6$ (para $n=1$ e $n=2$ dá 1 e 4). Logo $\Theta(n^3)$.
+
+\resp{cx-loglog} Após $t$ iterações, $j=2^{2^t}$. O laço para quando $2^{2^t}>n$, isto é, quando $2^t>\log n$, ou $t>\log\log n$: $\Theta(\log\log n)$.
+
+\resp{cx-fatexp} $\frac{2^n}{n!}=\prod_{i=1}^n\frac2i\le2\cdot1\cdot\left(\frac23\right)^{n-2}\to0$. $\frac{n!}{n^n}=\prod_{i=1}^n\frac in\le\frac1n\to0$ (cada fator é $\le1$ e o primeiro é $1/n$).
+
+\resp{cx-binaria} No pior caso, $\floor{\log_2n}+1$ comparações (cada passo descarta pelo menos metade do intervalo). Para $n=1000$: $\floor{9{,}97}+1=10$. Para $n=10^6$: $\floor{19{,}93}+1=20$.
+
+\resp{cx-inf} Argumento do adversário: o adversário responde ``diferente'' a toda comparação. Se o algoritmo parar depois de menos de $n$ comparações, alguma posição $p$ nunca foi comparada com $x$. Se ele responder ``não está'', o adversário coloca $x$ na posição $p$; se responder ``está'', o adversário põe em $p$ um valor diferente de $x$. Em ambos os casos, as respostas dadas continuam consistentes e o algoritmo erra. Logo são necessárias $n$ comparações, e a busca sequencial, que faz $n$, é ótima.
+
+\resp{cx-max} (a) V: $\max\{f,g\}\le f+g\le2\max\{f,g\}$. (b) V: de $f\le cg$ vem $\log f\le\log c+\log g\le(\abs{\log c}+1)\log g$, pois $\log g\ge1$. (c) V: $f^2\le c^2g^2$. (d) F: para $f=2^n$, $f(n)/f(n/2)=2^{n/2}\to\infty$.

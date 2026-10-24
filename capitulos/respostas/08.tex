@@ -1,0 +1,40 @@
+\respcap{cap:selecao}
+\resp{se-quick} Quickselect com pivô aleatório (§\ref{sec:selecao}): particione em $S_1=\{<m\}$, $S_2=\{=m\}$ e $S_3=\{>m\}$ e recursione apenas no lado que contém o $k$-ésimo, com $k=\ceil{n/2}$. Com probabilidade pelo menos $1/2$, o pivô fica entre os quartis e o lado mantido tem no máximo $3n/4$ elementos; agrupando as chamadas em fases, $E[T(n)]\le E[T(3n/4)]+2cn$, e portanto $E[T(n)]\le8cn=O(n)$.
+
+\resp{se-qs} Use como pivô a mediana exata, obtida pela mediana das medianas em $O(n)$. As duas partes têm no máximo $n/2$ elementos, e $T(n)=2T(n/2)+O(n)=O(n\log n)$ no \textbf{pior} caso. Na prática, as constantes da mediana das medianas (grupos, medianas, duas recursões) tornam esse algoritmo bem mais lento que o quicksort com pivô aleatório ou mediana de três, cujo pior caso é raríssimo. Por isso, implementações reais preferem trocar para o heapsort quando a recursão fica profunda demais.
+
+\resp{se-trace} Medianas dos grupos: $12,9,11,14,16$; pivô $m=12$, a mediana das medianas. $|S_1|=11$ (os elementos $1,\dots,11$) e $|S_3|=13$; ambos são pelo menos $3\floor{25/10}=6$. (O algoritmo, de fato, ordenaria diretamente, pois $n\le49$; aqui o exemplo serve só para praticar a escolha do pivô.)
+
+\resp{se-grupos} Grupos de 7: pelo menos metade das $n/7$ medianas é maior ou igual a $m$, e cada uma traz 4 elementos maiores ou iguais a $m$; há pelo menos $4\cdot\frac n{14}=\frac{2n}7$ elementos de cada lado, e cada parte tem no máximo $\frac{5n}7$ (mais uma constante). Então $T(n)\le T(n/7)+T(5n/7)+O(n)$, com $\frac17+\frac57=\frac67<1$: o algoritmo é \textbf{linear}. Grupos de 3: só há $2\cdot\frac n6=\frac n3$ elementos garantidos de cada lado, e $T(n)\le T(n/3)+T(2n/3)+O(n)$, com $\frac13+\frac23=1$: $\Theta(n\log n)$, \textbf{não} linear.
+
+\resp{se-kmenores} Encontre o $k$-ésimo menor $x$ pela mediana das medianas, em $O(n)$, e percorra o conjunto separando os elementos menores que $x$, completando com cópias de $x$ até ter $k$ elementos: $O(n)$. Para devolvê-los em ordem crescente, ordene esses $k$ elementos: $O(n+k\log k)$.
+
+\resp{se-oleo} O comprimento total é $\sum_i|y_i-y|$, que é minimizado em qualquer \textbf{mediana} dos $y_i$: se há mais poços acima do que abaixo de $y$, subir um pouco o oleoduto diminui a soma, e vice-versa; na mediana, os dois lados se equilibram. A mediana é encontrada em $O(n)$.
+
+\resp{se-piorqs} Se o pivô escolhido for sempre o maior elemento --- por exemplo, com o pivô determinístico ``último elemento'' num vetor crescente, ou por um azar sistemático na escolha aleatória ---, cada chamada descarta apenas o pivô, e $T(n)=T(n-1)+\Theta(n)=\Theta(n^2)$. Isso acontece mesmo procurando o mínimo ($k=1$). Com pivô aleatório, esse caso tem probabilidade desprezível.
+
+\resp{se-qstrace} 1ª chamada: pivô 1, $S_1=\emptyset$, $S_2=\{1\}$, $S_3=\{7,2,9,4,3,8,6\}$; como $0<4$ e $1<4$, segue para $S_3$ com $k=3$. 2ª: pivô 6, $S_1=\{2,4,3\}$, $S_2=\{6\}$, $S_3=\{7,9,8\}$; como $|S_1|=3\ge3$, segue para $S_1$ com $k=3$. 3ª: pivô 3, $S_1=\{2\}$, $S_2=\{3\}$, $S_3=\{4\}$; como $1<3$ e $2<3$, segue para $S_3$ com $k=1$. 4ª: pivô 4, $S_2=\{4\}$: devolve \textbf{4}, que é de fato o quarto menor.
+
+\resp{se-n49} Para $n=49$: $49-3\cdot4=37>36{,}75=3\cdot49/4$. Para $n=50$: $50-3\cdot5=35\le37{,}5$. A garantia ``cada lado tem no máximo $3n/4$'' só vale a partir de $n=50$; por isso os conjuntos com até 49 elementos são resolvidos diretamente.
+
+\resp{se-ordmed} Ordenar as $n/5$ medianas custa $O(\frac n5\log\frac n5)=O(n\log n)$, e a recorrência passa a ser $T(n)=T(3n/4)+O(n\log n)$, cuja solução é $O(n\log n)$ (soma geométrica). O algoritmo continua correto, mas deixa de ser linear: a recursão sobre as medianas é essencial.
+
+\resp{se-lista} Sim. Formar os grupos de 5, calcular suas medianas e particionar em $S_1$, $S_2$, $S_3$ são operações que percorrem a sequência uma vez, o que se faz numa lista encadeada em tempo linear; nenhum passo depende de acesso direto por posição.
+
+\resp{se-quartis} Selecione o elemento de posição $\ceil{n/2}$ (a mediana) e particione; depois selecione, em cada metade, o elemento do meio. São três seleções sobre conjuntos de tamanho no máximo $n$, em $O(n)$ no total.
+
+\resp{se-proximos} Ache a mediana $m$ em $O(n)$. Calcule $d_i=|x_i-m|$ para todo $i$ e selecione o $k$-ésimo menor $d$, digamos $d^*$, em $O(n)$. Os $k$ números mais próximos são os $x_i$ com $d_i<d^*$, completados com elementos de $d_i=d^*$ até somar $k$ (excluindo a própria mediana, se ela não deve contar). Total $O(n)$.
+
+\resp{se-ponderada} Recursão parecida com a seleção: ache a mediana $m$ (por valor) do conjunto atual em $O(n)$ e some os pesos $W_<$ dos elementos menores que $m$ e $W_>$ dos maiores. Se $W_<<1/2$ e $W_>\le1/2$, $m$ é a resposta. Se $W_<\ge1/2$, a resposta está entre os menores: descarte os maiores (e $m$), somando o peso deles a um contador do lado direito. Caso contrário, faça o simétrico. Cada passo descarta metade dos elementos: $T(n)=T(n/2)+O(n)=O(n)$.
+
+\resp{se-dois} Compare as medianas $X[\ceil{n/2}]$ e $Y[\ceil{n/2}]$. Se a de $X$ é menor, a mediana procurada não está na metade inferior de $X$ nem na metade superior de $Y$; descarte essas duas metades, de mesmo tamanho, o que não muda a mediana do conjunto restante. Se é maior, descarte as outras duas metades. Repita até sobrarem poucos elementos e resolva diretamente. Cada passo divide $n$ por 2: $O(\log n)$.
+
+\resp{se-segundo} Organize um torneio eliminatório: compare os elementos aos pares e faça os vencedores (os menores) se enfrentarem, até restar o mínimo, com $n-1$ comparações. O segundo menor perdeu, necessariamente, para o mínimo em algum confronto. O mínimo disputou no máximo $\ceil{\log_2n}$ confrontos; o menor dos que perderam para ele, encontrado com $\ceil{\log_2n}-1$ comparações, é o segundo menor. Total: $n+\ceil{\log_2n}-2$.
+
+\resp{se-cinco} Sejam $a,b,c,d,e$. Compare $a$ com $b$ e $c$ com $d$; suponha $a<b$ e $c<d$ (2 comparações). Compare os menores, $a$ e $c$; suponha $a<c$ (3). Então $a$ é menor que $b$, $c$ e $d$, e não pode ser a mediana; a mediana dos cinco é o segundo menor de $\{b,c,d,e\}$, com $c<d$ já sabido. Compare $b$ com $e$; suponha $b<e$ (4). Compare $b$ com $c$ (5): se $b<c$, o menor dos quatro é $b$ e a resposta é $\min\{c,e\}$; se $c<b$, o menor é $c$ e a resposta é $\min\{b,d\}$. A última comparação (6) decide.
+
+\resp{se-inferior} Considere o grafo com os $n$ elementos como vértices e uma aresta para cada comparação feita. Se ele fosse desconexo, haveria uma componente $C$ que não contém a mediana devolvida $x$. Somando a todos os elementos de $C$ uma constante muito grande (se algum elemento de $C$ é menor que $x$) ou subtraindo (se todos são maiores), todas as comparações feitas continuariam com o mesmo resultado, mas o número de elementos menores que $x$ mudaria, e $x$ deixaria de ser a mediana. Logo o grafo é conexo e tem pelo menos $n-1$ arestas.
+
+\resp{se-esperado} Com pivô aleatório, cada posição final $i$ do pivô tem probabilidade $1/n$, e a partição custa no máximo $n$ comparações. No pior caso, a recursão vai para o lado maior, de tamanho $\max\{i-1,n-i\}$, e cada tamanho entre $\floor{n/2}$ e $n-1$ aparece no máximo duas vezes; daí a desigualdade. Supondo $E[T(i)]\le4i$ para $i<n$: $E[T(n)]\le n+\frac2n\sum_{i=\floor{n/2}}^{n-1}4i\le n+\frac8n\cdot\frac{3n^2}8=4n$, usando $\sum_{i=\floor{n/2}}^{n-1}i\le\frac{3n^2}8$.
+
+\resp{se-maior} O $k$-ésimo maior é o $(n-k+1)$-ésimo menor. O percentil 90 de $n$ notas é o elemento de posição $\ceil{0{,}9n}$ na ordem crescente, obtido por uma seleção em $O(n)$.

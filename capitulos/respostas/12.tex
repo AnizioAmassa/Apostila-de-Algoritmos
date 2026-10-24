@@ -1,0 +1,40 @@
+\respcap{cap:fw}
+\resp{fw-sub} $D(i,j,S)=\min\big\{W(i,j),\ \min_{v\in S}\{D(i,v,S\setminus\{v\})+D(v,j,S\setminus\{v\})\}\big\}$. Há $n^2\cdot2^n$ subproblemas, um por par e por subconjunto: exponencial. O Floyd-Warshall fixa uma ordem dos vértices e só usa os $n+1$ prefixos $\{1,\dots,k\}$; em cada passo, decide-se apenas se o vértice $k$ entra ou não como intermediário. Isso dá $O(n^2)$ subproblemas por valor de $k$ e $\Theta(n^3)$ no total.
+
+\resp{fw-slide} Ver o Exemplo da §\ref{sec:fw}: as linhas de $D^5$ são $(0,1,2,3,5)$, $(2,0,1,2,4)$, $(1,2,0,1,3)$, $(3,4,5,0,2)$ e $(4,5,6,1,0)$. De 5 a 3: $P(5,3)=2$, $P(5,2)=1$, $P(5,1)=4$ e $P(5,4)=5$, logo $5\to4\to1\to2\to3$, com custo 6. De 2 a 1: $P(2,1)=3$ e $P(2,3)=2$, logo $2\to3\to1$, com custo 2.
+
+\resp{fw-neg} Linhas da matriz final, de 1 a 5: $(0,1,-3,2,-4)$, $(3,0,-4,1,-1)$, $(7,4,0,5,3)$, $(2,-1,-5,0,-2)$ e $(8,5,1,6,0)$. A diagonal é toda nula: não há ciclo negativo. Por exemplo, $D(1,2)=1$ pelo caminho $1\to5\to4\to3\to2$, de custo $-4+6-5+4$.
+
+\resp{fw-fecho} $T^0(i,j)$ é verdadeiro se $i=j$ ou se $ij\in E$, e $T^k(i,j)=T^{k-1}(i,j)\lor\big(T^{k-1}(i,k)\land T^{k-1}(k,j)\big)$, com $\Theta(n^3)$ operações lógicas. No exemplo, os vértices $1$, $2$ e $3$ alcançam $\{1,2,3,4\}$; o $4$ alcança apenas a si mesmo, e o $5$ também.
+
+\resp{fw-ciclo} Inicialize $D(i,i)=\infty$, em vez de 0, e execute o algoritmo: ao final, $D(i,i)$ é o peso do menor ciclo que passa por $i$, e a resposta é $\min_iD(i,i)$. No exemplo, $D(1,1)=D(2,2)=D(3,3)=6$ (o ciclo $1\to2\to3\to1$) e $D(4,4)=7$ (o ciclo $4\to3\to4$): a resposta é 6.
+
+\resp{fw-negciclo} Se não há ciclo negativo, todo passeio fechado tem peso maior ou igual a zero; $D(i,i)$ começa em 0 e só poderia diminuir por meio de um passeio fechado de peso negativo, logo continua 0. Se há um ciclo negativo, seja $k$ o vértice de maior índice do ciclo e $i$ outro vértice dele. Os dois trechos do ciclo, de $i$ a $k$ e de $k$ a $i$, só têm intermediários de índice menor que $k$; por isso, depois da iteração $k-1$, $D(i,k)$ e $D(k,i)$ são no máximo os pesos desses trechos. Na iteração $k$, então, $D(i,i)\le D(i,k)+D(k,i)\le$ peso do ciclo $<0$.
+
+\resp{fw-dij} Floyd-Warshall: $n^3=10^{12}$ operações. $n$ execuções do Dijkstra com heap: $n\cdot(n+m)\log n\approx10^4\cdot6\cdot10^4\cdot14\approx8\cdot10^9$, bem melhor nesse grafo esparso. Com $m\approx n^2/2$, as $n$ execuções do Dijkstra custam cerca de $n\cdot m\log n\approx n^3\log n/2$, mais que o Floyd-Warshall; com o Dijkstra em vetor ($O(n^2)$ por execução), o total também é $\Theta(n^3)$, e o Floyd-Warshall é mais simples e aceita pesos negativos.
+
+\resp{fw-4v} $D^1$: linhas $(0,4,\infty,10)$, $(\infty,0,3,\infty)$, $(7,11,0,1)$ e $(2,6,\infty,0)$. $D^2$: $(0,4,7,10)$, $(\infty,0,3,\infty)$, $(7,11,0,1)$ e $(2,6,9,0)$. $D^3$: $(0,4,7,8)$, $(10,0,3,4)$, $(7,11,0,1)$ e $(2,6,9,0)$. $D^4$: $(0,4,7,8)$, $(6,0,3,4)$, $(3,7,0,1)$ e $(2,6,9,0)$.
+
+\resp{fw-4vcam} $P^4$ tem as linhas $(-,1,2,3)$, $(4,-,2,3)$, $(4,1,-,3)$ e $(4,1,2,-)$. De 2 a 1: $P(2,1)=4$, $P(2,4)=3$ e $P(2,3)=2$, logo $2\to3\to4\to1$, com custo $3+1+2=6$. De 4 a 3: $P(4,3)=2$, $P(4,2)=1$ e $P(4,1)=4$, logo $4\to1\to2\to3$, com custo $2+4+3=9$.
+
+\resp{fw-negex} Com as arestas $1\to2$ (1) e $2\to1$ ($-3$), o ciclo $1\to2\to1$ pesa $-2$. Na iteração $k=1$, $D(2,2)$ passa a $D(2,1)+D(1,2)=-2$; na iteração $k=2$, $D(1,1)$ passa a $D(1,2)+D(2,1)=-2$. Os valores negativos na diagonal sinalizam o ciclo. Os demais valores passam a corresponder a \emph{passeios} que repetem vértices e não são mais custos de caminhos mínimos, que nem estão definidos, pois percorrer o ciclo mais vezes diminuiria o custo indefinidamente.
+
+\resp{fw-nd} Troque cada aresta não direcionada por duas arestas direcionadas de mesmo peso; a matriz $W$ fica simétrica, e $D$ também. Uma aresta não direcionada de peso negativo $uv$ é, ela mesma, um ciclo negativo $u\to v\to u$; por isso, com o Floyd-Warshall, pesos negativos só são aceitáveis em digrafos.
+
+\resp{fw-conta} O teste é executado exatamente $n^3$ vezes (três laços de 1 a $n$). A matriz $D$ ocupa $n^2$ posições; com a matriz $P$, o total é $2n^2$. Calcular $D^0,\dots,D^n$ separadamente usaria $\Theta(n^3)$ de memória, o que a atualização no lugar evita.
+
+\resp{fw-inplace} Na iteração $k$, os valores usados são $D(i,k)$ e $D(k,j)$. Eles não mudam durante a iteração: $D^k(i,k)=\min\{D^{k-1}(i,k),\ D^{k-1}(i,k)+D^{k-1}(k,k)\}=D^{k-1}(i,k)$, pois $D(k,k)=0$ sem ciclos negativos, e o mesmo vale para $D(k,j)$. Assim, não importa se uma entrada da linha ou da coluna $k$ já foi atualizada; e as demais entradas só podem diminuir para valores que correspondem a caminhos reais, nunca abaixo de $D^k$.
+
+\resp{fw-largura} Troque $\min$ por $\max$ e $+$ por $\min$: $C^k(i,j)=\max\{C^{k-1}(i,j),\ \min\{C^{k-1}(i,k),\,C^{k-1}(k,j)\}\}$, com $C^0(i,j)$ igual à capacidade da aresta $ij$ (0 se ela não existe e $\infty$ para $i=j$). O argumento de correção é o mesmo, e o custo é $\Theta(n^3)$.
+
+\resp{fw-diam} Excentricidades (o maior valor de cada linha de $D^5$): 5, 4, 3, 5 e 6 para os vértices 1 a 5. O diâmetro é 6 (a distância de 5 a 3), e o centro é o vértice 3, de excentricidade 3.
+
+\resp{fw-aresta} A aresta $uv$ está em algum caminho mínimo de $i$ a $j$ se e somente se $D(i,u)+W(u,v)+D(v,j)=D(i,j)$. Ela está em algum caminho mínimo do grafo se e somente se $W(u,v)=D(u,v)$, pois então ela própria é um caminho mínimo de $u$ a $v$.
+
+\resp{fw-atualiza} Os novos caminhos mínimos ou não usam a aresta $uv$, e já estão em $D$, ou a usam uma única vez (com pesos que não criam ciclo negativo). Logo, para todo par, $D'(i,j)=\min\{D(i,j),\ D(i,u)+w'+D(v,j)\}$: $O(n^2)$.
+
+\resp{fw-novo} Calcule primeiro as distâncias de e para o novo vértice $n+1$: $D(i,n+1)=\min_u\{D(i,u)+W(u,n+1)\}$ e $D(n+1,j)=\min_u\{W(n+1,u)+D(u,j)\}$, em $O(n^2)$ no total. Depois, para todo par $(i,j)$, faça $D(i,j):=\min\{D(i,j),\ D(i,n+1)+D(n+1,j)\}$, em $O(n^2)$. É exatamente uma iteração do Floyd-Warshall com $k=n+1$.
+
+\resp{fw-contar} Mantenha $C(i,j)$, com $C(i,i)=1$ e $C(i,j)=1$ se há aresta $ij$ (0 se não há). Na iteração $k$, para $i\ne k\ne j$: se $D(i,k)+D(k,j)<D(i,j)$, faça $D(i,j):=D(i,k)+D(k,j)$ e $C(i,j):=C(i,k)\cdot C(k,j)$; se $D(i,k)+D(k,j)=D(i,j)$, faça $C(i,j):=C(i,j)+C(i,k)\cdot C(k,j)$. Com pesos positivos, cada caminho mínimo é contado exatamente uma vez: na iteração do seu vértice intermediário de maior índice.
+
+\resp{fw-bits} Represente a linha $i$ da matriz como um vetor de $n$ bits, ocupando $\ceil{n/w}$ palavras. A atualização $T(i,\cdot):=T(i,\cdot)\lor T(k,\cdot)$, feita sempre que $T(i,k)$ é verdadeiro, custa $O(n/w)$ operações sobre palavras. Para cada $k$ e cada $i$, isso dá $O(n^2\cdot n/w)=O(n^3/w)$ no total.

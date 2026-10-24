@@ -1,0 +1,42 @@
+\respcap{cap:sortlin}
+\resp{sl-t2} (A) \textbf{Counting sort}: $k=101$ é muito menor que $n$, o custo é $\Theta(n+k)=\Theta(n)$ e bastam 101 contadores; uma ordenação por comparação faria cerca de $n\log_2n\approx2{,}3\cdot10^8$ comparações. (B) \textbf{Radix sort}: o counting sort é inviável ($k=10^{12}$); com $d=12$ e $b=10$ são 12 passadas lineares, $\Theta(d(n+b))\approx1{,}2\cdot10^7$ (ou 4 e 3 passadas nas bases $10^3$ e $10^4$). (C) \textbf{Bucket sort} com $n$ baldes: $\Theta(n)$ esperado para entrada uniforme; counting e radix não se aplicam a reais. (D) \textbf{Radix sort} depois de somar $10^9$ a todos os valores (as chaves passam a estar em $[0,2\cdot10^9]$, com cerca de 31 bits: 2 passadas na base $2^{16}$); o counting sort exigiria $2\cdot10^9$ contadores. Mergesort ou quicksort, em $\Theta(n\log n)$, seriam aceitáveis, mas o radix é linear. (E) Só resta comparar: \textbf{mergesort}, com garantia de $\Theta(n\log n)$ e estabilidade, boa para registros; ou quicksort, mais rápido em média e in-place, mas $\Theta(n^2)$ no pior caso e não estável.
+
+\resp{sl-var} Radix: agrupe os números pelo número de dígitos (um counting sort por $d_i$). Como um número com menos dígitos é menor, basta ordenar cada grupo separadamente com um radix de $d$ passadas, sendo $d$ o tamanho dos números do grupo, e concatenar os grupos em ordem crescente de $d$. Um grupo com $n_d$ números de $d$ dígitos custa $O(d\,(n_d+b))$; somando, $O\big(\sum_id_i+b\cdot D\big)$, onde $D\le\max d_i$ é o número de tamanhos distintos. American Flag: primeiro separe por tamanho (mesma ideia); dentro de cada grupo, a recursão por dígito processa cada dígito de cada número uma única vez, com $O(b)$ de trabalho por chamada.
+
+\resp{sl-str} Radix (do último caractere para o primeiro): complete as strings menores à direita com um símbolo ``menor que todos'' até o comprimento máximo $L$ e ordene da última posição para a primeira, com counting sort estável sobre o alfabeto, em $O(L(n+|\Sigma|))$; para não pagar o custo de completar, agrupe por comprimento como no exercício anterior. American Flag (do primeiro caractere para o último): distribua pelo primeiro caractere, com um balde extra para ``a string terminou'', que vem antes de todos, e chame recursivamente cada balde com o caractere seguinte; strings que terminam saem da recursão.
+
+\resp{sl-count} Contagens: $C=[2,0,2,3,0,1]$. Depois das somas acumuladas: $C=[2,2,4,7,7,8]$. Percorrendo $A$ de trás para frente, cada $A[j]$ vai para a posição $C[A[j]]$, que é então decrementada. Saída: $B=[0,0,2,2,3,3,3,5]$.
+
+\resp{sl-radix} Pelas unidades: $720,355,436,457,657,329,839$. Pelas dezenas: $720,329,436,839,355,457,657$. Pelas centenas: $329,355,436,457,657,720,839$.
+
+\resp{sl-n3} Escreva cada número na base $n$: como $x<n^3$, ele tem no máximo 3 dígitos, $x\bmod n$, $\floor{x/n}\bmod n$ e $\floor{x/n^2}$. O radix sort com 3 passadas de counting sort, cada uma com $k=n$, custa $\Theta(3(n+n))=\Theta(n)$.
+
+\resp{sl-frente} A saída continua ordenada, pois cada valor ainda ocupa o seu bloco, mas os elementos iguais saem em ordem \emph{invertida}: o primeiro a ser lido vai para a última posição do bloco. O counting sort deixa de ser estável, e o radix sort que o usa em cada passada \textbf{deixa de ordenar corretamente}, porque cada passada desfaz a ordem obtida pelos dígitos anteriores.
+
+\resp{sl-bucket} Se todos os elementos caírem no mesmo balde, a inserção custa $\Theta(n^2)$. Ordene cada balde com mergesort ou heapsort: o pior caso passa a $O(n\log n)$, e o caso esperado continua $\Theta(n)$, porque um balde com $n_i$ elementos custa $O(n_i\log n_i)\le O(n_i^2)$ e $\sum_iE[n_i^2]=O(n)$.
+
+\resp{sl-msd} No radix que começa pelo dígito menos significativo, a passada pelo dígito $i$ precisa preservar, entre elementos com o mesmo dígito $i$, a ordem estabelecida pelos dígitos $1,\dots,i-1$, que é a única informação sobre eles. No que começa pelo mais significativo, depois de separar pelo primeiro dígito, cada bloco é ordenado recursivamente e de forma independente pelos dígitos seguintes; a ordem dentro do bloco antes da recursão não importa, porque a recursão a refaz.
+
+\resp{sl-neg} Some $m$ a todos os valores, que passam a estar em $[0,2m]$, ordene com o counting sort e subtraia $m$ na saída (ou indexe o vetor de contadores por $x+m$). O custo é $\Theta(n+m)$.
+
+\resp{sl-n2} O counting sort direto usaria $k=n^2$ contadores e custaria $\Theta(n^2)$. Na base $n$, cada número tem 2 dígitos, e o radix sort faz 2 passadas de counting sort com $k=n$: $\Theta(n)$ de tempo e de memória.
+
+\resp{sl-strtrace} Pela terceira letra: SEA TEA MOB TAB DOG RUG DIG BIG BAR EAR TAR COW ROW NOW BOX FOX. Pela segunda: TAB BAR EAR TAR SEA TEA DIG BIG MOB DOG COW ROW NOW BOX FOX RUG. Pela primeira: BAR BIG BOX COW DIG DOG EAR FOX MOB NOW ROW RUG SEA TAB TAR TEA.
+
+\resp{sl-buckettrace} Balde 1: $0{,}17;\ 0{,}12$. Balde 2: $0{,}26;\ 0{,}21;\ 0{,}23$. Balde 3: $0{,}39$. Balde 6: $0{,}68$. Balde 7: $0{,}78;\ 0{,}72$. Balde 9: $0{,}94$. Ordenando cada balde e concatenando: $0{,}12;\ 0{,}17;\ 0{,}21;\ 0{,}23;\ 0{,}26;\ 0{,}39;\ 0{,}68;\ 0{,}72;\ 0{,}78;\ 0{,}94$.
+
+\resp{sl-base} Com $b=2^4$: 8 passadas de custo $\approx n+16$. Com $b=2^8$: 4 passadas de custo $\approx n+256$. Com $b=2^{16}$: 2 passadas de custo $\approx n+65536$. Como $n=10^6$, o termo $b$ é desprezível nas três, e a base $2^{16}$ faz menos passadas, com custo total $\approx2\cdot10^6$. Na prática, a base $2^8$ também é muito usada, porque o vetor de contadores cabe na memória cache.
+
+\resp{sl-prova} Hipótese: depois da passada $i$, a lista está ordenada pelos $i$ dígitos menos significativos. Para $i=1$ vale, pois a passada ordena pelo dígito 1. Suponha válido para $i-1$ e tome dois números $x$ e $y$. Se os seus dígitos $i$ diferem, a passada $i$ os coloca na ordem desse dígito, que decide a comparação entre os $i$ últimos dígitos. Se são iguais, a passada, por ser estável, mantém a ordem relativa que eles tinham, que, pela hipótese de indução, é a ordem pelos $i-1$ últimos dígitos. Em ambos os casos, ficam na ordem certa pelos $i$ últimos dígitos.
+
+\resp{sl-registros} Counting sort pela nota ($k=11$), que é \textbf{estável}: alunos com a mesma nota continuam na ordem em que estavam, isto é, em ordem alfabética. O custo é $\Theta(n)$. Um algoritmo não estável, como o quicksort ou o heapsort, poderia desfazer a ordem alfabética.
+
+\resp{sl-datas} Do menos para o mais significativo: primeiro pelo dia (base 31 ou 32), depois pelo mês (base 12) e por fim pelo ano (base igual à amplitude dos anos, ou em duas passadas de dígitos), sempre com passadas estáveis.
+
+\resp{sl-dup} Ordene com o radix sort na base $n+1$: os números de $[0,n^2]$ têm no máximo 3 dígitos nessa base (2 bastam para valores menores que $(n+1)^2$), e a ordenação custa $O(n)$. Depois, verifique se há dois elementos vizinhos iguais.
+
+\resp{sl-intervalo} Calcule as contagens acumuladas $C[i]=\#\{j:A[j]\le i\}$, como no counting sort, em $O(n+k)$. A resposta para $[a,b]$ é $C[b]-C[a-1]$ (com $C[-1]=0$), em $O(1)$.
+
+\resp{sl-bucketruim} Por exemplo, $x_i=\frac{i}{n^2}$ para $i=1,\dots,n$: todos ficam no intervalo $[0,1/n)$ e caem no balde 0. Se estiverem em ordem decrescente na entrada, a inserção nesse balde faz $\Theta(n^2)$ deslocamentos.
+
+\resp{sl-flag} Cada nível da recursão usa um vetor de $b$ contadores (e as posições de início dos blocos); a recursão tem profundidade $d$, de modo que a memória auxiliar é $O(b\cdot d)$, mais a pilha de recursão. Diz-se que ele é in-place porque essa memória não depende de $n$: os elementos são permutados dentro do próprio vetor, sem um vetor auxiliar de tamanho $n$.

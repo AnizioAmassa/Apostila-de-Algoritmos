@@ -1,0 +1,180 @@
+% ================================================================
+\chapter{Busca em profundidade em digrafos}\label{cap:dfsdig}\label{sec:dfsdig}
+% ================================================================
+\begin{objetivos}
+\begin{itemize}
+  \item A busca em profundidade em digrafos e os quatro tipos de aresta: árvore, retorno, avanço e cruzamento.
+  \item A caracterização dos tipos de aresta pelos intervalos de vida e o teste de aciclicidade.
+  \item As componentes fortemente conexas, calculadas numa única busca com o valor $old(v)$.
+  \item A ordenação topológica de digrafos acíclicos.
+\end{itemize}
+\end{objetivos}
+
+Em grafos direcionados, a mesma busca em profundidade do capítulo anterior produz quatro tipos de aresta, e não apenas dois; os intervalos de vida dos vértices continuam a caracterizá-los. Com essa classificação, decide-se se um digrafo tem ciclo, obtém-se uma ordenação topológica de um digrafo acíclico e calculam-se as componentes fortemente conexas --- tudo em tempo linear.
+
+\section{Classificação das arestas}
+A busca é a mesma do Capítulo~\ref{cap:dfs}, percorrendo a vizinhança de saída $N_{out}(v)$ e com o laço externo, de modo que a floresta de profundidade alcança todos os vértices. Quando a busca, a partir de $v$, examina uma aresta $vw$, há quatro possibilidades.
+\begin{pseudo}{Classificação das arestas na busca em profundidade em digrafos}
+\begin{algorithmic}
+\Procedure{P}{$v$}
+  \State $t:=t+1$;\ $PE(v):=t$
+  \For{\textbf{cada} $w\in N_{out}(v)$}
+    \If{$PE(w)=0$} \State $vw$ é de \textbf{árvore};\ $pai(w):=v$;\ \Call{P}{$w$}
+    \ElsIf{$PS(w)=0$} \State $vw$ é de \textbf{retorno} \Comment{$w$ ainda está ativo: é ancestral de $v$}
+    \ElsIf{$PE(v)<PE(w)$} \State $vw$ é de \textbf{avanço} \Comment{$w$ é um descendente que já terminou}
+    \Else \State $vw$ é de \textbf{cruzamento} \Comment{$w$ terminou antes de $v$ começar}
+    \EndIf
+  \EndFor
+  \State $t:=t+1$;\ $PS(v):=t$
+\EndProcedure
+\end{algorithmic}
+\end{pseudo}
+\begin{center}\small
+\begin{tabularx}{\linewidth}{@{}l>{\raggedright\arraybackslash}p{6.2cm}X@{}}
+\toprule
+Tipo de $vw$ & Caracterização pelos intervalos & Observação\\
+\midrule
+Árvore & $I(v)\supset I(w)$ e $PE(w)=0$ na hora da visita & liga pai e filho\\
+Avanço & $I(v)\supset I(w)$ e $PE(w)\ne0$ na hora da visita & vai a um descendente que não é filho\\
+Retorno & $I(v)\subset I(w)$ & vai a um ancestral e \textbf{fecha um ciclo direcionado}\\
+Cruzamento & $I(v)$ inteiro à \textbf{direita} de $I(w)$ & vai ``para trás'' no tempo\\
+\bottomrule
+\end{tabularx}
+\end{center}
+Nunca há uma aresta $vw$ com $I(v)$ inteiro à esquerda de $I(w)$: quando $v$ examina a aresta $vw$, o vértice $w$ ou já foi alcançado ou será visitado como descendente de $v$. Como toda aresta de retorno fecha um ciclo direcionado, e todo ciclo contém uma aresta de retorno (a que chega ao primeiro vértice do ciclo alcançado pela busca), vale: \textbf{um digrafo é acíclico se e somente se uma busca em profundidade --- qualquer uma --- não produz arestas de retorno}.
+
+\section{Componentes fortemente conexas}
+Uma \textbf{componente fortemente conexa} (CFC) de um digrafo é um subdigrafo maximal em que, para quaisquer dois vértices $v$ e $w$, existe um caminho direcionado de $v$ para $w$ \emph{e} um de $w$ para $v$. As CFC particionam os \emph{vértices}; algumas arestas não pertencem a nenhuma CFC, e essas são, numa busca, arestas de árvore, de avanço ou de cruzamento. As componentes não dependem da ordem da busca, embora o tipo de cada aresta dependa.
+
+Para calculá-las numa única busca, define-se $old(v)$ como a profundidade de entrada do vértice mais antigo, \textbf{na mesma CFC} que $v$, que pode ser alcançado a partir de $v$ descendo por arestas de árvore e usando, no máximo, uma aresta de retorno ou de cruzamento. Um vértice $v$ é \textbf{forte} --- é a ``raiz'' da sua componente na floresta --- se $old(v)=PE(v)$ no momento em que $v$ sai da busca. Os vértices são empilhados numa pilha $Q$ ao serem alcançados; ao encontrar um vértice forte, desempilham-se todos os vértices até ele, que formam uma componente.
+\begin{pseudo}{Componentes fortemente conexas: $O(n+m)$}
+\begin{algorithmic}
+\Procedure{P}{$v$}
+  \State $t:=t+1$;\ $PE(v):=t$;\ $old(v):=PE(v)$;\ empilhe $v$ em $Q$
+  \For{\textbf{cada} $w\in N_{out}(v)$}
+    \If{$PE(w)=0$} \State $pai(w):=v$;\ \Call{P}{$w$};\ $old(v):=\min\{old(v),\,old(w)\}$ \Comment{árvore}
+    \ElsIf{$PS(w)=0$} \State $old(v):=\min\{old(v),\,PE(w)\}$ \Comment{retorno}
+    \ElsIf{$PE(v)<PE(w)$} \State nada a fazer \Comment{avanço}
+    \ElsIf{$w$ está em $Q$} \State $old(v):=\min\{old(v),\,PE(w)\}$ \Comment{cruzamento dentro de uma componente aberta}
+    \EndIf
+  \EndFor
+  \State $t:=t+1$;\ $PS(v):=t$
+  \If{$old(v)=PE(v)$} \State desempilhe de $Q$ todos os vértices até $v$, inclusive: \textbf{eles formam uma CFC} \EndIf
+\EndProcedure
+\end{algorithmic}
+\end{pseudo}
+
+\begin{center}
+\begin{tikzpicture}[v/.style={circle,draw,fill=yellow!40,inner sep=1.2pt,minimum size=5mm,font=\small},
+  >={Stealth[length=2.2mm]}, arv/.style={->,very thick,MidnightBlue}, ret/.style={->,thick,dashed,BrickRed},
+  ava/.style={->,thick,dotted,orange!85!black}, cru/.style={->,thick,ForestGreen}, lab/.style={font=\scriptsize,text=gray!70!black}]
+\node[v] (a) at (0,1.5) {$a$}; \node[v] (b) at (1.8,1.5) {$b$}; \node[v] (c) at (3.6,1.5) {$c$}; \node[v] (d) at (5.4,1.5) {$d$};
+\node[v] (e) at (0,0) {$e$}; \node[v] (f) at (1.8,0) {$f$}; \node[v] (g) at (3.6,0) {$g$}; \node[v] (h) at (5.4,0) {$h$};
+\draw[arv] (a)--(b); \draw[arv] (b)--(c); \draw[arv] (b)--(e); \draw[arv] (c) to[bend left=18] (d); \draw[arv] (c)--(g);
+\draw[arv] (d)--(h); \draw[arv] (g) to[bend left=18] (f);
+\draw[ret] (d) to[bend left=18] (c); \draw[ret] (e)--(a); \draw[ret] (f) to[bend left=18] (g);
+\draw[ava] (b)--(f); \draw[cru] (e)--(f); \draw[cru] (g)--(h);
+\node[lab,above=1pt of a] {1/16}; \node[lab,above=1pt of b] {2/15}; \node[lab,above=1pt of c] {3/12}; \node[lab,above=1pt of d] {4/7};
+\node[lab,below=1pt of e] {13/14}; \node[lab,below=1pt of f] {9/10}; \node[lab,below=1pt of g] {8/11}; \node[lab,below=1pt of h] {5/6};
+\end{tikzpicture}
+\end{center}
+\begin{exemplo}[Componentes fortemente conexas]\label{ex:cfc}
+Busca a partir de $a$, com os vizinhos em ordem alfabética; os rótulos são $PE/PS$. Em azul, as arestas de árvore; em vermelho tracejado, as de retorno ($dc$, $ea$ e $fg$); em laranja pontilhado, a de avanço ($bf$); em verde, as de cruzamento ($ef$ e $gh$). Os valores de $old$ são $1$ para $a$, $b$ e $e$; $3$ para $c$ e $d$; $8$ para $g$ e $f$; e $5$ para $h$. Os vértices fortes, na ordem em que saem da busca, são $h$, $g$, $c$ e $a$, e as componentes são $\{h\}$, $\{f,g\}$, $\{c,d\}$ e $\{a,b,e\}$. A aresta $ef$ é de cruzamento, mas $f$ já saiu de $Q$ --- a sua componente já tinha sido fechada ---, e por isso ela não altera $old(e)$.
+\end{exemplo}
+
+\section{Ordenação topológica}\label{sec:topo}
+Uma \textbf{ordenação topológica} de um digrafo acíclico é uma ordem $v_1,\dots,v_n$ dos vértices tal que toda aresta $v_iv_j$ tem $i<j$. Ela aparece sempre que há tarefas com dependências: se cada aresta $a\to b$ indica que $b$ só pode ser feita depois de $a$, uma ordenação topológica é uma sequência viável de execução.
+
+\textbf{Algoritmo.} Execute uma busca em profundidade; se houver uma aresta de retorno, o digrafo tem ciclo e não há ordenação. Senão, ordene os vértices por \textbf{$PS$ decrescente}. Para obter $O(n+m)$, basta colocar cada vértice na frente de uma lista no momento em que ele recebe o seu $PS$, o que dispensa a ordenação.
+\begin{teo}
+Num digrafo acíclico, toda aresta $vw$ satisfaz $PS(w)<PS(v)$.
+\end{teo}
+\begin{proof}
+Não há arestas de retorno. Se $vw$ é de árvore ou de avanço, $w$ é descendente de $v$ e sai antes dele. Se é de cruzamento, $I(w)$ está inteiramente à esquerda de $I(v)$.
+\end{proof}
+Uma outra forma de ver a correção: o vértice de menor $PS$ é um \emph{sumidouro} (não tem arestas de saída) e pode ser o último da ordem; retirando-o, o de menor $PS$ entre os restantes é um sumidouro do digrafo que sobrou, e assim por diante.
+
+\begin{exemplo}
+No digrafo acíclico com as arestas $a{\to}c$, $a{\to}d$, $d{\to}c$, $b{\to}c$, $e{\to}b$, $e{\to}f$, $e{\to}g$, $f{\to}g$, $h{\to}f$, $i{\to}h$, $i{\to}j$, $j{\to}h$ e $j{\to}g$, uma busca com as raízes em ordem alfabética dá, por $PS$ decrescente, a ordem $i,j,h,e,f,g,b,a,d,c$. Com as raízes na ordem $i,c,b,e,d,a$, obtém-se $a,d,e,b,c,i,j,h,f,g$. As duas são válidas: a ordenação topológica não é única.
+\end{exemplo}
+
+\paragraph{Uma alternativa sem busca.} Todo digrafo acíclico tem um sumidouro --- o último vértice de um caminho de comprimento máximo --- e uma fonte. Retirar repetidamente uma fonte e colocá-la no fim da ordem (ou um sumidouro, no início) também produz uma ordenação topológica. Com contadores de grau de entrada e uma fila dos vértices cujo contador chegou a zero, isso custa $O(n+m)$; é o \emph{algoritmo de Kahn}.
+
+\begin{cuidado}[Armadilhas em digrafos]
+\begin{itemize}
+  \item ``Acíclico'' refere-se a ciclos \emph{direcionados}: arestas de cruzamento e de avanço não indicam ciclo; só as de retorno indicam.
+  \item O tipo de cada aresta depende da ordem da busca; as componentes fortemente conexas, não.
+  \item A ordenação topológica é por $PS$ \emph{decrescente}, e não por $PE$; e ela não é única.
+  \item No cálculo das componentes, uma aresta de cruzamento só atualiza $old(v)$ se o outro extremo ainda está na pilha $Q$, isto é, numa componente que ainda não foi fechada.
+\end{itemize}
+\end{cuidado}
+
+\begin{chave}
+Quatro tipos de aresta: árvore e avanço ($I(v)\supset I(w)$), retorno ($I(v)\subset I(w)$, fecha ciclo) e cruzamento ($I(v)$ à direita de $I(w)$). Acíclico $\iff$ sem arestas de retorno. Ordenação topológica: $PS$ decrescente, em $O(n+m)$. Componentes fortemente conexas: quando $old(v)=PE(v)$ na saída, desempilha-se uma componente. Tudo em $O(n+m)$.
+\end{chave}
+
+% ----------------------------------------------------------------
+\section{Exercícios}
+\excurso
+\begin{exercicio}{dd-sorv}[Slides]
+Prove que todo digrafo acíclico tem um sumidouro. Use isso para um algoritmo alternativo de ordenação topológica: repetidamente, encontre um sumidouro, retire-o e coloque-o no início da ordenação. É possível implementá-lo em tempo $O(n+m)$?
+\end{exercicio}
+\begin{exercicio}{dd-porque}[Slides]
+Por que ordenar os vértices por $PS$ decrescente dá uma ordenação topológica? Aplique ao digrafo acíclico do exemplo da §\ref{sec:topo}.
+\end{exercicio}
+\begin{exercicio}{dd-papel}[Slides]
+Uma aresta $vw$ pode ser de cruzamento numa busca e de avanço em outra? Dê um exemplo. Por que, mesmo assim, as componentes fortemente conexas encontradas são sempre as mesmas?
+\end{exercicio}
+
+\excompl
+\begin{exercicio}{dd-sim}[Complementar]
+No digrafo com as arestas $1\to2$, $1\to3$, $2\to3$, $2\to4$, $3\to1$, $4\to5$, $5\to6$, $6\to4$, $7\to3$ e $7\to6$, execute a busca em profundidade a partir de 1, com raízes e vizinhos em ordem crescente. Dê $PE$, $PS$, o tipo de cada aresta, os valores $old$ e as componentes fortemente conexas.
+\end{exercicio}
+\begin{exercicio}{dd-roupa}[Complementar]
+Para se vestir: cueca antes de calça e de sapatos; calça antes de cinto e de sapatos; camisa antes de cinto e de gravata; cinto e gravata antes do paletó; meias antes dos sapatos; o relógio é independente. Dê uma ordenação topológica pela busca em profundidade, com raízes e vizinhos em ordem alfabética.
+\end{exercicio}
+\begin{exercicio}{dd-cond}[Complementar]
+O \emph{grafo das componentes} (condensação) tem um vértice por componente fortemente conexa e uma aresta $C\to C'$ se há uma aresta de algum vértice de $C$ para algum de $C'$. Prove que ele é acíclico.
+\end{exercicio}
+\begin{exercicio}{dd-unica}[Complementar]
+Mostre que um digrafo acíclico tem uma \emph{única} ordenação topológica se e somente se tem um caminho hamiltoniano, isto é, um caminho que passa por todos os vértices. Como testar isso em $O(n+m)$?
+\end{exercicio}
+\begin{exercicio}{dd-prereq}[Complementar]
+Um curso tem $n$ disciplinas e $m$ pré-requisitos. Como decidir se é possível cursar todas e, se for, qual o menor número de semestres, se cada disciplina leva um semestre e não há limite de disciplinas por semestre?
+\end{exercicio}
+\begin{exercicio}{dd-classif}[Complementar]
+No digrafo com as arestas $1\to2$, $1\to4$, $2\to3$, $3\to4$, $4\to2$, $5\to3$, $5\to6$ e $6\to5$, execute a busca em profundidade com raízes e vizinhos em ordem crescente. Classifique todas as arestas e dê $PE$ e $PS$.
+\end{exercicio}
+\begin{exercicio}{dd-cfcex}[Complementar]
+Calcule, com o procedimento da §\ref{sec:dfsdig}, os valores $old$ e as componentes fortemente conexas do digrafo do exercício anterior, na ordem em que são encontradas.
+\end{exercicio}
+\begin{exercicio}{dd-kahn}[Complementar]
+Execute o algoritmo de Kahn no digrafo acíclico com as arestas $a\to b$, $a\to c$, $b\to d$, $c\to d$, $d\to e$ e $f\to c$, escolhendo sempre, entre as fontes disponíveis, a de menor nome. Qual a ordem obtida?
+\end{exercicio}
+\begin{exercicio}{dd-ciclo}[Complementar]
+Mostre como, ao encontrar uma aresta de retorno $vw$ numa busca em profundidade num digrafo, imprimir um ciclo direcionado.
+\end{exercicio}
+\begin{exercicio}{dd-forte}[Complementar]
+Mostre que um digrafo é fortemente conexo se e somente se, a partir de um vértice qualquer $s$, todos os vértices são alcançáveis no digrafo e também no digrafo com as arestas invertidas. Conclua que é possível testar a conexidade forte com duas buscas.
+\end{exercicio}
+\begin{exercicio}{dd-kosaraju}[Complementar \estrela]
+O algoritmo de Kosaraju faz uma busca em profundidade no digrafo, registrando a ordem de saída dos vértices; depois, faz buscas no digrafo invertido, iniciando-as em ordem decrescente de $PS$. Mostre que cada árvore da segunda busca é uma componente fortemente conexa.
+\end{exercicio}
+\begin{exercicio}{dd-conta}[Complementar]
+Quantas ordenações topológicas tem o digrafo acíclico com as arestas $a\to c$, $b\to c$, $c\to d$ e $c\to e$? Liste-as.
+\end{exercicio}
+\begin{exercicio}{dd-longo}[Complementar]
+No digrafo acíclico com as arestas $s\to a$ (3), $s\to b$ (2), $a\to c$ (4), $a\to t$ (2), $b\to c$ (6), $b\to t$ (3) e $c\to t$ (1), encontre o caminho de maior peso de $s$ a $t$ processando os vértices em ordem topológica.
+\end{exercicio}
+\begin{exercicio}{dd-semestres}[Complementar]
+As disciplinas $C_1,C_2,C_3,A_1,P_1,P_2$ têm os pré-requisitos $C_1\to C_2$, $C_2\to C_3$, $C_1\to A_1$, $A_1\to C_3$ e $P_1\to P_2$. Qual o menor número de semestres para cursar todas, e em que semestre cada uma pode ser cursada?
+\end{exercicio}
+\begin{exercicio}{dd-minarestas}[Complementar \estrela]
+Num digrafo cujo grafo das componentes tem $f$ fontes e $s$ sumidouros (e mais de uma componente), mostre que são necessárias pelo menos $\max\{f,s\}$ novas arestas para torná-lo fortemente conexo.
+\end{exercicio}
+\begin{exercicio}{dd-lex}[Complementar]
+Como obter, entre todas as ordenações topológicas, a lexicograficamente menor (comparando os nomes dos vértices)? Qual o custo?
+\end{exercicio}
+\begin{exercicio}{dd-nd}[Complementar]
+Por que, num grafo não direcionado, não aparecem arestas de avanço nem de cruzamento, enquanto num digrafo elas aparecem?
+\end{exercicio}

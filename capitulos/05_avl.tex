@@ -1,0 +1,571 @@
+% ================================================================
+\chapter{Árvores binárias de busca e árvores AVL}\label{cap:avl}\label{sec:avl}
+% ================================================================
+\begin{objetivos}
+\begin{itemize}
+  \item Árvores binárias de busca: busca, inserção e remoção em tempo proporcional à altura.
+  \item Árvores AVL: a condição de balanceamento e a prova de que a altura é logarítmica.
+  \item As rotações simples e duplas, a inserção com no máximo uma rotação e a remoção.
+  \item Uma visão geral das árvores rubro-negras e critérios para escolher entre heap, ABB e AVL.
+\end{itemize}
+\end{objetivos}
+
+Heaps são ótimos para encontrar o máximo, mas não sabem procurar uma chave qualquer. Para um \textbf{dicionário ordenado} --- buscar, inserir e remover por chave, listar as chaves em ordem, encontrar sucessor e predecessor --- usamos árvores binárias de busca. Seu custo é proporcional à altura, que pode degenerar até $n$. As árvores AVL impedem a degeneração com uma condição local de balanceamento, restaurada após cada atualização por meio de rotações que custam $O(1)$.
+
+\section{Árvores binárias de busca}
+Uma lista sequencial ordenada permite busca binária em $\Theta(\log n)$, mas inserções e remoções custam $\Omega(n)$, pois exigem deslocar elementos; uma lista encadeada insere rapidamente, mas a busca custa $\Omega(n)$. A árvore binária de busca combina busca eficiente com uma estrutura dinâmica.
+\begin{defi}
+Uma \textbf{árvore binária de busca} (ABB) é uma árvore binária em que, para todo nó $p$, a chave de $p$ é maior ou igual às chaves da subárvore esquerda de $p$ e menor ou igual às da subárvore direita. Equivalentemente, o percurso \emph{em ordem} lista as chaves em ordem crescente.
+\end{defi}
+
+\begin{intuicao}
+Uma ABB é uma busca binária ``congelada'' numa árvore. A raiz faz o papel do elemento do meio: tudo o que é menor está à esquerda, tudo o que é maior, à direita, e o mesmo vale recursivamente em cada subárvore. Procurar uma chave é responder a uma sequência de perguntas ``é menor ou maior?'', descendo um nível a cada resposta.
+\end{intuicao}
+
+\begin{itemize}
+  \item \textbf{Busca}: desce a partir da raiz, indo para a esquerda ou para a direita conforme a comparação; custa $\Theta(h)$, onde $h$ é a altura.
+  \item \textbf{Inserção}: busca a posição onde a chave deveria estar e a insere como uma nova \textbf{folha}; custa $\Theta(h)$.
+  \item \textbf{Remoção} de um nó $p$: se $p$ é folha, basta retirá-lo; se tem um único filho, esse filho ocupa o lugar de $p$; se tem dois filhos, o \textbf{maior elemento da subárvore esquerda} (o predecessor de $p$, encontrado descendo uma vez à esquerda e depois sempre à direita) ocupa o lugar de $p$ e é removido da sua posição original, que tem no máximo um filho. Simetricamente, pode-se usar o menor da subárvore direita. Custa $\Theta(h)$.
+\end{itemize}
+
+\begin{exemplo}[Busca e inserção]\label{ex:abbbusca}
+Na ABB da Figura~\ref{fig:abbbusca}(a), a busca por 25 compara com 50 (menor: esquerda), com 30 (menor: esquerda), com 20 (maior: direita) e encontra 25: quatro comparações. A busca por 65 compara com 50 (direita), com 70 (esquerda) e com 60 (direita), e encontra um ponteiro nulo: 65 não está na árvore. Inserir 65 é exatamente pendurar uma nova folha nesse ponteiro nulo, como filho direito de 60 (Figura~\ref{fig:abbbusca}(b)). Percorrendo a árvore em ordem (subárvore esquerda, raiz, subárvore direita), obtemos $10,20,25,30,40,50,60,65,70,80$, em ordem crescente.
+\begin{figura}[(a) As buscas por 25 (caminho azul, sucesso) e por 65 (caminho vermelho, fracasso). (b) A inserção de 65 pendura uma folha onde a busca fracassou.\label{fig:abbbusca}]
+\begin{tabular}{@{}c@{\hspace{14mm}}c@{}}
+\begin{forest} bstp
+[50,fill=azul [30,fill=azul,acam [20,fill=azul,acam [10] [25,acam,fill=destaque]] [40]] [70,aviol [60,aviol [,vazio] [?,draw=BrickRed,dashed,aviol,text=BrickRed]] [80]]]
+\end{forest}
+&
+\begin{forest} bstp
+[50 [30 [20 [10] [25]] [40]] [70 [60 [,vazio] [65,novo]] [80]]]
+\end{forest}\\[3pt]
+\small (a) buscas por 25 e por 65 & \small (b) depois de inserir 65
+\end{tabular}
+\end{figura}
+\end{exemplo}
+
+\begin{exemplo}[Os três casos da remoção]\label{ex:abbrem}
+Partimos da árvore da Figura~\ref{fig:abbbusca}(b).
+\begin{itemize}
+  \item \textbf{Remover 10} (folha): basta retirá-la.
+  \item \textbf{Remover 60} (um filho): o filho 65 sobe e ocupa o lugar de 60.
+  \item \textbf{Remover 30} (dois filhos): o predecessor de 30 é o maior da subárvore esquerda, encontrado descendo uma vez à esquerda (20) e depois sempre à direita (25). A chave 25 sobe para o lugar de 30, e o nó onde ela estava, uma folha, é retirado. A ordem continua correta: 25 é maior que tudo o que ficou à esquerda e menor que tudo à direita.
+\end{itemize}
+\begin{figura}[Os três casos da remoção numa ABB, cada um aplicado à árvore da Figura~\ref{fig:abbbusca}(b).\label{fig:abbrem}]
+\begin{tabular}{@{}c@{\hspace{8mm}}c@{\hspace{8mm}}c@{}}
+\begin{forest} bstp
+[50 [30 [20 [,vazio] [25]] [40]] [70 [60 [,vazio] [65]] [80]]]
+\end{forest}
+&
+\begin{forest} bstp
+[50 [30 [20 [10] [25]] [40]] [70 [65,novo] [80]]]
+\end{forest}
+&
+\begin{forest} bstp
+[50 [25,novo [20 [10] [,vazio]] [40]] [70 [60 [,vazio] [65]] [80]]]
+\end{forest}\\[3pt]
+\small (a) sem 10 (folha) & \small (b) sem 60 (um filho) & \small (c) sem 30 (dois filhos)
+\end{tabular}
+\end{figura}
+\end{exemplo}
+
+A altura de uma ABB com $n$ nós está entre $\floor{\log_2n}+1$ e $n$ (medida em níveis). Inserir as chaves em ordem crescente ou decrescente produz uma ``lista'' de altura $n$, e todas as operações passam a custar $\Theta(n)$ (Figura~\ref{fig:abbdeg}).
+
+\begin{figura}[As mesmas cinco chaves inseridas em duas ordens. Em ordem crescente, a ABB degenera numa lista de altura 5; na ordem $30,20,40,10,50$, fica com altura 3.\label{fig:abbdeg}]
+\begin{tabular}{@{}c@{\hspace{18mm}}c@{}}
+\begin{forest} bstp
+[10 [,vazio] [20 [,vazio] [30 [,vazio] [40 [,vazio] [50]]]]]
+\end{forest}
+&
+\begin{forest} bstp
+[30 [20 [10] [,vazio]] [40 [,vazio] [50]]]
+\end{forest}\\[3pt]
+\small inserção de $10,20,30,40,50$ & \small inserção de $30,20,40,10,50$
+\end{tabular}
+\end{figura}
+
+Árvores completas minimizam a altura, mas mantê-las completas depois de cada inserção exige reorganizações globais de custo $\Omega(n)$. A saída é exigir algo mais fraco: que a árvore seja \textbf{balanceada}, isto é, que tenha altura $O(\log n)$ e que o mesmo valha para cada subárvore, e que o balanceamento possa ser restaurado em tempo $O(\log n)$.
+
+\section{Árvores AVL}
+\begin{defi}
+Uma árvore binária é \textbf{AVL} se, em todo nó $v$, as alturas das subárvores esquerda e direita diferem de no máximo 1. O \textbf{balanço} de $v$ é
+\[
+\bal(v)=h_D(v)-h_E(v),
+\]
+a altura da subárvore direita menos a da esquerda; um balanço $-1$ indica que $v$ ``pesa'' à esquerda. O nó $v$ é \emph{regulado} se $\bal(v)\in\{-1,0,1\}$ e \emph{desregulado} caso contrário. Folhas têm balanço 0, e toda árvore completa é AVL (a recíproca é falsa).
+\end{defi}
+
+\begin{exemplo}[Calculando balanços]\label{ex:balancos}
+Na árvore da esquerda da Figura~\ref{fig:avlsimnao}, o nó 10 não tem filho esquerdo (altura 0) e tem o filho direito 12 (altura 1): $\bal(10)=1-0=+1$. Na raiz, as duas subárvores têm altura 2, e $\bal(8)=0$. Todos os balanços estão em $\{-1,0,1\}$: é uma AVL, embora não seja completa. Na árvore da direita, a subárvore direita de 10 tem altura 2 (o caminho $12\to14$) e a esquerda é vazia: $\bal(10)=+2$, e a árvore \textbf{não} é AVL, ainda que todos os outros nós, inclusive a raiz, estejam regulados.
+\begin{figura}[Balanços em vermelho. À esquerda, uma AVL; à direita, uma ABB que não é AVL por causa do nó 10.\label{fig:avlsimnao}]
+\begin{tabular}{@{}c@{\hspace{18mm}}c@{}}
+\begin{forest} bstp
+[8,bb=0 [4,bb=0 [2,bb=0] [6,bb=0]] [10,bb=+1 [,vazio] [12,bb=0]]]
+\end{forest}
+&
+\begin{forest} bstp
+[8,bb=0 [4,bb=-1 [2,bb=-1 [1,bb=0] [,vazio]] [6,bb=0]] [10,desreg,bb=+2 [,vazio] [12,bb=+1 [,vazio] [14,bb=0]]]]
+\end{forest}
+\end{tabular}
+\end{figura}
+\end{exemplo}
+
+\begin{teo}\label{teo:avlaltura}
+Toda árvore AVL com $n$ nós tem altura $O(\log n)$; mais precisamente, $h<1{,}44\log_2(n+2)$.
+\end{teo}
+\begin{proof}
+Seja $N(h)$ o número mínimo de nós de uma AVL de altura $h$, medida em níveis. Então $N(1)=1$, $N(2)=2$ e, para $h\ge3$, uma AVL mínima de altura $h$ tem a raiz, uma subárvore de altura $h-1$ e a outra com a menor altura permitida, $h-2$, ambas mínimas:
+\[
+N(h)=1+N(h-1)+N(h-2).
+\]
+Essas árvores mínimas são chamadas \textbf{árvores de Fibonacci}, e $N(h)=F_{h+2}-1$. Como $N$ é crescente, $N(h)>2N(h-2)$, de onde $N(h)\ge2^{\floor{h/2}}$, ou seja, $h\le2\log_2N(h)+1$. Como qualquer AVL de altura $h$ com $n$ nós tem $n\ge N(h)$, segue que $h=O(\log n)$; o cálculo exato com a fórmula de $F_k$ dá a constante $1{,}44$.
+\end{proof}
+
+\begin{figura}[As árvores de Fibonacci: as AVL com o menor número de nós para cada altura. Cada uma é uma raiz com as duas anteriores penduradas.\label{fig:avlfib}]
+\forestset{bn/.style={for tree={circle, draw, minimum size=2.8mm, inner sep=0pt, s sep=1.8mm, l sep=1.8mm, edge={thick}}}}
+\begin{tabular}{@{}c@{\hspace{9mm}}c@{\hspace{9mm}}c@{\hspace{9mm}}c@{\hspace{9mm}}c@{}}
+\begin{forest} bn, baseline [] \end{forest} &
+\begin{forest} bn, baseline [ [] [,vazio] ] \end{forest} &
+\begin{forest} bn, baseline [ [ [] [,vazio] ] [] ] \end{forest} &
+\begin{forest} bn, baseline [ [ [ [] [,vazio] ] [] ] [ [] [,vazio] ] ] \end{forest} &
+\begin{forest} bn, baseline [ [ [ [ [] [,vazio] ] [] ] [ [] [,vazio] ] ] [ [ [] [,vazio] ] [] ] ] \end{forest}\\[2pt]
+\small $h=1$: 1 nó & \small $h=2$: 2 & \small $h=3$: 4 & \small $h=4$: 7 & \small $h=5$: 12
+\end{tabular}
+\end{figura}
+
+\begin{exemplo}[Quão alta pode ser uma AVL?]
+A recorrência dá $N(1),\dots,N(8)=1,2,4,7,12,20,33,54$. Como uma AVL de altura 7 tem pelo menos 33 nós, uma AVL com 32 nós tem altura no máximo 6; uma árvore completa com 32 nós tem altura 6. A diferença entre a melhor e a pior AVL é pequena, e continua pequena para $n$ grande: com um milhão de nós, a altura de uma AVL é no máximo 28, contra 20 de uma árvore completa e até $10^6$ de uma ABB degenerada.
+\end{exemplo}
+
+Assim, a busca numa AVL custa $O(\log n)$. Resta mostrar que a inserção e a remoção, incluindo o rebalanceamento, também custam $O(\log n)$.
+
+% ------------------------------------------------------------------
+\section{Inserção e atualização dos balanços}
+A inserção começa como numa ABB: a nova chave vira uma folha (se a chave já existe, nada é feito). Em seguida, percorre-se o caminho de volta, do pai do novo nó em direção à raiz, atualizando os balanços. Suponha que a inserção ocorreu na subárvore \textbf{esquerda} de um nó $p$; o caso direito é simétrico, com os sinais trocados.
+\begin{center}
+\small
+\begin{tabular}{@{}cccl@{}}
+\toprule
+$\bal(p)$ antes & depois & altura de $T(p)$ & ação\\
+\midrule
+$+1$ & $0$ & não mudou & \textbf{para}: os ancestrais não mudam\\
+$0$ & $-1$ & aumentou 1 & continua com o pai de $p$ (se $p$ é a raiz, para)\\
+$-1$ & $-2$ & --- & $p$ está desregulado: \textbf{rotação}, e depois \textbf{para}\\
+\bottomrule
+\end{tabular}
+\end{center}
+Uma inserção aumenta alturas em no máximo 1, então o nó desregulado tem balanço $\pm2$. O nó $p$ a rotacionar é o \textbf{primeiro nó desregulado encontrado ao subir da folha para a raiz}, isto é, o mais profundo. Como a rotação devolve à subárvore a altura que ela tinha antes da inserção, nenhum ancestral é afetado: \textbf{uma inserção faz no máximo uma rotação}, simples ou dupla.
+
+\begin{exemplo}[As três linhas da tabela]\label{ex:avlupd}
+Na árvore $20^{+1}(10,\ 30^{+1}(\cdot,40))$ (Figura~\ref{fig:avlupd}(a)):
+\begin{itemize}
+  \item \textbf{Inserir 5}, à esquerda de 10. Em 10, o balanço passa de $0$ a $-1$: a subárvore de 10 ficou mais alta, e subimos. Em 20, a inserção veio da esquerda e o balanço passa de $+1$ a $0$: a altura de $T(20)$ não mudou, e paramos (Figura~\ref{fig:avlupd}(b)).
+  \item \textbf{Inserir 50}, à direita de 40. Em 40, $0\to+1$, e subimos; em 30, $+1\to+2$: 30 é o primeiro desregulado. O filho do lado pesado, 40, tem balanço $+1$ (mesmo sinal), e uma rotação simples à esquerda em 30 produz $40(30,50)$, com a altura de antes. Paramos sem tocar em 20 (Figura~\ref{fig:avlupd}(c)).
+\end{itemize}
+\begin{figura}[Atualização de balanços na inserção (Exemplo~\ref{ex:avlupd}). O nó novo está em destaque.\label{fig:avlupd}]
+\begin{tabular}{@{}c@{\hspace{12mm}}c@{\hspace{12mm}}c@{}}
+\begin{forest} bstp
+[20,bb=+1 [10,bb=0] [30,bb=+1 [,vazio] [40,bb=0]]]
+\end{forest}
+&
+\begin{forest} bstp
+[20,bb=0 [10,bb=-1 [5,novo,bb=0] [,vazio]] [30,bb=+1 [,vazio] [40,bb=0]]]
+\end{forest}
+&
+\begin{forest} bstp
+[20,bb=0 [10,bb=-1 [5,bb=0] [,vazio]] [40,bb=0 [30,bb=0] [50,novo,bb=0]]]
+\end{forest}\\[3pt]
+\small (a) inicial & \small (b) após inserir 5 & \small (c) após inserir 50
+\end{tabular}
+\end{figura}
+\end{exemplo}
+
+\section{As rotações}
+Seja $p$ o nó desregulado mais profundo. Há quatro casos, determinados pelo sinal do balanço de $p$ e pelo do filho do lado mais pesado.
+\begin{center}
+\small
+\begin{tabularx}{\linewidth}{@{}lcllX@{}}
+\toprule
+Caso & $\bal(p)$ & filho do lado pesado & sinais & rotação\\
+\midrule
+esquerda-esquerda & $-2$ & $u$ (esq.), $\bal(u)=-1$ & iguais & \textbf{simples à direita} em $p$\\
+esquerda-direita & $-2$ & $u$ (esq.), $\bal(u)=+1$ & opostos & \textbf{dupla à direita}: esquerda em $u$, direita em $p$\\
+direita-direita & $+2$ & $z$ (dir.), $\bal(z)=+1$ & iguais & \textbf{simples à esquerda} em $p$\\
+direita-esquerda & $+2$ & $z$ (dir.), $\bal(z)=-1$ & opostos & \textbf{dupla à esquerda}: direita em $z$, esquerda em $p$\\
+\bottomrule
+\end{tabularx}
+\end{center}
+Uma regra fácil de lembrar: \textbf{balanço positivo pede rotações à esquerda e negativo, à direita; sinais iguais pedem rotação simples e sinais opostos, dupla}. Um filho com balanço 0 só ocorre na remoção, e então se usa a rotação simples.
+
+\begin{exemplo}[Os quatro casos com três chaves]\label{ex:quatrocasos}
+A menor situação de cada caso aparece ao inserir 10, 20 e 30 numa árvore vazia, em ordens diferentes (Figura~\ref{fig:quatrocasos}). Nos quatro casos o resultado é o mesmo, $20(10,30)$: a rotação sempre leva para a raiz a chave do meio.
+\begin{figura}[Os quatro casos de rotação. Na linha de cima, a árvore logo após a terceira inserção, com o nó desregulado em vermelho; na de baixo, depois da rotação.\label{fig:quatrocasos}]
+\begin{tabular}{@{}c@{\hspace{9mm}}c@{\hspace{9mm}}c@{\hspace{9mm}}c@{}}
+\begin{forest} bstp [30,desreg,bb=-2 [20,bb=-1 [10,novo] [,vazio]] [,vazio]] \end{forest} &
+\begin{forest} bstp [30,desreg,bb=-2 [10,bb=+1 [,vazio] [20,novo]] [,vazio]] \end{forest} &
+\begin{forest} bstp [10,desreg,bb=+2 [,vazio] [20,bb=+1 [,vazio] [30,novo]]] \end{forest} &
+\begin{forest} bstp [10,desreg,bb=+2 [,vazio] [30,bb=-1 [20,novo] [,vazio]]] \end{forest}\\
+\small $30,20,10$: esq.-esq. & \small $30,10,20$: esq.-dir. & \small $10,20,30$: dir.-dir. & \small $10,30,20$: dir.-esq.\\
+\small simples à direita & \small dupla à direita & \small simples à esquerda & \small dupla à esquerda\\[4pt]
+\begin{forest} bstp [20,bb=0 [10,bb=0] [30,bb=0]] \end{forest} &
+\begin{forest} bstp [20,bb=0 [10,bb=0] [30,bb=0]] \end{forest} &
+\begin{forest} bstp [20,bb=0 [10,bb=0] [30,bb=0]] \end{forest} &
+\begin{forest} bstp [20,bb=0 [10,bb=0] [30,bb=0]] \end{forest}
+\end{tabular}
+\end{figura}
+\end{exemplo}
+
+Em geral, as subárvores penduradas nos nós envolvidos precisam ser redistribuídas. As figuras abaixo mostram as rotações à direita com subárvores genéricas $T_1,\dots,T_4$.
+
+\begin{figura}[Rotação simples à direita (caso esquerda-esquerda), com $h(T_1)=h+1$ e $h(T_2)=h(T_3)=h$. Depois da rotação, $\bal(u)=\bal(p)=0$ e a altura volta a $h+2$.\label{fig:rotsimples}]
+\begin{forest} bst
+[$p$ [$u$ [$T_1$,tri] [$T_2$,tri]] [$T_3$,tri]]
+\end{forest}
+\quad\raisebox{3em}{$\xrightarrow{\text{à direita em }p}$}\quad
+\begin{forest} bst
+[$u$ [$T_1$,tri] [$p$ [$T_2$,tri] [$T_3$,tri]]]
+\end{forest}
+\end{figura}
+\begin{figura}[Rotação dupla à direita (caso esquerda-direita): $v$ sobe para a raiz e fica com $\bal(v)=0$. Se $\bal(v)$ era $-1$, ficam $\bal(u)=0$ e $\bal(p)=+1$; se era $+1$, $\bal(u)=-1$ e $\bal(p)=0$; se era $0$ ($v$ é o nó inserido), ambos ficam 0.\label{fig:rotdupla}]
+\begin{forest} bst
+[$p$ [$u$ [$T_1$,tri] [$v$ [$T_2$,tri] [$T_3$,tri]]] [$T_4$,tri]]
+\end{forest}
+\quad\raisebox{3em}{$\xrightarrow{\text{dupla à direita}}$}\quad
+\begin{forest} bst
+[$v$ [$u$ [$T_1$,tri] [$T_2$,tri]] [$p$ [$T_3$,tri] [$T_4$,tri]]]
+\end{forest}
+\end{figura}
+Os casos direita-direita e direita-esquerda são os espelhos desses: na rotação simples à esquerda, o filho direito $z$ sobe, $p$ passa a ser seu filho esquerdo e o antigo filho esquerdo de $z$ passa a ser filho direito de $p$. \textbf{Rotações preservam a ordem da ABB}, pois o percurso em ordem $T_1,u,T_2,p,T_3$ é o mesmo antes e depois, e custam $O(1)$, porque só alteram alguns ponteiros.
+
+\begin{intuicao}[Por que a rotação dupla?]
+No caso esquerda-direita, uma rotação simples à direita em $p$ não resolve: a subárvore pesada, a de $v$, mudaria de lado junto com $u$ e continuaria pendurada no lugar errado, só que agora do lado direito. A primeira rotação (à esquerda em $u$) transforma o ``zigue-zague'' $p\to u\to v$ numa ``linha reta'' $p\to v\to u$, e a segunda (à direita em $p$) é o caso esquerda-esquerda comum. Teste com $30,10,20$: rotacionar só em 30 daria $10(\cdot,30(20,\cdot))$, ainda desregulado.
+\end{intuicao}
+
+\section{Pseudocódigo da inserção}
+Cada nó tem os campos \texttt{esq}, \texttt{dir}, \texttt{chave} e \texttt{bal}; $\nil$ é o ponteiro nulo e $pt\ptr.campo$ acessa um campo do nó apontado por $pt$. A chamada externa é \textsc{Ins-AVL}$(x,ptraiz)$. A função devolve um valor lógico $h$ que indica se \textbf{a altura da subárvore aumentou}; só nesse caso o pai precisa atualizar o seu balanço.
+
+\begin{pseudo}{Inserção em árvore AVL}
+\begin{algorithmic}
+\Procedure{Iniciar-nó}{$pt, x$}
+  \State alocar$(pt)$;\ $pt\ptr.esq:=\nil$;\ $pt\ptr.dir:=\nil$;\ $pt\ptr.chave:=x$;\ $pt\ptr.bal:=0$
+\EndProcedure
+\Function{Ins-AVL}{$x$, \textbf{ref} $pt$} \Comment{verdadeiro se a altura de $T(pt)$ aumentou}
+  \If{$pt=\nil$} \State \Call{Iniciar-nó}{$pt,x$};\ \Return verdadeiro \EndIf
+  \If{$x=pt\ptr.chave$} \State \Return falso \Comment{chave repetida} \EndIf
+  \If{$x<pt\ptr.chave$}
+    \State $h:=$ \Call{Ins-AVL}{$x, pt\ptr.esq$}
+    \If{$h$} \State $(pt,h):=$ \Call{AtualizaBalanço}{$pt$, ``esquerda''} \EndIf
+  \Else
+    \State $h:=$ \Call{Ins-AVL}{$x, pt\ptr.dir$}
+    \If{$h$} \State $(pt,h):=$ \Call{AtualizaBalanço}{$pt$, ``direita''} \EndIf
+  \EndIf
+  \State \Return $h$
+\EndFunction
+\Function{AtualizaBalanço}{$pt, a$}
+  \State $h:=$ falso
+  \If{$a=$ ``esquerda''}
+    \If{$pt\ptr.bal=1$} \State $pt\ptr.bal:=0$
+    \ElsIf{$pt\ptr.bal=0$} \State $pt\ptr.bal:=-1$;\ $h:=$ verdadeiro \Comment{a altura aumentou}
+    \Else \State $pt:=$ \Call{RotaçõesDireita}{$pt$} \Comment{era $-1$ e ficaria $-2$}
+    \EndIf
+  \Else
+    \If{$pt\ptr.bal=-1$} \State $pt\ptr.bal:=0$
+    \ElsIf{$pt\ptr.bal=0$} \State $pt\ptr.bal:=1$;\ $h:=$ verdadeiro
+    \Else \State $pt:=$ \Call{RotaçõesEsquerda}{$pt$}
+    \EndIf
+  \EndIf
+  \State \Return $(pt,h)$ \Comment{após uma rotação, $pt$ aponta para a nova raiz da subárvore}
+\EndFunction
+\end{algorithmic}
+\end{pseudo}
+
+\begin{pseudo}{Rotações}
+\begin{algorithmic}
+\Function{RotaçõesDireita}{$pt$}
+  \State $ptu:=pt\ptr.esq$
+  \If{$ptu\ptr.bal=-1$} \Comment{simples à direita}
+    \State $pt\ptr.esq:=ptu\ptr.dir$;\ $ptu\ptr.dir:=pt$;\ $pt\ptr.bal:=0$;\ $ptu\ptr.bal:=0$;\ $pt:=ptu$
+  \Else \Comment{dupla à direita}
+    \State $ptv:=ptu\ptr.dir$
+    \State $ptu\ptr.dir:=ptv\ptr.esq$;\ $ptv\ptr.esq:=ptu$;\ $pt\ptr.esq:=ptv\ptr.dir$;\ $ptv\ptr.dir:=pt$
+    \If{$ptv\ptr.bal=-1$} $pt\ptr.bal:=1$ \Else\ $pt\ptr.bal:=0$ \EndIf
+    \If{$ptv\ptr.bal=1$} $ptu\ptr.bal:=-1$ \Else\ $ptu\ptr.bal:=0$ \EndIf
+    \State $ptv\ptr.bal:=0$;\ $pt:=ptv$
+  \EndIf
+  \State \Return $pt$
+\EndFunction
+\Function{RotaçõesEsquerda}{$pt$}
+  \State $ptz:=pt\ptr.dir$
+  \If{$ptz\ptr.bal=1$} \Comment{simples à esquerda}
+    \State $pt\ptr.dir:=ptz\ptr.esq$;\ $ptz\ptr.esq:=pt$;\ $pt\ptr.bal:=0$;\ $ptz\ptr.bal:=0$;\ $pt:=ptz$
+  \Else \Comment{dupla à esquerda}
+    \State $pty:=ptz\ptr.esq$
+    \State $ptz\ptr.esq:=pty\ptr.dir$;\ $pty\ptr.dir:=ptz$;\ $pt\ptr.dir:=pty\ptr.esq$;\ $pty\ptr.esq:=pt$
+    \If{$pty\ptr.bal=1$} $pt\ptr.bal:=-1$ \Else\ $pt\ptr.bal:=0$ \EndIf
+    \If{$pty\ptr.bal=-1$} $ptz\ptr.bal:=1$ \Else\ $ptz\ptr.bal:=0$ \EndIf
+    \State $pty\ptr.bal:=0$;\ $pt:=pty$
+  \EndIf
+  \State \Return $pt$
+\EndFunction
+\end{algorithmic}
+\end{pseudo}
+
+\begin{cuidado}[Detalhes do pseudocódigo]
+\begin{itemize}
+  \item \textbf{Para que serve $h$?} Ele indica se a altura da subárvore cresceu. Se não cresceu, nenhum ancestral muda de balanço; por isso \textsc{AtualizaBalanço} só é chamada quando $h$ é verdadeiro.
+  \item \textbf{Por que atualizar $pt$ depois da rotação?} A raiz da subárvore muda ($u$, $v$, $z$ ou $y$ sobe). Como $pt$ é passado por referência, a atribuição religa a nova raiz ao pai, ou atualiza a raiz da árvore.
+  \item Os três testes de \textsc{AtualizaBalanço} precisam ser \textbf{mutuamente exclusivos} (``senão se''). Escritos como ``se'' consecutivos, um nó com balanço 1 viraria 0 e, em seguida, o teste ``balanço $=0$'' dispararia de novo, deixando o nó com $-1$ e $h$ verdadeiro.
+  \item Depois de uma rotação na inserção, $h$ é falso: a altura voltou ao valor antigo.
+\end{itemize}
+\end{cuidado}
+
+% ------------------------------------------------------------------
+\section{Remoção}
+A remoção começa como numa ABB (se o nó tem dois filhos, o maior elemento da subárvore esquerda toma o seu lugar) e sobe a partir do nó \emph{fisicamente removido}, atualizando os balanços. Agora a pergunta é se a altura \textbf{diminuiu}. Para uma remoção na subárvore \textbf{direita} de $p$ (o caso esquerdo é simétrico):
+\begin{center}
+\small
+\begin{tabular}{@{}cccl@{}}
+\toprule
+$\bal(p)$ antes & depois & altura de $T(p)$ & ação\\
+\midrule
+$+1$ & $0$ & \textbf{diminuiu} & continua com o pai\\
+$0$ & $-1$ & não mudou & \textbf{para}\\
+$-1$ & $-2$ & --- & rotação à direita (ver abaixo)\\
+\bottomrule
+\end{tabular}
+\end{center}
+Na rotação, olha-se o filho esquerdo $u$ de $p$:
+\begin{itemize}
+  \item se $\bal(u)=-1$, faz-se a rotação simples à direita; ambos ficam com balanço 0 e a altura \textbf{diminuiu}, de modo que o processo continua subindo;
+  \item se $\bal(u)=0$, caso que só ocorre na remoção, faz-se a rotação simples à direita; ficam $\bal(p)=-1$ e $\bal(u)=+1$, a altura \textbf{não muda} e o processo para;
+  \item se $\bal(u)=+1$, faz-se a rotação dupla à direita; a altura \textbf{diminuiu} e o processo continua subindo.
+\end{itemize}
+Por isso uma remoção pode exigir uma rotação em \textbf{cada} ancestral: são $O(\log n)$ rotações de custo $O(1)$, e o total continua $O(\log n)$.
+
+\begin{intuicao}[Por que a remoção pode propagar e a inserção não]
+Na inserção, o nó desregulado ficou desregulado porque a sua subárvore \emph{cresceu}; a rotação a encolhe de volta à altura original, e os ancestrais nem percebem. Na remoção, a subárvore desregulada \emph{encolheu} de um lado; a rotação conserta o nó, mas em geral a subárvore resultante fica um nível mais baixa do que era antes da remoção, e esse encolhimento pode desregular o ancestral seguinte.
+\end{intuicao}
+
+\begin{cuidado}[Reaproveitar as rotações da inserção]
+As funções \textsc{RotaçõesDireita} e \textsc{RotaçõesEsquerda} acima testam apenas ``$\bal(u)=-1$'' (ou ``$=1$'') para decidir entre a rotação simples e a dupla. Na remoção, o caso $\bal(u)=0$ cairia na rotação \emph{dupla}, o que está errado: com $\bal(u)=0$ deve-se fazer a rotação \textbf{simples} (o teste passa a ser ``$\le0$''), ajustar $\bal(p)=-1$ e $\bal(u)=+1$ e informar que a altura não diminuiu.
+\end{cuidado}
+
+\begin{exemplo}[Remoções pequenas]\label{ex:avlrem}\leavevmode
+\begin{itemize}
+  \item Em $20^{+1}(10,\ 40^{0}(30,50))$, remover $10$ deixa $\bal(20)=+2$, com o filho $40$ de balanço 0: rotação simples à esquerda em 20, resultando em $40^{-1}(20^{+1}(\cdot,30),\ 50)$, com a altura inalterada.
+  \item Em $20^{-1}(10^{+1}(\cdot,15),\ 30)$, remover $30$ deixa $\bal(20)=-2$, com o filho $10$ de balanço $+1$: rotação dupla à direita, resultando em $15(10,20)$.
+\end{itemize}
+\begin{figura}[As duas remoções do Exemplo~\ref{ex:avlrem}. O nó removido está tracejado; o desregulado, em vermelho.\label{fig:avlrem}]
+\forestset{rem/.style={draw=gray, dashed, text=gray}}
+\begin{tabular}{@{}c@{\hspace{4mm}}c@{\hspace{4mm}}c@{\hspace{14mm}}c@{\hspace{4mm}}c@{\hspace{4mm}}c@{}}
+\begin{forest} bstp [20,desreg,bb=+2 [10,rem] [40,bb=0 [30] [50]]] \end{forest} &
+\raisebox{-4ex}{$\Rightarrow$} &
+\begin{forest} bstp [40,bb=-1 [20,bb=+1 [,vazio] [30]] [50]] \end{forest} &
+\begin{forest} bstp [20,desreg,bb=-2 [10,bb=+1 [,vazio] [15]] [30,rem]] \end{forest} &
+\raisebox{-4ex}{$\Rightarrow$} &
+\begin{forest} bstp [15,bb=0 [10] [20]] \end{forest}\\[3pt]
+\multicolumn{3}{c}{\small filho com balanço 0: simples, altura mantida} & \multicolumn{3}{c}{\small sinais opostos: dupla, altura diminui}
+\end{tabular}
+\end{figura}
+\end{exemplo}
+
+% ------------------------------------------------------------------
+\section{Exemplos resolvidos}\label{sec:avlexemplos}
+\begin{exemplo}[Inserções com rotação simples e dupla]\label{ex:teste1q5}
+Partimos da árvore abaixo (balanços em vermelho) e inserimos $5$, $15$, $35$ e $45$.
+\begin{center}
+\begin{forest} bst
+[50,bb=-1 [30,bb=-1 [20,bb=0 [10,bb=0] [25,bb=0]] [40,bb=0]] [70,bb=0 [60,bb=0] [80,bb=0]]]
+\end{forest}
+\end{center}
+\textbf{Inserir 5} (filho esquerdo de 10). Subindo: $\bal(10)=-1$, $\bal(20)=-1$, $\bal(30)=-2$. O primeiro nó desregulado é \textbf{30}, e o filho esquerdo $20$ tem balanço $-1$ (sinais iguais): caso esquerda-esquerda, \textbf{rotação simples à direita em 30}. A altura da subárvore volta a 3, e 50 continua com $-1$.
+\begin{center}
+\begin{forest} bst
+[50,bb=-1 [20,bb=0 [10,bb=-1 [5,novo,bb=0] [,vazio]] [30,bb=0 [25,bb=0] [40,bb=0]]] [70,bb=0 [60,bb=0] [80,bb=0]]]
+\end{forest}
+\end{center}
+\textbf{Inserir 15} (filho direito de 10): $\bal(10)$ passa de $-1$ a $0$ e a altura de $T(10)$ não muda; o processo para, sem rotação.
+\begin{center}
+\begin{forest} bst
+[50,bb=-1 [20,bb=0 [10,bb=0 [5,bb=0] [15,novo,bb=0]] [30,bb=0 [25,bb=0] [40,bb=0]]] [70,bb=0 [60,bb=0] [80,bb=0]]]
+\end{forest}
+\end{center}
+\textbf{Inserir 35} (filho esquerdo de 40). Subindo: $\bal(40)=-1$, $\bal(30)=+1$, $\bal(20)=+1$, $\bal(50)=-2$. O primeiro nó desregulado é \textbf{50}, e o filho esquerdo $20$ tem balanço $+1$ (sinais opostos): caso esquerda-direita, \textbf{rotação dupla à direita} --- à esquerda em 20 e depois à direita em 50. O nó $v=30$ sobe para a raiz; como $\bal(30)$ era $+1$, ficam $\bal(20)=-1$ e $\bal(50)=0$.
+\begin{center}
+\begin{forest} bst
+[30,bb=0 [20,bb=-1 [10,bb=0 [5,bb=0] [15,bb=0]] [25,bb=0]] [50,bb=0 [40,bb=-1 [35,novo,bb=0] [,vazio]] [70,bb=0 [60,bb=0] [80,bb=0]]]]
+\end{forest}
+\end{center}
+\textbf{Inserir 45} (filho direito de 40): $\bal(40)$ passa de $-1$ a $0$ e a altura de $T(40)$ não muda. A árvore final é:
+\begin{center}
+\begin{forest} bst
+[30,bb=0 [20,bb=-1 [10,bb=0 [5,bb=0] [15,bb=0]] [25,bb=0]] [50,bb=0 [40,bb=0 [35,bb=0] [45,novo,bb=0]] [70,bb=0 [60,bb=0] [80,bb=0]]]]
+\end{forest}
+\end{center}
+Numa ABB comum, inserções em ordem desfavorável (crescente, decrescente ou em zigue-zague) produziriam altura $\Theta(n)$ e operações de custo $\Theta(n)$. A AVL garante altura no máximo $1{,}44\log_2n$ (Teorema~\ref{teo:avlaltura}), qualquer que seja a ordem de chegada, pagando só $O(1)$ rotações por inserção.
+\end{exemplo}
+
+\begin{exemplo}[Inserindo $40,20,10,30,35$ numa árvore vazia]\label{ex:avl4020}
+Depois de $40$ e $20$, temos $40^{-1}(20)$. Inserir $10$ deixa $\bal(40)=-2$ com o filho $20$ de balanço $-1$: rotação simples à direita em 40, resultando em $20^{0}(10,40)$. Inserir $30$ dá $20^{+1}(10,\ 40^{-1}(30,\cdot))$. Inserir $35$ (à direita de 30) deixa $\bal(30)=+1$ e $\bal(40)=-2$: o primeiro desregulado é \textbf{40}, com filho esquerdo $30$ de balanço $+1$, e a rotação é \textbf{dupla à direita} (à esquerda em 30, à direita em 40). A árvore final é $20^{+1}(10^{0},\ 35^{0}(30^{0},40^{0}))$.
+\begin{figura}[As inserções do Exemplo~\ref{ex:avl4020}: uma rotação simples e uma dupla.\label{fig:avl4020}]
+\begin{tabular}{@{}c@{\hspace{9mm}}c@{\hspace{9mm}}c@{\hspace{9mm}}c@{}}
+\begin{forest} bstp [40,desreg,bb=-2 [20,bb=-1 [10,novo] [,vazio]] [,vazio]] \end{forest} &
+\begin{forest} bstp [20,bb=+1 [10] [40,bb=-1 [30,novo] [,vazio]]] \end{forest} &
+\begin{forest} bstp [20 [10] [40,desreg,bb=-2 [30,bb=+1 [,vazio] [35,novo]] [,vazio]]] \end{forest} &
+\begin{forest} bstp [20,bb=+1 [10] [35,bb=0 [30] [40]]] \end{forest}\\[3pt]
+\small (a) 10 desregula 40 & \small (b) após a rotação e o 30 & \small (c) 35 desregula 40 & \small (d) após a dupla
+\end{tabular}
+\end{figura}
+\end{exemplo}
+
+\begin{exemplo}[Inserindo $10,20,30,40,50$ e depois $49$]
+Inserir $30$ deixa $\bal(10)=+2$ com o filho $20$ de balanço $+1$: rotação simples à esquerda em 10, resultando em $20(10,30)$. Inserir $40$ dá $20^{+1}(10,\ 30^{+1}(\cdot,40))$. Inserir $50$: subindo, $\bal(40)=+1$ e $\bal(30)=+2$, de modo que o \textbf{primeiro desregulado é 30}, e não 20; faz-se a rotação simples à esquerda em 30, e a árvore fica $20^{+1}(10^{0},\ 40^{0}(30^{0},50^{0}))$.
+\begin{center}
+\begin{forest} bst
+[20,bb=+1 [10,bb=0] [40,bb=0 [30,bb=0] [50,bb=0]]]
+\end{forest}
+\end{center}
+Inserir $49$ (à esquerda de 50) deixa $\bal(50)=-1$, $\bal(40)=+1$ e $\bal(20)=+2$: o desregulado é 20, com filho direito $40$ de balanço $+1$, e a rotação é \textbf{simples à esquerda em 20}, resultando em $40^{0}(20^{0}(10,30),$\allowbreak$\ 50^{-1}(49,\cdot))$.
+\begin{center}
+\begin{forest} bst
+[40,bb=0 [20,bb=0 [10,bb=0] [30,bb=0]] [50,bb=-1 [49,novo,bb=0] [,vazio]]]
+\end{forest}
+\end{center}
+Compare com a Figura~\ref{fig:abbdeg}: as mesmas chaves crescentes, que numa ABB comum formariam uma lista, aqui formam uma árvore de altura 3.
+\end{exemplo}
+
+\begin{cuidado}[Rotacionar no nó certo]
+No exemplo anterior, ao inserir 50, é tentador rotacionar em 20, a raiz. Mas a rotação deve ser feita no desregulado \emph{mais profundo}, 30; depois dela, o nó 20 fica com balanço $+1$ e nem chega a se desregular. Rotacionar em 20 produziria a árvore $30(20(10),40(\cdot,50))$, e a inserção seguinte de 49 levaria, erradamente, a uma rotação dupla.
+\end{cuidado}
+
+% ------------------------------------------------------------------
+\section{Heap, ABB ou AVL?}
+\begin{roteiro}[Como escolher]
+\begin{itemize}
+  \item \textbf{Fila de prioridade pura} (sempre atender o elemento de maior prioridade): \textbf{heap}. O máximo sai em $O(1)$, inserir e remover custam $O(\log n)$, e a estrutura é um vetor simples. A AVL também faria tudo em $O(\log n)$, mas não dá o máximo em $O(1)$ sem um ponteiro extra e é mais pesada.
+  \item \textbf{Busca por chave arbitrária, remoção de um elemento específico, percurso em ordem, sucessor e predecessor, consultas por intervalo}: \textbf{AVL}. O heap não tem ordem entre irmãos, e buscar uma chave nele custa $O(n)$.
+  \item \textbf{ABB simples ou AVL}: com inserções e remoções frequentes e ordem de chegada imprevisível, \textbf{AVL}, pois a ABB pode degenerar para altura $\Theta(n)$.
+\end{itemize}
+\end{roteiro}
+
+\begin{exemplo}[Aplicando o roteiro]
+Uma agenda de compromissos precisa listar os eventos entre duas datas e remover um evento cancelado qualquer: consultas por intervalo e remoções arbitrárias pedem uma \textbf{AVL} indexada pela data. Já o atendimento de chamados por urgência, em que só interessa o mais urgente, pede um \textbf{heap}. Um dicionário que é carregado uma vez a partir de um arquivo ordenado e depois só consultado degeneraria numa ABB simples (as chaves chegam em ordem crescente), mas pode ser um vetor ordenado com busca binária, ou uma AVL.
+\end{exemplo}
+
+% ------------------------------------------------------------------
+\section{Árvores rubro-negras}\label{sec:rn}
+As árvores rubro-negras são outra forma clássica de manter uma ABB balanceada, e são a escolha mais comum em bibliotecas de linguagens de programação.
+\begin{defi}
+Uma \textbf{árvore rubro-negra} é uma ABB em que cada nó é \emph{vermelho} ou \emph{preto} (um bit extra por nó) e: (1) a raiz é preta; (2) as folhas nulas ($\nil$) são pretas; (3) um nó vermelho tem os dois filhos pretos, isto é, não há dois vermelhos seguidos; (4) todo caminho de um nó até as folhas nulas abaixo dele tem o mesmo número de nós pretos, chamado \emph{altura negra} do nó, $bh$.
+\end{defi}
+
+\begin{exemplo}[Conferindo as propriedades]\label{ex:rn}
+Na árvore da Figura~\ref{fig:rn}, a raiz 13 é preta; os vermelhos 8, 17, 6, 22 e 27 têm apenas filhos pretos (inclusive as folhas nulas, não desenhadas). Contando os pretos de 13 até as folhas nulas, sem contar o próprio 13 e contando a folha nula, todo caminho encontra 2: por exemplo, $13\to8\to1\to6\to\nil$ passa pelos pretos 1 e $\nil$, e $13\to17\to25\to22\to\nil$ passa por 25 e $\nil$. Logo $bh(13)=2$.
+\begin{figura}[Uma árvore rubro-negra com altura negra 2. As folhas nulas, todas pretas, foram omitidas.\label{fig:rn}]
+\forestset{rb/.style={fill=black!80, text=white}, rr/.style={fill=BrickRed!85, text=white, draw=BrickRed!60!black}}
+\begin{forest} bst
+[13,rb [8,rr [1,rb [,vazio] [6,rr]] [11,rb]] [17,rr [15,rb] [25,rb [22,rr] [27,rr]]]]
+\end{forest}
+\end{figura}
+\end{exemplo}
+
+\textbf{Por que é balanceada.} Pela propriedade (4), a subárvore de um nó $x$ tem pelo menos $2^{bh(x)}-1$ nós internos (por indução). Pela propriedade (3), pelo menos metade dos nós de qualquer caminho da raiz até uma folha é preta, então $bh(\text{raiz})\ge h/2$. Logo $n\ge2^{h/2}-1$, isto é, $h\le2\log_2(n+1)$. Dito de outro modo: como todos os caminhos têm o mesmo número de pretos e não há dois vermelhos seguidos, o caminho mais longo da raiz até uma folha nula tem no máximo cerca do dobro de nós do mais curto. Na Figura~\ref{fig:rn}, os caminhos vão de 3 nós ($13\to8\to11$) a 4 nós ($13\to17\to25\to22$).
+
+\textbf{Inserção.} Insere-se como numa ABB e pinta-se o novo nó $z$ de \emph{vermelho}, o que não altera alturas negras; se o pai de $z$ também é vermelho, a propriedade (3) é violada. A correção olha o \emph{tio} $y$ de $z$: (caso 1) se o tio é vermelho, pintam-se o pai e o tio de preto e o avô de vermelho, e o processo continua a partir do avô; (caso 2) se o tio é preto e $z$ está em zigue-zague com o pai e o avô, uma rotação no pai o transforma no caso 3; (caso 3) se o tio é preto e $z$ está ``em linha'', faz-se uma rotação no avô e trocam-se as cores do pai e do avô. Ao final, a raiz é pintada de preto. São no máximo \textbf{duas rotações} por inserção, e $O(\log n)$ recolorações.
+
+\begin{exemplo}[Inserindo $10,20,30$ numa rubro-negra vazia]
+O 10 entra como raiz e é pintado de preto. O 20 entra vermelho, à direita de 10: o pai é preto, e nada é violado. O 30 entra vermelho, à direita de 20: pai e filho vermelhos violam a regra (3). O tio de 30 (filho esquerdo de 10) é uma folha nula, preta, e $10\to20\to30$ estão em linha: é o caso 3. A rotação à esquerda no avô 10 leva 20 para a raiz, e a troca de cores deixa 20 preto e 10 vermelho (Figura~\ref{fig:rnins}). É a mesma rotação que a AVL faria (Figura~\ref{fig:quatrocasos}), seguida de uma recoloração.
+\begin{figura}[Inserção de 30 na rubro-negra $10(\cdot,20)$: o caso 3 resolve-se com uma rotação e uma troca de cores.\label{fig:rnins}]
+\forestset{rb/.style={fill=black!80, text=white}, rr/.style={fill=BrickRed!85, text=white, draw=BrickRed!60!black}}
+\begin{tabular}{@{}c@{\hspace{6mm}}c@{\hspace{6mm}}c@{}}
+\begin{forest} bstp [10,rb [,vazio] [20,rr [,vazio] [30,rr]]] \end{forest} &
+\raisebox{-5ex}{$\xrightarrow{\text{rotação à esquerda em 10, troca de cores}}$} &
+\begin{forest} bstp [20,rb [10,rr] [30,rr]] \end{forest}
+\end{tabular}
+\end{figura}
+\end{exemplo}
+
+\textbf{Remoção.} Remove-se como numa ABB; se o nó retirado era preto, surge um ``preto duplo'', resolvido olhando o irmão, em quatro casos, com no máximo \textbf{três rotações}.
+
+\begin{complemento}[AVL ou rubro-negra?]
+A AVL é mais rigidamente balanceada ($h\le1{,}44\log n$, contra $2\log n$), o que torna as buscas um pouco mais rápidas. A rubro-negra faz menos rotações nas atualizações --- $O(1)$ rotações na remoção, contra $O(\log n)$ na AVL ---, o que a torna preferida em bibliotecas e sistemas com muitas atualizações.
+\end{complemento}
+
+\begin{chave}
+AVL: $\bal=h_D-h_E\in\{-1,0,1\}$ e altura no máximo $1{,}44\log n$ (árvores de Fibonacci). Inserção: sobe atualizando os balanços; $\pm1\to0$ para, $0\to\pm1$ continua, $\pm1\to\pm2$ rotaciona no desregulado \textbf{mais profundo} e para (no máximo uma rotação). Sinais iguais: simples; opostos: dupla. Remoção: pode rotacionar em todos os ancestrais; filho com balanço 0 pede rotação simples, e a altura não muda.
+\end{chave}
+
+% ----------------------------------------------------------------
+\section{Exercícios}
+\excurso
+\begin{exercicio}{avl-r1}[Monitoria]
+(a) Defina árvore binária de busca balanceada. (b) Defina árvore AVL. (c) Qual a relação entre árvores AVL e árvores balanceadas? (d) Defina o fator de balanço de um nó.
+\end{exercicio}
+\begin{exercicio}{avl-r2}[Monitoria]
+Um nó é inserido na subárvore esquerda de $p$. (a) Para $\bal(p)=1$, $0$ e $-1$ antes da inserção, diga o novo balanço, se a altura de $T(p)$ mudou e se é preciso continuar subindo. (b) Se $\bal(p)=-2$ e o filho esquerdo $u$ tem $\bal(u)=-1$, qual rotação deve ser feita? E se $\bal(u)=+1$? Qual a diferença entre os dois casos?
+\end{exercicio}
+\begin{exercicio}{avl-r4}[Monitoria]
+No pseudocódigo da inserção: (a) qual a finalidade da variável lógica $h$? (b) Por que \textsc{AtualizaBalanço} só é chamada quando $h$ é verdadeiro? (c) Por que o ponteiro $pt$ precisa ser atualizado após uma rotação? (d) Um aluno escreveu os três testes de \textsc{AtualizaBalanço} como ``se'' consecutivos: o que dá errado?
+\end{exercicio}
+\begin{exercicio}{avl-r5}[Monitoria]
+Insira (a) $40,20,10,30,35$ e (b) $10,20,30,40,50$ numa AVL vazia, indicando os balanços, as rotações (simples ou dupla, e a direção) e a árvore final. (c) Em seguida, insira 49 na árvore de (b).
+\end{exercicio}
+\begin{exercicio}{avl-t5}[Avaliação]
+Na AVL $50(30(20(10,25),40),\,70(60,80))$, que armazena códigos de produtos, insira $5,15,35,45$, nessa ordem. (a) Após cada inserção, verifique os balanços e desenhe a árvore após cada rotação. (b) Quando a árvore deixar de ser AVL, identifique o primeiro nó desbalanceado encontrado ao subir da folha para a raiz, o caso e a rotação necessária. (c) Por que uma ABB comum poderia ter desempenho muito pior que a AVL se os códigos chegassem numa ordem desfavorável?
+\end{exercicio}
+\begin{exercicio}{avl-l3}[Lista]
+Construa uma AVL em que remover um único nó exija rotações em \emph{todos} os ancestrais; o nó removido deve ter pelo menos três ancestrais.
+\end{exercicio}
+\begin{exercicio}{avl-l4}[Lista]
+Descreva em alto nível uma estratégia para a fusão de duas árvores AVL.
+\end{exercicio}
+\begin{exercicio}{avl-l5}[Lista]
+É possível usar árvores AVL como estrutura de conjuntos disjuntos? Qual seria a complexidade de \Find{} e \Union?
+\end{exercicio}
+\begin{exercicio}{avl-r6}[Monitoria]
+(a) Uma base de registros tem inserções e remoções frequentes e consultas rápidas por chave: ABB simples ou AVL? (b) Uma fila de impressão sempre processa a tarefa de maior prioridade: heap ou AVL? Justifique.
+\end{exercicio}
+\begin{exercicio}{avl-pseudo}[Slides]
+Escreva o pseudocódigo das rotações, da inserção e da remoção em árvores AVL.
+\end{exercicio}
+\begin{exercicio}{avl-juiz}[Slides]
+Resolva os problemas 1195 (\emph{Árvore Binária de Busca}), 1200 e 1201 (\emph{Operações em ABP I e II}) e 1191 (\emph{Recuperação da Árvore}) do Beecrowd, e o problema SID do SPOJ. No 1191, dados os percursos em pré-ordem e em ordem de uma árvore binária, deve-se imprimir o percurso em pós-ordem.
+\end{exercicio}
+\begin{exercicio}{avl-rn}[Pesquisa]
+Apresente a definição de árvore rubro-negra e suas propriedades; justifique por que elas garantem altura $O(\log n)$; explique os algoritmos de inserção e remoção, com rotações e recolorações.
+\end{exercicio}
+
+\excompl
+\begin{exercicio}{avl-1a7}[Complementar]
+Insira $1,2,3,4,5,6,7$ numa AVL vazia. Em quais inserções ocorrem rotações, e de que tipo? Qual a árvore final?
+\end{exercicio}
+\begin{exercicio}{avl-3rot}[Complementar]
+Insira $10,20,30,25,28,27$ numa AVL vazia, indicando cada rotação e a árvore final com os balanços.
+\end{exercicio}
+\begin{exercicio}{avl-rem}[Complementar]
+Na árvore final do Exercício~\ref{ex:avl-1a7}, remova $1$, depois $3$, depois $2$ (na remoção de nó com dois filhos, use o maior da subárvore esquerda). Indique balanços e rotações.
+\end{exercicio}
+\begin{exercicio}{avl-altmax}[Complementar]
+Qual a altura máxima (em níveis) de uma AVL com 20 nós? E com 32 nós? Use $N(h)=1+N(h-1)+N(h-2)$.
+\end{exercicio}
+\begin{exercicio}{avl-inordem}[Complementar]
+Prove que as rotações simples e duplas preservam o percurso em ordem e, portanto, a propriedade de ABB.
+\end{exercicio}
+\begin{exercicio}{avl-catalan}[Complementar]
+Quantas ABBs distintas armazenam as chaves $\{1,2,3\}$? E $\{1,2,3,4\}$? Dê a recorrência.
+\end{exercicio}
+\begin{exercicio}{avl-rem30}[Complementar]
+Na árvore final do Exemplo~\ref{ex:teste1q5}, remova a raiz 30 (substituindo-a pelo maior elemento da subárvore esquerda). Indique os balanços e a rotação necessária.
+\end{exercicio}
+\begin{exercicio}{avl-seq}[Complementar]
+Insira $3,2,1,4,5,6,7,16,15,14$, nessa ordem, numa AVL vazia. Em quais inserções há rotação, de que tipo e em que nó? Qual a árvore final?
+\end{exercicio}
+\begin{exercicio}{avl-hmin}[Complementar]
+Mostre que toda árvore binária com $n$ nós tem altura (em níveis) pelo menos $\ceil{\log_2(n+1)}$. Conclua que a altura de uma AVL é $\Theta(\log n)$.
+\end{exercicio}
+\begin{exercicio}{avl-verif}[Complementar]
+Escreva um algoritmo $O(n)$ que decide se uma árvore binária é uma árvore AVL (isto é, uma ABB que satisfaz a condição de balanceamento).
+\end{exercicio}
+\begin{exercicio}{avl-suc}[Complementar]
+Escreva um algoritmo que encontra o sucessor de um nó numa ABB em tempo $O(h)$, supondo que cada nó tem um ponteiro para o pai.
+\end{exercicio}

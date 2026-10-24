@@ -1,0 +1,43 @@
+\respcap{cap:hash}
+\resp{hs-pesq} O Apêndice~\ref{cap:hash} serve de roteiro: motivação (dicionários e endereçamento direto), funções de divisão, multiplicação, dobra e polinomial, hashing universal, encadeamento exterior e interior, sondagens linear e quadrática e duplo hashing, e a complexidade em função do fator de carga, com pior caso $\Theta(n)$. O texto da pesquisa é um trabalho individual, a ser escrito com as próprias palavras.
+
+\resp{hs-abertos} Posições $0..10$; ``--'' indica posição vazia.\\
+\hspace*{1em}(a) Linear: $22,88,-,-,4,15,28,17,59,31,10$.\\
+\hspace*{1em}(b) Quadrática: $22,-,88,17,4,-,28,59,15,31,10$.\\
+\hspace*{1em}(c) Duplo hashing: $22,-,59,17,4,15,28,88,-,31,10$.
+
+\resp{hs-encad} Lista 1: $28,19,10$; lista 2: $20$; lista 3: $12$; lista 5: $5$; lista 6: $15,33$; lista 8: $17$; as demais ficam vazias. A maior lista tem 3 elementos.
+
+\resp{hs-primo} Com $m=2^r$, $k\bmod m$ são apenas os $r$ bits menos significativos de $k$: chaves que diferem só nos bits mais altos (por exemplo, múltiplos de $2^r$, ou strings codificadas que diferem só no começo) caem todas no mesmo endereço. Um primo longe de potências de 2 faz o resultado depender de todos os bits da chave.
+
+\resp{hs-remove} Uma busca por $k$ para ao encontrar uma posição vazia. Se uma chave no meio da sequência de sondagem de $k$ for apagada, a busca pararia ali e não encontraria $k$, que está mais adiante. A solução é marcar a posição como ``removida'': a busca continua passando por ela, e a inserção pode reutilizá-la. Com muitas remoções, o desempenho cai e convém reconstruir a tabela.
+
+\resp{hs-carga} $\alpha=1000/500=2$: as listas têm, em média, 2 elementos. Uma busca sem sucesso percorre uma lista inteira, com 2 comparações em média, mais o cálculo do hash: $\Theta(1+\alpha)$.
+
+\resp{hs-sondagens} No máximo $\frac1{1-\alpha}$: 2 sondagens com $\alpha=0{,}5$ e 10 com $\alpha=0{,}9$. O custo cresce rapidamente quando a tabela se aproxima de cheia; por isso é comum redimensionar quando $\alpha$ passa de algo entre $0{,}5$ e $0{,}75$.
+
+\resp{hs-mult} $123456\cdot A\approx76300{,}0041$, cuja parte fracionária é $0{,}0041$: $h=\floor{4{,}1}=4$. $123457\cdot A\approx76300{,}6221$: $h=\floor{622{,}1}=622$. Chaves vizinhas vão para endereços distantes.
+
+\resp{hs-universal} Uma família $\mathcal H$ de funções de $U$ em $\{0,\dots,m-1\}$ é universal se, para quaisquer chaves distintas $k_1\ne k_2$, no máximo $|\mathcal H|/m$ funções da família as fazem colidir, isto é, a probabilidade de colisão é no máximo $1/m$ quando a função é sorteada. Como o sorteio é feito depois de a entrada ser fixada, nenhuma entrada específica é ruim para a maioria das funções, e o número esperado de colisões de uma chave é no máximo $\alpha$, qualquer que seja o conjunto de chaves.
+
+\resp{hs-string} $h:=0$; \textbf{para} $i:=0$ \textbf{até} $L-1$: $h:=(h\cdot b+s_i)\bmod m$. Cada passo mantém $h<m$, sem calcular potências grandes. Se $b$ e $m$ tivessem um fator comum $d$, os termos $s_ib^j$ com $j\ge1$ seriam múltiplos de $d$ módulo $m$, e só uma fração dos endereços seria usada, aumentando as colisões.
+
+\resp{hs-doissoma} Percorra o vetor mantendo uma tabela hash dos valores já vistos; para cada $a_i$, verifique se $x-a_i$ está na tabela e depois insira $a_i$. São $n$ buscas e $n$ inserções, em $O(n)$ esperado.
+
+\resp{hs-repetido} Percorra a sequência inserindo cada valor numa tabela hash; o primeiro valor que já estiver na tabela no momento da inserção é a resposta. $O(n)$ esperado.
+
+\resp{hs-ordem} A função hash espalha as chaves sem relação com a ordem, então o sucessor de $k$ pode estar em qualquer posição, e é preciso examinar todas as chaves: $\Theta(n)$. Na AVL, ele é encontrado descendo ou subindo um caminho, em $O(\log n)$. Mínimo, máximo, percurso em ordem e consultas por intervalo têm a mesma limitação nas tabelas hash.
+
+\resp{hs-rehash} É a análise do vetor dinâmico do Capítulo~\ref{cap:heapav}: uma reconstrução com $k$ chaves custa $O(k)$, mas só acontece depois de $\Theta(k)$ inserções baratas desde a anterior. Com o potencial $\Phi=$ constante vezes (número de chaves inseridas desde a última reconstrução), cada inserção custa $O(1)$ amortizado.
+
+\resp{hs-agrup} Na sondagem linear, uma chave cujo endereço cai em qualquer posição de um grupo contíguo de posições ocupadas vai parar na primeira posição livre depois do grupo. Assim, a posição logo após um grupo de $k$ ocupadas é escolhida com probabilidade $(k+1)/m$, em vez de $1/m$, e grupos grandes tendem a crescer ainda mais e a se fundir.
+
+\resp{hs-duplo} A sequência $h_1(k)+i\,h_2(k)\pmod m$ só visita $m/\mathrm{mdc}(h_2(k),m)$ posições distintas. Com $m=10$ e $h_2(k)=5$, ela alterna entre apenas 2 posições, e a inserção pode falhar mesmo com a tabela quase vazia. Por isso usa-se $m$ primo, ou $m$ potência de 2 com $h_2(k)$ sempre ímpar.
+
+\resp{hs-remencad} Use listas \emph{duplamente} encadeadas: com ponteiros para o anterior e o próximo, o nó é retirado da lista em $O(1)$, sem percorrê-la. (Sem o ponteiro para o nó, a remoção exige primeiro uma busca, de custo $\Theta(1+\alpha)$ esperado.)
+
+\resp{hs-perfeito} No primeiro nível, uma função universal distribui as $n$ chaves em $m=n$ posições; a posição $j$ recebe $n_j$ chaves. No segundo nível, cada posição tem uma tabela própria de tamanho $n_j^2$ e uma função universal sorteada até não haver colisões (com tamanho $n_j^2$, isso acontece com probabilidade pelo menos $1/2$ a cada sorteio). A memória total esperada é $O(\sum_jn_j^2)=O(n)$, e cada busca consulta duas posições: $O(1)$ no pior caso.
+
+\resp{hs-distintos} Insira cada valor numa tabela hash, contando apenas quando ele ainda não estava presente: $O(n)$ esperado. Em $O(n\log n)$ no pior caso: ordene (por exemplo, com mergesort) e conte as posições em que o valor muda.
+
+\resp{hs-tamanho} São necessárias pelo menos $10^6/0{,}75\approx1\,333\,334$ posições. Para o método da divisão, escolha um primo pouco acima desse valor e longe de potências de 2, como $1\,333\,357$.

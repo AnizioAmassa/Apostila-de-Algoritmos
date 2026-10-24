@@ -1,0 +1,333 @@
+\documentclass[11pt,a4paper,oneside,openany]{book}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[brazil]{babel}
+\usepackage{amsmath,amsthm,mathtools}
+\usepackage{newpxtext,newpxmath}
+\usepackage{microtype}
+\usepackage[a4paper,top=2.6cm,bottom=2.6cm,inner=2.5cm,outer=2.5cm,headheight=14pt]{geometry}
+\usepackage{enumitem}
+\usepackage{booktabs,tabularx,multirow,array}
+\usepackage[dvipsnames,table]{xcolor}
+\usepackage[most]{tcolorbox}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,shapes.geometric,shapes.multipart,calc,decorations.pathreplacing,
+  matrix,fit,backgrounds,patterns,bending,quotes}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18, /pgf/number format/.cd, use comma, 1000 sep={.}}
+\usepackage{forest}
+\usepackage{graphicx}
+\usepackage{caption}
+\captionsetup{font=small,labelfont={bf,color=MidnightBlue},labelsep=period,skip=4pt}
+\usepackage[noend]{algpseudocode}
+\usepackage{titlesec}
+\usepackage{fancyhdr}
+\usepackage[colorlinks=true,linkcolor=MidnightBlue,urlcolor=MidnightBlue]{hyperref}
+\usepackage{bookmark}
+
+% ------------------------------------------------------------------
+% Aparência de livro
+% ------------------------------------------------------------------
+\definecolor{capcor}{named}{MidnightBlue}
+\titleformat{\chapter}[display]
+  {\normalfont\bfseries\color{capcor}}
+  {\filleft\fontsize{48}{48}\selectfont\thechapter}
+  {6pt}
+  {\titlerule[1.2pt]\vspace{6pt}\filright\Huge}
+  [{\vspace{2pt}\titlerule[0.4pt]}]
+\titleformat{name=\chapter,numberless}[display]
+  {\normalfont\bfseries\color{capcor}}{}{0pt}
+  {\titlerule[1.2pt]\vspace{6pt}\filright\Huge}[{\vspace{2pt}\titlerule[0.4pt]}]
+\titlespacing*{\chapter}{0pt}{-10pt}{24pt}
+\titleformat{\section}{\normalfont\Large\bfseries\color{capcor}}{\thesection}{0.8em}{}
+\titleformat{\subsection}{\normalfont\large\bfseries}{\thesubsection}{0.7em}{}
+\titleformat{\part}[display]{\normalfont\bfseries\centering\color{capcor}}
+  {\Large\partname~\thepart}{14pt}{\Huge}
+
+\pagestyle{fancy}
+\fancyhf{}
+\makeatletter
+\renewcommand{\chaptermark}[1]{\markboth{\if@mainmatter\thechapter.\ \fi #1}{}}
+\makeatother
+\renewcommand{\sectionmark}[1]{\markright{\thesection\ \ #1}}
+\fancyhead[L]{\small\textsc{\nouppercase{\leftmark}}}
+\fancyhead[R]{\small\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\fancypagestyle{plain}{\fancyhf{}\fancyfoot[C]{\small\thepage}\renewcommand{\headrulewidth}{0pt}}
+
+\setcounter{tocdepth}{1}
+
+% ------------------------------------------------------------------
+% Macros
+% ------------------------------------------------------------------
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\bal}{\operatorname{bal}}
+\newcommand{\rank}{\operatorname{rank}}
+\newcommand{\Find}{\textsc{Find}}
+\newcommand{\Union}{\textsc{Union}}
+\newcommand{\MakeSet}{\textsc{Make-Set}}
+\newcommand{\lgs}{\log^{*}}
+\DeclarePairedDelimiter{\floor}{\lfloor}{\rfloor}
+\DeclarePairedDelimiter{\ceil}{\lceil}{\rceil}
+\DeclarePairedDelimiter{\abs}{\lvert}{\rvert}
+\newcommand{\am}{$^{*}$}   % marca de amortizado
+
+% Pseudocódigo em português (algpseudocode)
+\algrenewcommand\algorithmicif{\textbf{se}}
+\algrenewcommand\algorithmicthen{\textbf{então}}
+\algrenewcommand\algorithmicelse{\textbf{senão}}
+\algrenewcommand\algorithmicwhile{\textbf{enquanto}}
+\algrenewcommand\algorithmicdo{\textbf{faça}}
+\algrenewcommand\algorithmicfor{\textbf{para}}
+\algrenewcommand\algorithmicreturn{\textbf{retorna}}
+\algrenewcommand\algorithmicprocedure{\textbf{Procedimento}}
+\algrenewcommand\algorithmicfunction{\textbf{Função}}
+\algrenewcommand\algorithmicrepeat{\textbf{repita}}
+\algrenewcommand\algorithmicuntil{\textbf{até que}}
+\algrenewcommand{\algorithmiccomment}[1]{\hfill{\color{gray}\small\% #1}}
+\algnewcommand\algorithmicelsif{\textbf{senão se}}
+\algdef{C}[IF]{IF}{ElsIf}[1]{\algorithmicelsif\ #1\ \algorithmicthen}
+\newcommand{\ptr}{\mathbin{\uparrow}}
+\newcommand{\nil}{\lambda}
+
+% ------------------------------------------------------------------
+% Teoremas e caixas
+% ------------------------------------------------------------------
+\theoremstyle{plain}
+\newtheorem{teo}{Teorema}[chapter]
+\newtheorem{prop}[teo]{Proposição}
+\newtheorem{lema}[teo]{Lema}
+\newtheorem{cor}[teo]{Corolário}
+\theoremstyle{definition}
+\newtheorem{defi}[teo]{Definição}
+\newtheorem{exemplo}[teo]{Exemplo}
+\theoremstyle{remark}
+\newtheorem{obs}[teo]{Observação}
+
+% Pseudocódigo
+\newtcolorbox{pseudo}[1]{enhanced, breakable, colback=gray!3, colframe=gray!45, colbacktitle=gray!22, coltitle=black,
+  fonttitle=\bfseries\small, title={#1}, left=3pt,right=3pt,top=2pt,bottom=2pt, fontupper=\small}
+% Abertura de capítulo
+\newtcolorbox{objetivos}{enhanced, breakable, colback=capcor!3, colframe=capcor!3, boxrule=0pt,
+  left=8pt,right=6pt,top=5pt,bottom=5pt, borderline west={3pt}{0pt}{capcor!70},
+  fontupper=\small, title={Neste capítulo}, coltitle=capcor!80!black, colbacktitle=capcor!3,
+  fonttitle=\bfseries\small, attach title to upper={\par\smallskip}}
+% O essencial de uma seção ou de um capítulo
+\newtcolorbox{chave}[1][Pontos-chave]{enhanced, breakable, colback=MidnightBlue!4,
+  colframe=MidnightBlue!70!black, fonttitle=\bfseries, title={#1}, left=4pt,right=4pt,top=3pt,bottom=3pt}
+% Métodos e roteiros
+\newtcolorbox{roteiro}[1][Roteiro]{enhanced, breakable, colback=ForestGreen!5,
+  colframe=ForestGreen!70!black, fonttitle=\bfseries, title={#1}, left=4pt,right=4pt,top=3pt,bottom=3pt}
+% Erros frequentes
+\newtcolorbox{cuidado}[1][Armadilhas comuns]{enhanced, breakable, colback=BrickRed!4,
+  colframe=BrickRed!75!black, fonttitle=\bfseries, title={#1}, left=4pt,right=4pt,top=3pt,bottom=3pt}
+% Aprofundamento
+\newtcolorbox{complemento}[1][Para saber mais]{enhanced, breakable, colback=orange!4, colframe=orange!70!black,
+  fonttitle=\bfseries, title={#1}, left=4pt,right=4pt,top=3pt,bottom=3pt}
+% A ideia por trás de um conceito, antes da formalização
+\newtcolorbox{intuicao}[1][Intuição]{enhanced, breakable, colback=Goldenrod!7, colframe=Goldenrod!7, boxrule=0pt,
+  left=8pt,right=6pt,top=4pt,bottom=4pt, borderline west={3pt}{0pt}{Goldenrod!85!black},
+  title={#1}, coltitle=Goldenrod!40!black, colbacktitle=Goldenrod!7, fonttitle=\bfseries\small,
+  attach title to upper={\par\smallskip}}
+% Exemplos resolvidos ficam numa caixa leve, para se destacarem do texto corrido
+\tcolorboxenvironment{exemplo}{enhanced, breakable, colback=ForestGreen!3, colframe=ForestGreen!3, boxrule=0pt,
+  left=6pt,right=6pt,top=2pt,bottom=4pt, borderline west={2pt}{0pt}{ForestGreen!60!black},
+  before skip=8pt, after skip=8pt}
+
+% Figuras no lugar em que aparecem (não flutuam), com legenda numerada
+\NewDocumentEnvironment{figura}{o}
+  {\par\addvspace{6pt}\noindent\begin{minipage}{\linewidth}\centering}
+  {\IfValueT{#1}{\par\smallskip\captionof{figure}{#1}}\end{minipage}\par\addvspace{6pt}}
+
+% ------------------------------------------------------------------
+% Estilos TikZ usados nas figuras
+% ------------------------------------------------------------------
+\colorlet{destaque}{Goldenrod!45}      % célula/vértice em foco
+\colorlet{feito}{ForestGreen!25}       % já processado / definitivo
+\colorlet{ruim}{BrickRed!25}           % violação / conflito
+\colorlet{azul}{MidnightBlue!18}
+\tikzset{
+  cel/.style={draw, minimum width=7mm, minimum height=6mm, inner sep=0pt, font=\small},
+  idx/.style={font=\scriptsize, text=gray},
+  vtx/.style={circle, draw, thick, minimum size=6.5mm, inner sep=0pt, font=\small},
+  vtxs/.style={circle, draw, thick, minimum size=5mm, inner sep=0pt, font=\scriptsize},
+  aresta/.style={thick},
+  arco/.style={thick, -{Stealth[length=2.2mm]}},
+  peso/.style={font=\scriptsize, fill=white, inner sep=1pt},
+  marca/.style={line width=2.2pt, draw=MidnightBlue!70, opacity=0.65},
+  seta/.style={-{Stealth[length=2mm]}, thick},
+  rot/.style={font=\scriptsize, text=gray!60!black},
+  passo/.style={font=\small\bfseries, text=MidnightBlue},
+}
+% \vetor[posições em destaque]{a,b,c,...}: desenha um vetor indexado a partir de 1
+\NewDocumentCommand{\vetor}{O{} m}{%
+\begin{tikzpicture}[baseline=-0.6ex]
+  \foreach \h in {#1} {\fill[destaque] ($(\h*7mm,0)+(-3.5mm,-3mm)$) rectangle ++(7mm,6mm);}
+  \foreach \x [count=\i] in {#2} {\node[cel] at (\i*7mm,0) {$\x$}; \node[idx] at (\i*7mm,4.8mm) {\i};}
+\end{tikzpicture}}
+% Dentro de um tikzpicture: \pic at (x,y) {arr={k}{a,b,c}} desenha k células centradas em (x,y)
+\tikzset{pics/arr/.style n args={2}{code={\foreach \arrv [count=\arri] in {#2}
+  {\node[cel, minimum width=5mm, minimum height=4.8mm, font=\scriptsize] at ({(\arri-(#1+1)/2)*5mm},0) {$\arrv$};}}}}
+% \vetorz: o mesmo, indexado a partir de 0
+\NewDocumentCommand{\vetorz}{O{} m}{%
+\begin{tikzpicture}[baseline=-0.6ex]
+  \foreach \h in {#1} {\fill[destaque] ($(\h*7mm,0)+(-3.5mm,-3mm)$) rectangle ++(7mm,6mm);}
+  \foreach \x [count=\i from 0] in {#2} {\node[cel] at (\i*7mm,0) {$\x$}; \node[idx] at (\i*7mm,4.8mm) {\i};}
+\end{tikzpicture}}
+
+% ------------------------------------------------------------------
+% Exercícios com link para a resposta (Apêndice B)
+% ------------------------------------------------------------------
+\newcounter{exerc}[chapter]
+\renewcommand{\theexerc}{\thechapter.\arabic{exerc}}
+\NewDocumentEnvironment{exercicio}{m o}{%
+  \par\addvspace{7pt}\refstepcounter{exerc}\label{ex:#1}%
+  \noindent{\color{capcor}\bfseries\theexerc}%
+  \IfValueT{#2}{\enspace{\small\color{gray!75!black}\textsf{[#2]}}}%
+  \hfill{\scriptsize\hyperref[resp:#1]{resposta: p.~\pageref*{resp:#1}}}%
+  \par\nopagebreak\noindent\ignorespaces}{\par}
+\newcommand{\resp}[1]{\par\addvspace{6pt}\noindent\phantomsection\label{resp:#1}%
+  \hyperref[ex:#1]{\textcolor{capcor}{\textbf{\ref*{ex:#1}}}}\enspace\ignorespaces}
+\newcommand{\respcap}[1]{\subsection*{Capítulo~\ref*{#1}: \nameref*{#1}}}
+\newcommand{\estrela}{$\bigstar$}
+\newcommand{\excurso}{\subsection*{Exercícios do curso}}
+\newcommand{\excompl}{\subsection*{Exercícios complementares}}
+
+% Árvores (forest)
+\forestset{
+  bst/.style={for tree={circle, draw, minimum size=1.5em, inner sep=1pt, font=\small,
+      s sep=6mm, l sep=4mm, edge={thick}}},
+  bstp/.style={for tree={circle, draw, minimum size=1.4em, inner sep=0.5pt, font=\scriptsize,
+      s sep=2.2mm, l sep=2.2mm, edge={thick}}},
+  bb/.style={label={[font=\scriptsize,text=BrickRed,inner sep=1pt]right:{$#1$}}},
+  feito/.style={fill=ForestGreen!25},
+  aviol/.style={edge={very thick, BrickRed}},
+  acam/.style={edge={very thick, MidnightBlue!80}},
+  vazio/.style={phantom},
+  tri/.style={draw, isosceles triangle, shape border rotate=90, isosceles triangle apex angle=60,
+      inner sep=0.5pt, minimum height=7mm, font=\scriptsize, anchor=apex, child anchor=apex},
+  novo/.style={fill=yellow!40},
+  desreg/.style={fill=BrickRed!25},
+}
+
+\setlist{itemsep=1.5pt,topsep=3pt}
+\renewcommand{\arraystretch}{1.15}
+\numberwithin{equation}{chapter}
+
+\begin{document}
+
+% ------------------------------------------------------------------
+% Folha de rosto
+% ------------------------------------------------------------------
+\frontmatter
+\begin{titlepage}
+\centering
+\vspace*{2.5cm}
+{\color{capcor}\rule{\linewidth}{1.5pt}\par\vspace{16pt}
+{\fontsize{40}{46}\selectfont\bfseries Algoritmos\par}
+\vspace{12pt}
+{\Large Estruturas de dados, paradigmas de projeto\\[2pt] e algoritmos em grafos\par}
+\vspace{12pt}\rule{\linewidth}{0.5pt}\par}
+\vspace{2cm}
+{\LARGE Anizio Silva Correia Júnior\par}
+\vspace{14pt}
+{\large com orientação e material didático do\\[2pt] Prof.\ Uéverton Souza\par}
+\vspace{10pt}
+{\normalsize IMPA Tech\par}
+\vfill
+\begin{tcolorbox}[enhanced, width=0.82\linewidth, colback=capcor!4, colframe=capcor!60, boxrule=0.6pt,
+  halign=center, left=8pt, right=8pt, top=6pt, bottom=6pt]
+\small\textbf{Produção auxiliada por inteligência artificial.}\\[2pt]
+Este texto foi elaborado por Anizio Silva Correia Júnior com o auxílio de ferramentas de inteligência artificial,
+a partir da orientação e do material didático proporcionados pelo Prof.\ Uéverton Souza.
+\end{tcolorbox}
+\vspace{1cm}
+\end{titlepage}
+
+\chapter{Prefácio}
+Este livro apresenta os fundamentos de projeto e análise de algoritmos na sequência em que eles são estudados na disciplina de Algoritmos do IMPA Tech: começa pela linguagem da análise de complexidade, passa pelas estruturas de dados clássicas (filas de prioridades, conjuntos disjuntos, árvores de busca), pela ordenação, pela seleção e pela técnica de divisão e conquista, e chega à programação dinâmica, aos algoritmos gulosos e aos algoritmos em grafos.
+
+Cada capítulo trata de um tópico. Ele começa com um quadro que diz o que será estudado, desenvolve o assunto com definições, algoritmos em pseudocódigo, demonstrações e exemplos resolvidos passo a passo, e termina com um resumo e uma lista de exercícios. Os exemplos numéricos foram conferidos por simulação.
+
+\section*{Como o livro está organizado}
+A Parte~I trata de análise de algoritmos e de estruturas de dados: complexidade (Capítulo~\ref{cap:complex}), heaps binários, binomiais e de Fibonacci com análise amortizada (Capítulos~\ref{cap:heap} e~\ref{cap:heapav}), conjuntos disjuntos (Capítulo~\ref{cap:uf}), árvores AVL (Capítulo~\ref{cap:avl}), ordenação (Capítulos~\ref{cap:sortcomp} e~\ref{cap:sortlin}), seleção (Capítulo~\ref{cap:selecao}) e divisão e conquista (Capítulo~\ref{cap:dc}). O Capítulo~\ref{cap:revisao} reúne os critérios para escolher entre essas ferramentas.
+
+A Parte~II trata de paradigmas de projeto e de grafos: programação dinâmica (Capítulo~\ref{cap:pd}), o algoritmo de Floyd-Warshall (Capítulo~\ref{cap:fw}), algoritmos gulosos e matroides (Capítulo~\ref{cap:gulosos}), árvores geradoras mínimas (Capítulo~\ref{cap:agm}), busca em largura (Capítulo~\ref{cap:bfs}), o algoritmo de Dijkstra (Capítulo~\ref{cap:dijkstra}) e a busca em profundidade em grafos e digrafos (Capítulos~\ref{cap:dfs} e~\ref{cap:dfsdig}). O Apêndice~\ref{cap:hash} trata de tabelas hash e o Apêndice~\ref{ap:respostas} traz as respostas dos exercícios.
+
+\section*{As caixas}
+Ao longo do texto, caixas coloridas ajudam a situar cada trecho:
+\begin{objetivos}
+O que o capítulo vai apresentar.
+\end{objetivos}
+\begin{chave}[Pontos-chave]
+O que precisa ficar claro ao fim de uma seção ou de um capítulo.
+\end{chave}
+\begin{roteiro}[Roteiro]
+Um método passo a passo para resolver um tipo de problema ou escolher entre alternativas.
+\end{roteiro}
+\begin{cuidado}[Armadilhas comuns]
+Erros frequentes e confusões que costumam aparecer.
+\end{cuidado}
+\begin{complemento}[Para saber mais]
+Aprofundamentos que vão além do essencial.
+\end{complemento}
+
+\section*{Os exercícios}
+Cada capítulo termina com pelo menos vinte exercícios, divididos em dois grupos. Os \textbf{exercícios do curso} vêm do material da disciplina; uma etiqueta indica a origem de cada um:
+\begin{center}\small
+\begin{tabular}{@{}ll@{}}
+\textsf{[Slides]} & exercícios propostos nos slides da disciplina;\\
+\textsf{[Lista]} & listas de exercícios da disciplina;\\
+\textsf{[Monitoria]} & exercícios das monitorias;\\
+\textsf{[Avaliação]} & questões das avaliações da disciplina;\\
+\textsf{[Pesquisa]} & temas dos trabalhos de pesquisa;\\
+\textsf{[Material de apoio]} & listas de outras disciplinas indicadas como material complementar.\\
+\end{tabular}
+\end{center}
+Os \textbf{exercícios complementares}, etiquetados \textsf{[Complementar]}, foram escolhidos para fixar e aprofundar o conteúdo; os mais difíceis estão marcados com \estrela. Todos têm resposta, sugestão ou esboço de solução no Apêndice~\ref{ap:respostas}. O link ``resposta: p.~X'' ao lado de cada enunciado leva até ela, e o número da resposta leva de volta ao enunciado.
+
+\section*{Convenções}
+\begin{itemize}
+  \item Heaps são \textbf{de máximo} e guardados em vetor indexado a partir de 1: o pai de $i$ é $\floor{i/2}$ e os filhos são $2i$ e $2i+1$.
+  \item Em árvores AVL, o balanço é $\bal(v)=h_D(v)-h_E(v)$ (altura da direita menos a da esquerda).
+  \item Em grafos, $n=|V|$ e $m=|E|$; $N(v)$ é a vizinhança de $v$ e, num digrafo, $N_{out}(v)$ é a vizinhança de saída.
+  \item $\log$ sem base indica $\log_2$; o símbolo \am\ indica custo amortizado.
+\end{itemize}
+
+\section*{Nota sobre a produção}
+Este livro foi produzido por \textbf{Anizio Silva Correia Júnior}, com o \textbf{auxílio de ferramentas de inteligência artificial}, a partir da orientação e do material didático proporcionados pelo \textbf{Prof.\ Uéverton Souza} na disciplina de Algoritmos do IMPA Tech. As fontes utilizadas estão listadas nas Referências bibliográficas, ao final do volume.
+
+\tableofcontents
+
+\mainmatter
+\part{Análise de algoritmos e estruturas de dados}
+\input{capitulos/01_complexidade}
+\input{capitulos/02_heaps}
+\input{capitulos/03_heaps_avancados}
+\input{capitulos/04_unionfind}
+\input{capitulos/05_avl}
+\input{capitulos/06_ordenacao_comparacao}
+\input{capitulos/07_ordenacao_linear}
+\input{capitulos/08_selecao}
+\input{capitulos/09_divisao_conquista}
+\input{capitulos/10_revisao}
+
+\part{Paradigmas de projeto e algoritmos em grafos}
+\input{capitulos/11_programacao_dinamica}
+\input{capitulos/12_floyd_warshall}
+\input{capitulos/13_gulosos_matroides}
+\input{capitulos/14_agm}
+\input{capitulos/15_busca_largura}
+\input{capitulos/16_dijkstra}
+\input{capitulos/17_busca_profundidade}
+\input{capitulos/18_profundidade_digrafos}
+
+\appendix
+\input{capitulos/A_hash}
+\input{capitulos/B_respostas}
+
+\backmatter
+\input{capitulos/referencias}
+
+\end{document}

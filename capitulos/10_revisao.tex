@@ -1,0 +1,168 @@
+% ================================================================
+\chapter{Escolhendo estruturas de dados e algoritmos}\label{cap:revisao}
+% ================================================================
+\begin{objetivos}
+\begin{itemize}
+  \item Um método para escolher a estrutura de dados e o algoritmo adequados a uma situação.
+  \item Um quadro comparativo das estruturas e algoritmos da Parte~I.
+  \item Como reconhecer, num trecho de código, oportunidades de melhorar a complexidade.
+\end{itemize}
+\end{objetivos}
+
+Conhecer cada estrutura e cada algoritmo isoladamente não basta: na prática, o problema chega descrito em palavras, ou na forma de um programa lento, e é preciso decidir qual ferramenta usar. Este capítulo reúne os critérios espalhados pelos capítulos anteriores e os organiza num método.
+
+\section{Um método de escolha}
+\begin{roteiro}[Como escolher]
+\begin{enumerate}
+  \item \textbf{Liste as operações} que o problema (ou o código) faz repetidamente: buscar por chave, achar o máximo, inserir, remover, unir grupos, ordenar, selecionar o $k$-ésimo.
+  \item \textbf{Estime quantas vezes} cada operação acontece. A operação dominante é a que deve ficar barata.
+  \item \textbf{Escolha a estrutura} que torna barata a operação dominante sem tornar as outras proibitivas.
+  \item \textbf{Olhe o tipo das chaves} para escolher a ordenação: inteiros pequenos, inteiros com poucos dígitos, reais uniformes ou chaves arbitrárias.
+  \item \textbf{Verifique as restrições}: memória disponível, necessidade de tempo previsível por operação (pior caso) ou apenas de custo total (amortizado), estabilidade, necessidade de manter ordem.
+  \item \textbf{Justifique} com as complexidades das operações e com uma estimativa do custo total.
+\end{enumerate}
+\end{roteiro}
+
+\section{Quadro comparativo}\label{sec:escolhageral}
+\begin{center}
+\small
+\begin{tabularx}{\linewidth}{@{}XX@{}}
+\toprule
+O problema faz repetidamente\dots & Estrutura ou algoritmo\\
+\midrule
+pega o maior (ou o menor), insere e às vezes altera prioridades & \textbf{heap binário} (Capítulo~\ref{cap:heap})\\
+\dots\ e une filas com frequência, exigindo tempo previsível & \textbf{heap binomial} (Capítulo~\ref{cap:heapav})\\
+\dots\ com um número enorme de aumentos de prioridade, importando o custo total & \textbf{heap de Fibonacci} (Capítulo~\ref{cap:heapav})\\
+``$x$ e $y$ estão no mesmo grupo?'' e une grupos & \textbf{Union-Find} com rank e compressão (Capítulo~\ref{cap:uf})\\
+\dots\ e precisa listar os membros de um grupo & \textbf{Union-Find por listas} (Capítulo~\ref{cap:uf})\\
+busca por chave, inserção, remoção, percurso em ordem, sucessor, mínimo e máximo, intervalos & \textbf{árvore AVL} ou rubro-negra (Capítulo~\ref{cap:avl})\\
+só busca, inserção e remoção por chave exata, sem ordem & \textbf{tabela hash}, $O(1)$ esperado (Apêndice~\ref{cap:hash})\\
+muitas buscas e quase nenhuma atualização & \textbf{vetor ordenado} e busca binária\\
+o $k$-ésimo menor ou a mediana, uma vez & \textbf{seleção linear} (Capítulo~\ref{cap:selecao}), sem ordenar\\
+os $k$ maiores de um fluxo de dados & \textbf{heap de mínimo de tamanho $k$}, $O(n\log k)$\\
+ordenar inteiros num intervalo pequeno ou com poucos dígitos & \textbf{counting} ou \textbf{radix sort} (Capítulo~\ref{cap:sortlin})\\
+ordenar chaves arbitrárias com garantia e estabilidade & \textbf{mergesort} (Capítulo~\ref{cap:sortcomp})\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\paragraph{Padrões a reconhecer em código.} Alguns padrões indicam, quase sempre, uma estrutura inadequada:
+\begin{itemize}
+  \item um laço que procura o máximo de uma lista e o remove, a cada iteração ($\Theta(n)$ por iteração): use um \textbf{heap};
+  \item ordenar a lista inteira depois de cada inserção: use um \textbf{heap} ou uma \textbf{AVL}, conforme seja preciso só o extremo ou a ordem toda;
+  \item percorrer todos os elementos para saber se dois estão no mesmo grupo: use \textbf{Union-Find};
+  \item ordenar só para depois pegar o $k$-ésimo elemento: use \textbf{seleção} em $O(n)$;
+  \item ordenar inteiros pequenos com um \texttt{sort} genérico: use \textbf{counting} ou \textbf{radix sort};
+  \item procurar um elemento por varredura a cada consulta: use \textbf{hash} (sem ordem) ou \textbf{AVL} (com ordem).
+\end{itemize}
+
+\section{Resumo das complexidades}
+\begin{center}
+\small
+\textbf{Listas de prioridades} ($n$ elementos; \am\ indica custo amortizado)\\[2pt]
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+Operação & Lista não ordenada & Heap binário & Heap binomial & Heap de Fibonacci\\
+\midrule
+Seleção do máximo & $\Theta(n)$ & $O(1)$ & $O(\log n)$ ou $O(1)$ & $O(1)$\\
+Inserção & $\Theta(1)$ & $O(\log n)$ & $O(\log n)$; $O(1)$\am & $O(1)$\am\\
+Remoção do máximo & $\Theta(n)$ & $O(\log n)$ & $O(\log n)$ & $O(\log n)$\am\\
+Aumentar prioridade & $\Theta(n)$ & $O(\log n)$ & $O(\log n)$ & $O(1)$\am\\
+Fusão & $O(1)$ & $O(n)$ & $O(\log n)$ & $O(1)$\am\\
+\bottomrule
+\end{tabular}
+
+\medskip
+\textbf{Ordenação}\\[2pt]
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+Algoritmo & Pior caso & Caso médio & Memória extra & Estável?\\
+\midrule
+Inserção & $\Theta(n^2)$ & $\Theta(n^2)$ & $O(1)$ & sim\\
+Mergesort & $\Theta(n\log n)$ & $\Theta(n\log n)$ & $\Theta(n)$ & sim\\
+Heapsort & $\Theta(n\log n)$ & $\Theta(n\log n)$ & $O(1)$ & não\\
+Quicksort & $\Theta(n^2)$ & $\Theta(n\log n)$ & $O(\log n)$ & não\\
+Counting sort & $\Theta(n+k)$ & $\Theta(n+k)$ & $\Theta(n+k)$ & sim\\
+Radix sort & $\Theta(d(n+b))$ & $\Theta(d(n+b))$ & $\Theta(n+b)$ & sim\\
+Bucket sort & $\Theta(n^2)$ & $\Theta(n)$ (uniforme) & $\Theta(n)$ & depende\\
+\bottomrule
+\end{tabular}
+\end{center}
+\textbf{Outras estruturas.} Union-Find com rank e compressão: $O(\lgs n)$ amortizado por operação (ou $O(\alpha)$). AVL: busca, inserção e remoção em $O(\log n)$ no pior caso. Seleção: $O(n)$ no pior caso pela mediana das medianas. Divisão e conquista: contagem de inversões e subvetor máximo em $O(n\log n)$; Strassen em $O(n^{2{,}807})$.
+
+\section{Exemplos}
+\begin{exemplo}[Uma agenda de compromissos]
+Um aplicativo guarda compromissos com data e hora, insere e remove compromissos com frequência, mostra o próximo compromisso e lista todos os compromissos de uma semana. As operações dominantes são inserção, remoção de um compromisso específico, ``próximo compromisso'' e consulta por intervalo. Um heap daria o próximo compromisso, mas não remove um elemento qualquer pela chave nem lista um intervalo; uma tabela hash não mantém ordem. Uma \textbf{AVL} indexada por data e hora faz tudo: inserção e remoção em $O(\log n)$, mínimo em $O(\log n)$ e a semana em $O(\log n+k)$, com $k$ compromissos listados.
+\end{exemplo}
+\begin{exemplo}[Ranking de uma competição]
+São $10^6$ participantes com pontuações inteiras de 0 a 1000, e é preciso imprimir o ranking uma única vez, mantendo, entre empatados, a ordem de inscrição. As chaves são inteiros num intervalo pequeno e a estabilidade importa: \textbf{counting sort}, em $\Theta(n+k)$ com $k=1001$, estável.
+\end{exemplo}
+
+\begin{chave}[Resumo da Parte I]
+Identifique a operação dominante e o tipo das chaves. Heap para extremos; binomial para fusões previsíveis; Fibonacci para muitos aumentos de prioridade. Union-Find para grupos. AVL para ordem e busca; hash para busca sem ordem. Seleção sem ordenar. Counting e radix para inteiros; mergesort para chaves arbitrárias com estabilidade; heapsort com pouca memória; quicksort para desempenho médio. Justifique sempre com complexidade, memória e o tipo de garantia (pior caso ou amortizada).
+\end{chave}
+
+% ----------------------------------------------------------------
+\section{Exercícios}
+Para cada situação, diga qual estrutura de dados ou algoritmo você usaria e justifique com as complexidades envolvidas.
+\excompl
+\begin{exercicio}{rv-maior}[Complementar]
+\textbf{Enquanto} houver tarefas na lista $L$ \textbf{faça}: percorra $L$ para achar a de maior prioridade, execute-a e remova-a de $L$; novas tarefas podem ser acrescentadas a $L$ durante a execução.
+\end{exercicio}
+\begin{exercicio}{rv-kesimo}[Complementar]
+Para cada uma de $q$ consultas: copie o vetor $V$ (que não muda) de tamanho $n$, ordene a cópia com um \texttt{sort} genérico e devolva o elemento da posição $k_i$.
+\end{exercicio}
+\begin{exercicio}{rv-grupos}[Complementar]
+Uma rede social recebe $10^6$ pedidos de amizade, que unem comunidades, e $10^8$ perguntas ``$u$ e $v$ estão na mesma comunidade?''. O código atual responde cada pergunta com uma busca em largura no grafo de amizades.
+\end{exercicio}
+\begin{exercicio}{rv-dic}[Complementar]
+Um sistema guarda produtos por código, com inserções e remoções frequentes, e precisa responder ``quais códigos estão entre $a$ e $b$?''. Hoje os códigos ficam num vetor ordenado e cada inserção desloca os elementos.
+\end{exercicio}
+\begin{exercicio}{rv-idades}[Complementar]
+Ordenar as idades (inteiros entre 0 e 120) de $10^8$ pessoas com o \texttt{sort} da biblioteca.
+\end{exercicio}
+\begin{exercicio}{rv-filas}[Complementar]
+Um sistema de atendimento tem uma fila de prioridade por guichê; quando um guichê fecha, sua fila é unida à de outro guichê. Fechamentos são frequentes e o tempo de cada operação precisa ser previsível. Hoje cada fila é um heap binário.
+\end{exercicio}
+\begin{exercicio}{rv-emerg}[Complementar]
+Um pronto-socorro mantém os pacientes em espera ordenados por gravidade. Chegam e são atendidos milhares de pacientes por dia; a gravidade de um paciente raramente muda; o sistema roda num dispositivo com pouca memória.
+\end{exercicio}
+\begin{exercicio}{rv-cancel}[Complementar]
+Um simulador mantém eventos futuros ordenados por horário; a todo momento processa o próximo evento, cria novos eventos e às vezes cancela um evento já agendado, identificado por um número.
+\end{exercicio}
+\begin{exercicio}{rv-palavras}[Complementar]
+Um corretor ortográfico precisa verificar, para cada palavra de um texto, se ela está num dicionário fixo de $10^6$ palavras. Não há atualizações nem consultas por ordem alfabética.
+\end{exercicio}
+\begin{exercicio}{rv-posicao}[Complementar \estrela]
+Um placar online recebe pontuações e precisa responder ``qual a posição de $x$ no ranking?'' e ``quem está na posição $r$?'', com inserções e remoções frequentes.
+\end{exercicio}
+\begin{exercicio}{rv-mediana}[Complementar]
+Um sensor envia medições continuamente, e após cada medição é preciso exibir a mediana de todas as medições recebidas até então.
+\end{exercicio}
+\begin{exercicio}{rv-externo}[Complementar]
+Ordenar um arquivo de 500 GB de registros num computador com 16 GB de memória.
+\end{exercicio}
+\begin{exercicio}{rv-quase}[Complementar]
+Um vetor de $10^6$ elementos está ordenado, exceto por uns poucos elementos fora do lugar, cada um a no máximo 10 posições da posição correta.
+\end{exercicio}
+\begin{exercicio}{rv-dup}[Complementar]
+Decidir se há strings repetidas numa lista de $10^7$ strings.
+\end{exercicio}
+\begin{exercicio}{rv-remocoes}[Complementar]
+Uma malha de estradas recebe uma lista de interdições, uma por vez, e após cada interdição é preciso dizer quantas regiões desconectadas existem. Toda a lista de interdições é conhecida de antemão.
+\end{exercicio}
+\begin{exercicio}{rv-topk}[Complementar]
+Um servidor processa um fluxo de $10^9$ requisições e, ao final, deve informar as 100 mais demoradas, usando pouca memória.
+\end{exercicio}
+\begin{exercicio}{rv-reais}[Complementar]
+Ordenar $10^6$ números reais em $[0,1)$ cuja distribuição é desconhecida e possivelmente muito concentrada perto de 0.
+\end{exercicio}
+\begin{exercicio}{rv-prefixo}[Complementar]
+Um programa responde a $q$ perguntas ``qual a soma de $V[i..j]$?'' sobre um vetor fixo, somando os elementos de $i$ a $j$ a cada pergunta.
+\end{exercicio}
+\begin{exercicio}{rv-busca}[Complementar]
+A cada consulta, um programa percorre uma lista de $n$ registros para descobrir se existe um registro com uma dada chave; há muitas consultas, inserções e remoções, e também é preciso, de vez em quando, listar os registros em ordem de chave.
+\end{exercicio}
+\begin{exercicio}{rv-desfazer}[Complementar]
+Um editor de redes permite ligar computadores, consultar se dois computadores se comunicam e desfazer as últimas ligações feitas.
+\end{exercicio}

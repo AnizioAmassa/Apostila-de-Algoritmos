@@ -1,0 +1,61 @@
+\respcap{cap:heap}
+\resp{hp-l1} (a) Não: a posição 6 ($29$) tem pai na posição 3 ($28$) e $29>28$. (b) Sim: as 8 relações pai--filho valem ($33\ge32,28$; $32\ge31,29$; $28\ge26,25$; $31\ge30,27$).
+
+\resp{hp-l2} Falso. Contraexemplo: $S=[10,9,1,8,7,0,0,6]$, $i=3$ ($1$), $j=4$ ($8$). Após a troca, $[10,9,8,1,7,0,0,6]$: a posição 8 ($6$) tem pai na posição 4 ($1$). O valor pequeno foi para uma posição cujos filhos podem ser maiores que ele.
+
+\resp{hp-l3} Falso. $S=[10,9]$, $i=1$, $j=2$: após a troca, $[9,10]$ tem o filho maior que o pai.
+
+\resp{hp-l4} $H(0)=H(1)=1$ e $H(n)=\binom{n-1}{L}H(L)H(n-1-L)$, onde $L$ é o tamanho da subárvore esquerda da raiz, determinado pelo formato da árvore completa: a raiz é obrigatoriamente o extremo, escolhem-se os $L$ valores que vão para a esquerda e cada lado é um heap. Valores: $1,1,2,3,8,20,80,210,896,3360$ para $n=1,\dots,10$. A demonstração está na §\ref{sec:heapprops}.
+
+\resp{hp-l5} Processam-se $i=4,3,2,1$: $34\leftrightarrow50$; $41\leftrightarrow52$; $25\leftrightarrow50$ e $25\leftrightarrow48$; $18\leftrightarrow52$ e $18\leftrightarrow41$. Resultado: $[52,50,41,48,14,10,18,34,25]$.
+
+\resp{hp-l6} É o Lema~\ref{lema:alturas}: o nó $i$ tem altura $\ge j$ se e somente se $i\,2^{j-1}\le n$; assim, o número de nós com altura exatamente $j$ é $\floor{x}-\floor{x/2}=\ceil{\floor{x}/2}\le\ceil{n/2^j}$, com $x=n/2^{j-1}$.
+
+\resp{hp-l16} Basta tornar \emph{subir} e \emph{descer} iterativos:
+\begin{pseudo}{Subir e descer sem recursão}
+\begin{algorithmic}
+\Procedure{subir}{$i$}
+  \While{$i>1$ \textbf{e} $T[i].chave>T[\floor{i/2}].chave$} \State $T[i]\Leftrightarrow T[\floor{i/2}]$;\ $i:=\floor{i/2}$ \EndWhile
+\EndProcedure
+\Procedure{descer}{$i,n$}
+  \While{$2i\le n$}
+    \State $j:=2i$
+    \If{$j<n$ \textbf{e} $T[j+1].chave>T[j].chave$} \State $j:=j+1$ \EndIf
+    \If{$T[i].chave<T[j].chave$} \State $T[i]\Leftrightarrow T[j]$;\ $i:=j$ \Else \State \textbf{pare} \EndIf
+  \EndWhile
+\EndProcedure
+\end{algorithmic}
+\end{pseudo}
+Inserir: $T[n+1]:=x$; $n:=n+1$; subir$(n)$. Remover: $T[1]:=T[n]$; $n:=n-1$; descer$(1,n)$. Aumentar a chave de $i$: subir$(i)$; diminuir: descer$(i,n)$. Construir: \textbf{para} $i:=\floor{n/2}$ \textbf{decrescendo até} 1, descer$(i,n)$.
+
+\resp{hp-r1} (a) $s_i\le s_{\floor{i/2}}$ para $1<i\le n$: cada nó é maior ou igual aos filhos. (b) Pela transitividade ao longo do caminho até a raiz (Proposição~\ref{prop:ancestral}), a raiz é o máximo; basta ler $T[1]$. (c) $O(1)$, $O(\log n)$, $O(\log n)$, $O(\log n)$ e $O(n)$.
+
+\resp{hp-r2} (a) O 98 sobe trocando com 78 (posição 3) e com 95 (posição 1): $[98,60,95,39,28,78,70,33]$. (b) Com 33 na raiz, ele desce trocando com 78 e depois com 70: $[78,60,70,39,28,66,33]$. (c) Em $i=3$ nada muda; em $i=2$, $15\leftrightarrow40$; em $i=1$, $20\leftrightarrow40$: $[40,20,30,15,10,25,5]$. (d) Em $i=3$, $15\leftrightarrow20$; em $i=2$, $2\leftrightarrow9$; em $i=1$, $7\leftrightarrow20$ e $7\leftrightarrow15$: $[20,9,15,2,1,7,13]$.
+
+\resp{hp-r5} As operações estão invertidas. Se o novo valor ficou \emph{maior que o pai}, a violação é com o pai e o elemento precisa \textbf{subir}; caso contrário, a única violação possível é com os filhos e ele precisa \textbf{descer}. Versão correta: \textbf{se} $i>1$ \textbf{e} $H[i]>H[\floor{i/2}]$ \textbf{então} Subir$(i)$ \textbf{senão} Descer$(i,n)$. Equivalentemente, comparando com o valor antigo: se aumentou, sobe; se diminuiu, desce.
+
+\resp{hp-tele} Use um heap de mínimo de pares $(t_{\text{livre}},\ \text{número do vendedor})$, comparados lexicograficamente, começando com $(0,1),\dots,(0,n)$. Para cada ligação de duração $d$, remova o mínimo $(t,v)$ --- o vendedor que fica livre primeiro, com desempate pelo menor número ---, conte uma ligação para $v$ e reinsira $(t+d,v)$. Cada ligação custa $O(\log n)$, e o total é $O(n+L\log n)$.
+
+\resp{hp-dario} (a) Pai de $i$: $\floor{(i-2)/d}+1$; filhos: $d(i-1)+2,\dots,di+1$. (b) $\Theta(\log_dn)$. (c) Subir custa $O(\log_dn)$, com uma comparação por nível; descer custa $O(d\log_dn)$, pois em cada nível acha o maior de $d$ filhos. (d) Aumentos de prioridade usam \emph{subir}, que fica mais barato com $d$ maior, enquanto as remoções (descer) ficam mais caras; quando há muito mais aumentos, compensa aumentar $d$.
+
+\resp{hp-kmerge} Mantenha um heap de mínimo com o primeiro elemento de cada lista (e a lista de onde veio). Repita $n$ vezes: remova o mínimo, coloque-o na saída e insira o próximo elemento da mesma lista. O heap tem sempre no máximo $k$ elementos, e o custo total é $O(n\log k)$, mais $O(k)$ da construção.
+
+\resp{hp-kmaiores} Use um heap de \textbf{mínimo} com até $k$ elementos. Para cada número $x$: se o heap tem menos de $k$ elementos, insira $x$; senão, se $x$ é maior que o mínimo do heap, substitua o mínimo por $x$ e faça-o descer. Ao final, o heap contém os $k$ maiores. Tempo $O(n\log k)$ e memória $O(k)$.
+
+\resp{hp-verif} \textbf{Para} $i:=2$ \textbf{até} $n$: \textbf{se} $s_i>s_{\floor{i/2}}$, \textbf{retorna} falso. Ao final, \textbf{retorna} verdadeiro. São $n-1$ comparações, uma por aresta da árvore, e isso basta porque a propriedade de heap é exatamente essa condição local.
+
+\resp{hp-estavel} Entrada $[1,\ 2_a,\ 2_b]$. O \emph{arranjar} troca 1 com $2_a$ (o primeiro filho, já que $2_b$ não é maior): $[2_a,1,2_b]$. O primeiro passo do heapsort troca a raiz com a última posição: $[2_b,1,2_a]$; descer não muda nada. O segundo passo dá $[1,2_b,2_a]$. Na saída, $2_b$ aparece antes de $2_a$: a ordem relativa dos iguais foi invertida.
+
+\resp{hp-crescente} Ao ser inserido, $i$ é o maior elemento até então e sobe até a raiz, com $\floor{\log_2i}$ trocas. O total, $\sum_{i=2}^n\floor{\log_2i}$, é $\Theta(n\log n)$, pois metade dos termos é $\ge\log_2(n/2)-1$. O \emph{arranjar} sobre o vetor $[1,2,\dots,n]$ continua $O(n)$, pela análise que soma as alturas (Lema~\ref{lema:alturas}).
+
+\resp{hp-ins} $[15]$; $[40,15]$; $[40,15,25]$; $[50,40,25,15]$ (50 sobe duas vezes); $[50,40,25,15,10]$; $[50,40,45,15,10,25]$ (45 troca com 25).
+
+\resp{hp-rem2} Primeira remoção: 20 vai para a raiz e desce trocando com 80 e depois com 50, resultando em $[80,70,50,30,\allowbreak60,20,40,10]$. Segunda: 10 vai para a raiz e desce trocando com 70 e depois com 60, resultando em $[70,60,50,30,\allowbreak10,20,40]$.
+
+\resp{hp-sort5} Após o \emph{arranjar}: $[10,5,3,4,1]$. Passos do laço, para $m=5,4,3,2$:\\ $[5,4,3,1\,|\,10]$,\ \ $[4,1,3\,|\,5,10]$,\ \ $[3,1\,|\,4,5,10]$,\ \ $[1\,|\,3,4,5,10]$.
+
+\resp{hp-remi} Copie $T[n]$ para a posição $i$ e faça $n:=n-1$. O valor que chegou a $i$ pode ser maior que o pai de $i$ (ele vinha de outro ramo da árvore) ou menor que algum filho de $i$; então, \textbf{se} $i>1$ \textbf{e} $T[i]>T[\floor{i/2}]$, suba; \textbf{senão}, desça. Apenas uma das duas violações pode ocorrer, e o custo é $O(\log n)$.
+
+\resp{hp-mediana} Guarde a metade menor dos elementos num heap de \textbf{máximo} $A$ e a metade maior num heap de \textbf{mínimo} $B$, com $|A|=|B|$ ou $|A|=|B|+1$. Para inserir $x$: se $x\le$ topo de $A$, insira em $A$, senão em $B$; depois, se os tamanhos ficarem desequilibrados, mova o topo de um heap para o outro. A mediana (inferior) é o topo de $A$, lido em $O(1)$; cada inserção custa $O(\log n)$.
+
+\resp{hp-comp} Cada passo do \emph{descer} faz no máximo duas comparações (uma entre os dois filhos e outra entre o maior filho e o pai). Um nó de altura $j$ faz no máximo $j-1$ passos. Pelo Lema~\ref{lema:alturas}, o total é no máximo $2\sum_{j\ge2}(j-1)\ceil{n/2^j}\le2n+O(\log^2n)$.

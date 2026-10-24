@@ -1,0 +1,300 @@
+% ================================================================
+\chapter{Programação dinâmica}\label{cap:pd}\label{sec:pd}
+% ================================================================
+\begin{objetivos}
+\begin{itemize}
+  \item A ideia da programação dinâmica: subestrutura ótima, sobreposição de subproblemas, memorização e cálculo de baixo para cima.
+  \item Um roteiro para projetar algoritmos de programação dinâmica.
+  \item Três problemas clássicos: subsequência comum máxima, ordem de multiplicação de matrizes e mochila 0-1.
+  \item Por que o algoritmo da mochila é pseudopolinomial.
+\end{itemize}
+\end{objetivos}
+
+Na divisão e conquista, os subproblemas são disjuntos. Em muitos problemas, porém, a decomposição natural gera subproblemas que \emph{se repetem}, e a recursão ingênua refaz o mesmo trabalho um número exponencial de vezes. A programação dinâmica resolve cada subproblema distinto uma única vez e guarda a resposta numa tabela. Este capítulo apresenta a técnica e três aplicações; uma quarta, o algoritmo de Floyd-Warshall, é o assunto do próximo capítulo.
+
+\section{A técnica}
+No método geral de decomposição, subproblemas idênticos podem aparecer muitas vezes ao longo do processo. Se cada aparição for resolvida de novo, o algoritmo pode ser exponencial mesmo que o número de subproblemas \emph{distintos} seja polinomial. A \textbf{programação dinâmica} mantém uma tabela com uma entrada para cada subproblema distinto: na primeira vez em que um subproblema é considerado, ele é resolvido normalmente; nas vezes seguintes, sua solução é simplesmente lida da tabela.
+\begin{itemize}
+  \item \textbf{Divisão e conquista ou programação dinâmica?} A divisão e conquista funciona bem quando os subproblemas são \textbf{disjuntos}, como no mergesort. Quando eles \textbf{compartilham} subproblemas, é melhor trocar a abordagem de cima para baixo por uma de baixo para cima: resolver dos subproblemas menores para os maiores, de modo que, ao chegar a um subproblema, todos aqueles de que ele depende já estejam resolvidos.
+  \item \textbf{Subestrutura ótima}: uma solução ótima é composta de soluções ótimas de subproblemas. A prova típica é o argumento de ``recortar e colar'': se uma parte não fosse ótima, trocá-la por uma melhor daria uma solução global melhor, o que é uma contradição.
+  \item \textbf{Sobreposição de subproblemas}: a recursão ingênua revisita os mesmos subproblemas; é isso que faz a tabela valer a pena.
+  \item \textbf{Memorização} (de cima para baixo): a recursão original, acrescida de ``se já calculei este subproblema, devolvo o valor guardado''. \textbf{Cálculo de baixo para cima}: laços que preenchem a tabela na ordem certa. As duas têm a mesma complexidade; a segunda evita a pilha de recursão e, às vezes, permite economizar memória.
+\end{itemize}
+
+\begin{pseudo}{Fibonacci: recursão ingênua $\Theta(\varphi^n)$; memorização $O(n)$; de baixo para cima, $O(n)$ com memória $O(1)$}
+\begin{algorithmic}
+\Function{FibMemo}{$n$} \Comment{$F[\,]$ começa preenchido com $-1$}
+  \If{$F[n]=-1$}
+    \If{$n\le1$} \State $F[n]:=n$ \Else \State $F[n]:=$ \Call{FibMemo}{$n-1$} $+$ \Call{FibMemo}{$n-2$} \EndIf
+  \EndIf
+  \State \Return $F[n]$
+\EndFunction
+\Function{FibIterativo}{$n$}
+  \State $a:=0$;\ $b:=1$ \Comment{$a=F_{i}$ e $b=F_{i+1}$}
+  \For{$i:=1$ \textbf{até} $n$} \State $(a,b):=(b,\ a+b)$ \EndFor
+  \State \Return $a$
+\EndFunction
+\end{algorithmic}
+\end{pseudo}
+
+\begin{roteiro}[Como projetar um algoritmo de programação dinâmica]
+\begin{enumerate}
+  \item \textbf{Defina o subproblema em palavras}, por exemplo ``$C(i,j)=$ tamanho da subsequência comum máxima de $X_i$ e $Y_j$''. Sem essa frase, a recorrência não tem sentido.
+  \item \textbf{Decomponha}: o que uma solução ótima faz com o \emph{último} elemento, ou qual é a \emph{primeira} decisão? Cada possibilidade vira um termo da recorrência.
+  \item \textbf{Escreva a recorrência e os casos base}.
+  \item \textbf{Calcule a complexidade} como o número de subproblemas vezes o custo de cada um.
+  \item \textbf{Escolha a ordem de preenchimento}: cada célula só pode depender de células já calculadas (linha a linha, por diagonais, por tamanho crescente\dots).
+  \item \textbf{Indique onde está a resposta}, como $C[n,m]$ ou $m[1,n]$.
+  \item \textbf{Reconstrua a solução}: guarde a escolha feita em cada célula, ou recalcule-a percorrendo a tabela de volta.
+\end{enumerate}
+\end{roteiro}
+
+% ------------------------------------------------------------------
+\section{Subsequência comum máxima}\label{sec:lcs}
+Uma sequência $Z$ é \textbf{subsequência} de $X=x_1\dots x_n$ se os seus símbolos aparecem em $X$ na mesma ordem, \textbf{não necessariamente contíguos}. Por exemplo, $6,10,12$ é subsequência de $3,6,9,10,12,14,6$, mas não de $3,9,10,12,14,6$. Dadas $X$, com $|X|=n$, e $Y$, com $|Y|=m$, o problema da \textbf{subsequência comum máxima} (LCS, do inglês \emph{longest common subsequence}) pede uma subsequência comum a $X$ e a $Y$ de tamanho máximo. A força bruta testaria as $2^n$ subsequências de $X$.
+
+\textbf{Decomposição.} Seja $X_i=x_1\dots x_i$ e olhe para os últimos símbolos. Se $x_n=y_m$, esse símbolo termina alguma subsequência comum máxima, e o restante dela é uma subsequência comum máxima de $X_{n-1}$ e $Y_{m-1}$. Se $x_n\ne y_m$, a resposta não usa $x_n$ ou não usa $y_m$. Com $C(i,j)=$ tamanho da subsequência comum máxima de $X_i$ e $Y_j$:
+\[
+C(i,j)=\begin{cases}0 & i=0\text{ ou }j=0\\ 1+C(i-1,j-1) & x_i=y_j\\ \max\{C(i-1,j),\,C(i,j-1)\} & x_i\ne y_j\end{cases}\qquad\text{resposta: }C(n,m).
+\]
+A recursão direta é exponencial, mas há apenas $(n+1)(m+1)$ subproblemas distintos.
+
+\begin{pseudo}{LCS de baixo para cima, com reconstrução: $\Theta(nm)$ de tempo e memória}
+\begin{algorithmic}
+\Function{LCS}{$X,Y$}
+  \For{$j:=0$ \textbf{até} $m$} \State $C[0,j]:=0$ \EndFor
+  \For{$i:=1$ \textbf{até} $n$} \State $C[i,0]:=0$ \EndFor
+  \For{$i:=1$ \textbf{até} $n$}
+    \For{$j:=1$ \textbf{até} $m$}
+      \If{$x_i=y_j$} \State $C[i,j]:=1+C[i-1,j-1]$
+      \Else \State $C[i,j]:=\max\{C[i-1,j],\,C[i,j-1]\}$
+      \EndIf
+    \EndFor
+  \EndFor
+  \State $i:=n$;\ $j:=m$;\ $Z:=$ sequência vazia \Comment{reconstrução em $O(n+m)$}
+  \While{$i>0$ \textbf{e} $j>0$}
+    \If{$x_i=y_j$} \State coloque $x_i$ no \textbf{início} de $Z$;\ $i:=i-1$;\ $j:=j-1$
+    \ElsIf{$C[i-1,j]\ge C[i,j-1]$} \State $i:=i-1$
+    \Else \State $j:=j-1$
+    \EndIf
+  \EndWhile
+  \State \Return $Z$ \Comment{$|Z|=C[n,m]$}
+\EndFunction
+\end{algorithmic}
+\end{pseudo}
+
+\begin{exemplo}[$X=\mathrm{ABCBDAB}$ e $Y=\mathrm{BDCABA}$]\leavevmode
+\begin{center}\small
+\begin{tabular}{cc|ccccccc}
+ & & $j{=}0$ & 1 & 2 & 3 & 4 & 5 & 6\\
+ & & & B & D & C & A & B & A\\ \hline
+$i{=}0$ & & 0&0&0&0&0&0&0\\
+1 & A & 0&0&0&0&1&1&1\\
+2 & B & 0&\textbf{1}&1&1&1&2&2\\
+3 & C & 0&1&1&\textbf{2}&2&2&2\\
+4 & B & 0&1&1&2&2&\textbf{3}&3\\
+5 & D & 0&1&2&2&2&3&3\\
+6 & A & 0&1&2&2&3&3&\textbf{4}\\
+7 & B & 0&1&2&2&3&4&4\\
+\end{tabular}
+\end{center}
+$C[7,6]=4$. A reconstrução, subindo nos empates, passa pelas células em negrito: de $(7,6)$ sobe para $(6,6)$, onde casa \textbf{A}; vai para $(5,5)$, sobe para $(4,5)$, onde casa \textbf{B}; vai para $(3,4)$, anda para a esquerda até $(3,3)$, onde casa \textbf{C}; vai para $(2,2)$ e anda até $(2,1)$, onde casa \textbf{B}. Como cada símbolo é colocado no início, $Z=\mathrm{BCBA}$. As subsequências comuns de tamanho 4 são exatamente BCAB, BCBA e BDAB.
+\end{exemplo}
+Para $X=5,2,1,3,9,10,14$ e $Y=2,3,1,10$, o tamanho é 3, com as soluções $2,3,10$ e $2,1,10$.
+\begin{itemize}
+  \item Se só o \textbf{tamanho} interessa, basta memória $O(\min\{n,m\})$, pois cada linha só usa a anterior. Mas então não é possível reconstruir a subsequência percorrendo a tabela.
+  \item Para obter \textbf{todas} as subsequências comuns máximas, siga, na reconstrução, os dois caminhos quando $x_i\ne y_j$ e $C[i-1,j]=C[i,j-1]$, eliminando repetições; pode haver exponencialmente muitas.
+\end{itemize}
+
+% ------------------------------------------------------------------
+\section{Multiplicação de cadeia de matrizes}\label{sec:cadeia}
+Queremos calcular $M=M_1\times M_2\times\dots\times M_n$, onde $M_i$ tem dimensões $r_{i-1}\times r_i$. Multiplicar uma matriz $p\times q$ por uma $q\times s$ custa $p\,q\,s$ multiplicações escalares. O produto de matrizes é \textbf{associativo}: a ordem em que as multiplicações são feitas não muda o resultado, mas pode mudar muito o custo. O problema é encontrar a parentização de custo mínimo.
+
+\begin{exemplo}\label{ex:cadeia}
+Sejam $M_1:20\times50$, $M_2:50\times10$, $M_3:10\times1$ e $M_4:1\times100$, isto é, $r=(20,50,10,1,100)$. A ordem $M_1(M_2(M_3M_4))$ custa $1000+50\,000+100\,000=\mathbf{151\,000}$ multiplicações; a ordem $((M_1M_2)M_3)M_4$ custa $10\,000+200+2000=\mathbf{12\,200}$. Nenhuma das duas é a melhor: a programação dinâmica abaixo encontra $(M_1(M_2M_3))M_4$, que custa $500+1000+2000=\mathbf{3500}$.
+\end{exemplo}
+A força bruta é exponencial: o número de parentizações de $n$ matrizes é o número de Catalan $C_{n-1}$ (que vale $1,1,2,5,14,42,132,\dots$), e cresce como $\Omega(4^n/n^{3/2})$.
+
+\textbf{Decomposição.} A \emph{última} multiplicação de $M_i\cdots M_j$ é $(M_i\cdots M_k)\times(M_{k+1}\cdots M_j)$, para algum $i\le k<j$. Numa solução ótima, as duas partes também estão parentizadas de forma ótima, pelo argumento de recortar e colar. Com $m[i,j]=$ número mínimo de multiplicações escalares para calcular $M_i\cdots M_j$:
+\[
+m[i,j]=\begin{cases}0 & i=j\\[2pt] \min\limits_{i\le k<j}\big\{\,m[i,k]+m[k+1,j]+r_{i-1}\,r_k\,r_j\,\big\} & i<j\end{cases}\qquad\text{resposta: } m[1,n].
+\]
+Há $O(n^2)$ subproblemas e cada um testa $O(n)$ valores de $k$: o algoritmo custa \textbf{$\Theta(n^3)$ de tempo e $\Theta(n^2)$ de memória}. Como $m[i,j]$ depende de intervalos \emph{mais curtos}, a tabela é preenchida \textbf{por diagonais}, com $d=j-i=1,2,\dots,n-1$; a diagonal principal é toda zero.
+
+\begin{pseudo}{Ordem ótima de multiplicação, com a tabela $s$ das escolhas}
+\begin{algorithmic}
+\Function{OrdemÓtima}{$r_0,\dots,r_n$}
+  \For{$i:=1$ \textbf{até} $n$} \State $m[i,i]:=0$ \EndFor
+  \For{$d:=1$ \textbf{até} $n-1$} \Comment{para cada diagonal}
+    \For{$i:=1$ \textbf{até} $n-d$} \Comment{para cada linha da diagonal}
+      \State $j:=i+d$;\ $m[i,j]:=\infty$
+      \For{$k:=i$ \textbf{até} $j-1$}
+        \State $q:=m[i,k]+m[k+1,j]+r_{i-1}\,r_k\,r_j$
+        \If{$q<m[i,j]$} \State $m[i,j]:=q$;\ $s[i,j]:=k$ \EndIf
+      \EndFor
+    \EndFor
+  \EndFor
+  \State \Return $m[1,n]$ e $s$
+\EndFunction
+\Procedure{Imprime}{$s,i,j$}
+  \If{$i=j$} \State imprima ``$M_i$''
+  \Else \State imprima ``(''; \Call{Imprime}{$s,i,s[i,j]$}; \Call{Imprime}{$s,s[i,j]+1,j$}; imprima ``)''
+  \EndIf
+\EndProcedure
+\Function{Multiplica}{$A,s,i,j$} \Comment{calcula $A_i\cdots A_j$ na ordem ótima}
+  \If{$i=j$} \State \Return $A_i$ \EndIf
+  \State \Return \Call{Multiplica}{$A,s,i,s[i,j]$} $\times$ \Call{Multiplica}{$A,s,s[i,j]+1,j$}
+\EndFunction
+\end{algorithmic}
+\end{pseudo}
+
+\begin{center}\small
+\begin{tabular}{c|cccc}
+$m[i,j]$ ($s[i,j]$) & $j=1$ & 2 & 3 & 4\\ \hline
+$i=1$ & 0 & 10\,000 (1) & 1500 (1) & \textbf{3500 (3)}\\
+2 & & 0 & 500 (2) & 5500 (3)\\
+3 & & & 0 & 1000 (3)\\
+4 & & & & 0
+\end{tabular}
+\end{center}
+Na tabela do Exemplo~\ref{ex:cadeia}, $s[1,4]=3$ indica que a última multiplicação é $(M_1M_2M_3)\cdot M_4$, e $s[1,3]=1$ indica que a primeira parte é $M_1(M_2M_3)$. Logo, a ordem ótima é $((M_1(M_2M_3))M_4)$, com custo 3500. Outros exemplos:
+\begin{center}\small
+\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{4.2cm}X@{}}
+\toprule
+Dimensões $r$ & Custo ótimo e ordem\\
+\midrule
+$(10,100,5,50)$ & $\mathbf{7500}$: $((M_1M_2)M_3)$, com $m[1,2]=5000$ e $m[2,3]=25\,000$\\
+$(5,10,3,12,5,50,6)$ & $\mathbf{2010}$: $((M_1M_2)((M_3M_4)(M_5M_6)))$\\
+$(30,35,15,5,10,20,25)$ & $15\,125$: $((M_1(M_2M_3))((M_4M_5)M_6))$\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+% ------------------------------------------------------------------
+\section{Mochila 0-1}\label{sec:mochila}
+Há $n$ itens; o item $i$ tem peso $p_i$ e valor $v_i$, inteiros; a mochila tem capacidade $W$. Queremos $S\subseteq\{1,\dots,n\}$ com $\sum_{i\in S}p_i\le W$ que maximize $\sum_{i\in S}v_i$, usando cada item no máximo uma vez. Seja $M(w,i)$ o maior valor obtido com os itens $1,\dots,i$ e capacidade $w$. O item $i$ fica de fora, ou entra, se couber:
+\[
+M(w,i)=\begin{cases}0 & i=0\\ M(w,i-1) & p_i>w\\ \max\{M(w,i-1),\ v_i+M(w-p_i,\,i-1)\} & p_i\le w\end{cases}\qquad\text{resposta: }M(W,n).
+\]
+\begin{pseudo}{Mochila 0-1: $\Theta(nW)$ (pseudopolinomial)}
+\begin{algorithmic}
+\Function{Mochila}{$p,v,n,W$}
+  \For{$w:=0$ \textbf{até} $W$} \State $M[w,0]:=0$ \EndFor
+  \For{$i:=1$ \textbf{até} $n$}
+    \For{$w:=0$ \textbf{até} $W$}
+      \State $M[w,i]:=M[w,i-1]$
+      \If{$p_i\le w$ \textbf{e} $v_i+M[w-p_i,i-1]>M[w,i]$} \State $M[w,i]:=v_i+M[w-p_i,i-1]$ \EndIf
+    \EndFor
+  \EndFor
+  \State $w:=W$ \Comment{reconstrução}
+  \For{$i:=n$ \textbf{decrescendo até} $1$}
+    \If{$M[w,i]\ne M[w,i-1]$} \State o item $i$ está na solução;\ $w:=w-p_i$ \EndIf
+  \EndFor
+  \State \Return $M[W,n]$
+\EndFunction
+\end{algorithmic}
+\end{pseudo}
+\begin{exemplo}[$W=4$ e itens $(p,v)=(1,2),(3,7),(2,1)$]\leavevmode
+\begin{center}\small
+\begin{tabular}{c|cccc}
+$w\backslash i$ & 0 & 1 & 2 & 3\\ \hline
+0 & 0 & 0 & 0 & 0\\
+1 & 0 & 2 & 2 & 2\\
+2 & 0 & 2 & 2 & 2\\
+3 & 0 & 2 & 7 & 7\\
+4 & 0 & 2 & \textbf{9} & \textbf{9}
+\end{tabular}
+\end{center}
+A solução ótima leva os itens 1 e 2, com peso 4 e valor \textbf{9}. Repare que $M(4,2)=\max\{M(4,1),\,7+M(1,1)\}=\max\{2,\,9\}=9$: é fácil errar essa célula esquecendo que, depois de colocar o item 2, ainda sobra capacidade 1 para o item 1.
+\end{exemplo}
+\begin{itemize}
+  \item Com $W=50$ e itens $(p,v)=(10,60),(20,100),(30,120)$, o ótimo é $\mathbf{220}$, com os itens 2 e 3. O guloso que escolhe pela razão $v/p$ (que vale $6,5,4$) pega os itens 1 e 2 e obtém só 160: o algoritmo guloso \textbf{não} resolve a mochila 0-1, embora resolva a versão fracionária, em que frações de itens são permitidas (Capítulo~\ref{cap:gulosos}).
+  \item \textbf{Por que pseudopolinomial?} O tempo $\Theta(nW)$ depende do \emph{valor} de $W$, mas a entrada guarda $W$ em apenas $\log_2W$ bits. Com $W=10^9$ (30 bits), o algoritmo faz $10^9$ iterações por item: é exponencial no tamanho da entrada. O problema da mochila é NP-difícil, e não se conhece algoritmo polinomial para ele.
+  \item \textbf{Memória $O(W)$.} Um único vetor $K[0..W]$ basta: para cada item, percorra $w$ \textbf{decrescendo} de $W$ até $p_i$ e faça $K[w]:=\max\{K[w],K[w-p_i]+v_i\}$. Com $w$ \emph{crescendo}, o mesmo item poderia ser reaproveitado, e o algoritmo passaria a resolver a mochila \emph{ilimitada}.
+\end{itemize}
+
+\begin{cuidado}[Armadilhas da programação dinâmica]
+\begin{itemize}
+  \item \textbf{Subsequência não é subvetor}: a subsequência comum máxima não exige contiguidade; o subvetor de soma máxima (Capítulo~\ref{cap:dc}) exige.
+  \item Escrever a recorrência sem casos base ou sem dizer o que $C(i,j)$ significa.
+  \item Preencher a tabela na ordem errada: na cadeia de matrizes, preencher por \emph{linhas} $i=1,2,\dots$ usaria $m[i+1,j]$ ainda não calculado. Use diagonais, ou $i$ decrescente.
+  \item Na cadeia de matrizes, o termo de custo é $r_{i-1}\,r_k\,r_j$ (e não $r_i r_k r_j$), e $k$ vai de $i$ a $j-1$.
+  \item Afirmar que $O(nW)$ é polinomial: é pseudopolinomial.
+\end{itemize}
+\end{cuidado}
+
+\begin{chave}
+Programação dinâmica $=$ recorrência com subproblemas que se repetem $+$ tabela. Subsequência comum máxima em $\Theta(nm)$; cadeia de matrizes em $\Theta(n^3)$, por diagonais; mochila 0-1 em $\Theta(nW)$, pseudopolinomial; Floyd-Warshall em $\Theta(n^3)$ (Capítulo~\ref{cap:fw}). Sempre: significado do subproblema, recorrência, base, ordem de preenchimento, complexidade e reconstrução.
+\end{chave}
+
+% ----------------------------------------------------------------
+\section{Exercícios}
+\excurso
+\begin{exercicio}{pd-max}[Lista]
+Na variante da multiplicação de cadeia de matrizes em que se quer \emph{maximizar} o número de multiplicações escalares, vale a subestrutura ótima?
+\end{exercicio}
+\begin{exercicio}{pd-lis}[Lista]
+Dê um algoritmo $O(n^2)$ para a maior subsequência estritamente crescente de $n$ números. Se puder, dê um $O(n\log n)$.
+\end{exercicio}
+\begin{exercicio}{pd-pal}[Lista]
+Dê um algoritmo eficiente para o maior palíndromo que é \emph{subsequência} de uma string; para ``character'', a resposta é ``carac''. Qual o tempo?
+\end{exercicio}
+\begin{exercicio}{pd-dag}[Lista]
+Num grafo acíclico dirigido com pesos reais nas arestas e dois vértices $s$ e $t$, descreva uma programação dinâmica para o caminho simples de maior peso de $s$ a $t$.
+\end{exercicio}
+\begin{exercicio}{pd-ilim}[Lista]
+Resolva por programação dinâmica a mochila \emph{inteira} (ilimitada): cada item é um tipo e pode ser usado quantas vezes se quiser.
+\end{exercicio}
+\begin{exercicio}{pd-corte}[Lista]
+Cortar uma string de $n$ caracteres em duas partes custa $n$. Dados os pontos de corte $L[1..m]$, determine a ordem de cortes de menor custo total e o custo. Para $n=20$ e cortes após os caracteres 2, 8 e 10, cortar da esquerda para a direita custa 50, e da direita para a esquerda, 38.
+\end{exercicio}
+\begin{exercicio}{pd-rec}[Slides]
+Modifique o algoritmo da subsequência comum máxima para devolver uma subsequência, e não só o tamanho. Aplique a $X=\mathrm{ABCBDAB}$ e $Y=\mathrm{BDCABA}$.
+\end{exercicio}
+\begin{exercicio}{pd-mon}[Monitoria]
+(a) Monte a tabela $m[i,j]$ para $r=(10,100,5,50)$ e para $r=(20,50,10,1,100)$, com a ordem ótima. (b) Monte a tabela da mochila com $W=4$ e itens $(p,v)=(1,2),(3,7),(2,1)$. (c) Explique por que $\Theta(nW)$ é pseudopolinomial.
+\end{exercicio}
+\begin{exercicio}{pd-apa}[Material de apoio]
+(a) Encontre a maior subsequência comum de $X=\mathrm{dacdba}$ e $Y=\mathrm{cadcda}$. (b) Resolva a mochila 0-1 com capacidade 100 e itens (valor, peso) $=(50,20),(70,30),(90,40),(120,50),(140,60)$. (c) Dê um algoritmo linear para o subvetor contíguo de soma máxima e aplique-o a $5,15,-30,10,-5,40,10$.
+\end{exercicio}
+\begin{exercicio}{pd-l6a}[Material de apoio]
+(a) Encontre a parentização ótima para as dimensões $\langle5,10,3,12,5,50,6\rangle$. (b) Adapte o algoritmo para calcular a tabela $s$ e escreva um algoritmo recursivo que multiplica $A_i\cdots A_j$ na ordem ótima. (c) Adapte o algoritmo da subsequência comum máxima para imprimir \emph{todas} as subsequências comuns mais longas.
+\end{exercicio}
+\begin{exercicio}{pd-l6b}[Material de apoio]
+(a) Quantas árvores binárias de busca guardam 6 chaves diferentes? (b) Construa uma árvore binária de busca ótima para as palavras com números de acessos \emph{case} (15), \emph{else} (5), \emph{end} (5), \emph{if} (35), \emph{of} (5) e \emph{then} (35), em que o custo é a soma, sobre as palavras, de (acessos)$\times$(profundidade $+1$).
+\end{exercicio}
+\begin{exercicio}{pd-l6c}[Material de apoio]
+(a) Subsequência crescente de \emph{soma} máxima em $O(n^2)$. (b) Festa da empresa: numa árvore hierárquica com notas de sociabilidade, escolha convidados sem convidar ninguém junto com o seu chefe imediato, maximizando a soma das notas. (c) Torres gêmeas: dadas duas sequências de raios de lajotas, encontre a maior torre comum obtida removendo lajotas e mantendo a ordem. (d) Bandeiras: quantas sequências de $n$ faixas brancas, azuis e vermelhas existem sem duas faixas de mesma cor vizinhas e com toda faixa azul entre uma branca e uma vermelha?
+\end{exercicio}
+\begin{exercicio}{pd-mc458}[Material de apoio]
+(a) Mochila exata (\emph{subset sum}) com pesos $2,7,5,2$: complete a tabela (``O'' $=$ há solução sem o item; ``I'' $=$ só usando o item; ``--'' $=$ não há solução) para os itens 3 e 4 e capacidades $0..14$. (b) Como reduzir a memória da mochila para $O(K)$? (c) Encontre a submatriz consecutiva de soma máxima numa matriz $m\times n$. (d) Corte uma laje de mármore $n\times m$, com cortes horizontais ou verticais de ponta a ponta, para maximizar o lucro, dados os preços $p_{ab}$ de cada retângulo $a\times b$, em $O(n^2m^2)$.
+\end{exercicio}
+
+\excompl
+\begin{exercicio}{pd-edit}[Complementar]
+A \emph{distância de edição} entre duas strings é o menor número de inserções, remoções e substituições de caracteres que transforma uma na outra. Dê a recorrência e a complexidade, e calcule a distância entre ``kitten'' e ``sitting''.
+\end{exercicio}
+\begin{exercicio}{pd-troco}[Complementar]
+Com moedas de valores $\{1,3,4\}$, qual o menor número de moedas para dar troco de 6? O que faz o algoritmo guloso? Escreva a programação dinâmica e preencha $T(0..10)$.
+\end{exercicio}
+\begin{exercicio}{pd-haste}[Complementar]
+Uma haste de comprimento $n$ pode ser cortada em pedaços de comprimentos inteiros; um pedaço de comprimento $i$ vale $p_i$. Com $p=(1,5,8,9,10,17,17,20)$ para $i=1,\dots,8$, qual o maior valor obtido de uma haste de comprimento 8? Dê a recorrência.
+\end{exercicio}
+\begin{exercicio}{pd-grade}[Complementar]
+Num tabuleiro de $4\times4$ casas, quantos caminhos levam uma peça da casa do canto superior esquerdo à do canto inferior direito, andando uma casa por vez para a direita ou para baixo? E se a casa da linha 2, coluna 2 estiver bloqueada?
+\end{exercicio}
+\begin{exercicio}{pd-part}[Complementar]
+Decida por programação dinâmica se um multiconjunto de inteiros positivos pode ser dividido em duas partes de mesma soma. Teste com $\{3,1,1,2,2,1\}$ e $\{2,3,7\}$. Qual a complexidade?
+\end{exercicio}
+\begin{exercicio}{pd-catalan}[Complementar]
+Seja $P(n)$ o número de parentizações de um produto de $n$ matrizes. Mostre que $P(1)=1$ e $P(n)=\sum_{k=1}^{n-1}P(k)P(n-k)$, e calcule $P(n)$ para $n\le6$.
+\end{exercicio}
+\begin{exercicio}{pd-lcsmem}[Complementar]
+Escreva uma versão do algoritmo da subsequência comum máxima que calcula apenas o tamanho usando memória $O(\min\{n,m\})$.
+\end{exercicio}
+\begin{exercicio}{pd-formas}[Complementar]
+De quantas maneiras é possível dar troco de 5 com moedas de valores $\{1,2,5\}$, sem considerar a ordem das moedas? E de 10? Escreva a programação dinâmica que conta as maneiras.
+\end{exercicio}
+\begin{exercicio}{pd-substring}[Complementar]
+O maior \emph{substring} comum de duas strings exige que os símbolos sejam contíguos nas duas. Dê uma programação dinâmica em $O(nm)$ e aplique-a a ``ABABC'' e ``BABCA''.
+\end{exercicio}

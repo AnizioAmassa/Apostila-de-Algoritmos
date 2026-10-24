@@ -1,0 +1,200 @@
+% ================================================================
+\chapter{Caminhos mínimos entre todos os pares: Floyd-Warshall}\label{cap:fw}\label{sec:fw}
+% ================================================================
+\begin{objetivos}
+\begin{itemize}
+  \item Notação e representações de grafos usadas no restante do livro.
+  \item O problema dos caminhos mínimos entre todos os pares de vértices.
+  \item O algoritmo de Floyd-Warshall como programação dinâmica, com reconstrução dos caminhos.
+  \item Pesos negativos, ciclos negativos e a comparação com o algoritmo de Dijkstra.
+\end{itemize}
+\end{objetivos}
+
+O algoritmo de Floyd-Warshall é mais uma aplicação da programação dinâmica, agora sobre um grafo: queremos o custo do caminho mais barato entre \emph{todos} os pares de vértices. Por ser o primeiro algoritmo em grafos do livro, o capítulo começa fixando a notação e as representações de grafos usadas daqui em diante.
+
+\section{Grafos: notação e representação}\label{sec:buscas}
+Um grafo é um par $G=(V,E)$, em que $V$ é o conjunto de vértices e $E$ o de arestas; escrevemos $n=|V|$ e $m=|E|$. A \textbf{vizinhança} de um vértice $v$, $N(v)$, é o conjunto dos vértices ligados a $v$ por uma aresta. Num \textbf{digrafo} (grafo direcionado), cada aresta $v\to w$ tem uma direção, e $N_{out}(v)$ é o conjunto dos vértices $w$ com uma aresta $v\to w$. Há duas formas usuais de representar um grafo na memória:
+\begin{center}\small
+\begin{tabular}{@{}lccc@{}}
+\toprule
+Representação & Memória & ``$vw\in E$?'' & Percorrer $N(v)$\\
+\midrule
+Matriz de adjacência (ou de pesos $W$) & $\Theta(n^2)$ & $O(1)$ & $\Theta(n)$\\
+Listas de adjacência & $\Theta(n+m)$ & $O(\text{grau}(v))$ & $\Theta(\text{grau}(v))$\\
+\bottomrule
+\end{tabular}
+\end{center}
+A matriz é adequada a grafos densos, com $m$ próximo de $n^2$, e a testes frequentes de adjacência; as listas, a grafos esparsos e a algoritmos que percorrem vizinhanças. Uma \textbf{busca}, que visita todos os vértices e arestas do grafo examinando cada vizinhança uma vez, custa $\Theta(n+m)$ com listas e $\Theta(n^2)$ com matriz; as buscas em largura e em profundidade são estudadas nos Capítulos~\ref{cap:bfs} e~\ref{cap:dfs}.
+
+\section{Matriz de pesos}\label{sec:fwmatriz}
+Em problemas de caminhos mínimos, cada aresta tem um peso (um custo, uma distância, um tempo), e o grafo é dado por uma \textbf{matriz de pesos} $W$: $W(x,x)=0$; $W(x,y)$ é o peso da aresta $xy$, se ela existe; e $W(x,y)=\infty$ se não existe. O custo de um caminho é a soma dos pesos das suas arestas, e a \textbf{distância} $\operatorname{dist}(x,y)$ é o menor custo de um caminho de $x$ a $y$. Um grafo não direcionado é tratado como um digrafo em que cada aresta $xy$ de peso $p$ dá origem às arestas $x\to y$ e $y\to x$, ambas de peso $p$.
+
+Usaremos como exemplo, neste capítulo e no Capítulo~\ref{cap:dijkstra}, o digrafo de cinco vértices dado pela matriz abaixo; os vértices são chamados $1,\dots,5$ aqui e $a,\dots,e$ no capítulo do algoritmo de Dijkstra.
+\begin{center}\small
+\begin{tabular}{c|ccccc}
+$W$ & 1\,($a$) & 2\,($b$) & 3\,($c$) & 4\,($d$) & 5\,($e$)\\ \hline
+1\,($a$) & 0 & 1 & 3 & $\infty$ & 6\\
+2\,($b$) & $\infty$ & 0 & 1 & 3 & $\infty$\\
+3\,($c$) & 1 & 2 & 0 & 1 & $\infty$\\
+4\,($d$) & 3 & $\infty$ & $\infty$ & 0 & 2\\
+5\,($e$) & $\infty$ & $\infty$ & $\infty$ & 1 & 0
+\end{tabular}
+\end{center}
+
+\section{O algoritmo de Floyd-Warshall}
+\textbf{Problema:} dado um digrafo com vértices $1,\dots,n$ e matriz de pesos $W$, calcular $\operatorname{dist}(i,j)$ para todos os pares ordenados $(i,j)$. A ideia é limitar, passo a passo, quais vértices podem aparecer \emph{no meio} dos caminhos:
+\[
+D^k(i,j)=\text{custo do caminho mínimo de }i\text{ a }j\text{ cujos vértices \emph{intermediários} estão em }\{1,\dots,k\}.
+\]
+Então $D^0=W$, pois sem intermediários só valem as arestas diretas, e $D^n$ é a matriz das distâncias.
+
+\textbf{Decomposição.} Um caminho mínimo de $i$ a $j$ com intermediários em $\{1,\dots,k\}$ ou \textbf{não passa} por $k$, e custa $D^{k-1}(i,j)$, ou passa \textbf{exatamente uma vez} por $k$ --- voltar a $k$ formaria um ciclo, que não ajuda --- e se divide num caminho mínimo de $i$ a $k$ e num de $k$ a $j$, ambos com intermediários em $\{1,\dots,k-1\}$:
+\[
+D^k(i,j)=\begin{cases}W(i,j) & k=0\\ \min\{\,D^{k-1}(i,j),\ D^{k-1}(i,k)+D^{k-1}(k,j)\,\} & k\ge1.\end{cases}
+\]
+
+\textbf{Por que só ``prefixos'' $\{1,\dots,k\}$?} Uma formulação mais livre usaria, para cada conjunto $S\subseteq V$ de intermediários permitidos, $D(i,j,S)=\min_{v\in S}\{D(i,v,S\setminus\{v\})+D(v,j,S\setminus\{v\})\}$. Ela também é correta, mas tem $n^2\,2^n$ subproblemas. Fixando uma ordem dos vértices e usando só os $n+1$ prefixos, sobram $O(n^2)$ subproblemas por valor de $k$, e $O(n^3)$ no total.
+
+\begin{pseudo}{Floyd-Warshall com matriz de predecessores $P$: $\Theta(n^3)$ de tempo e $\Theta(n^2)$ de memória}
+\begin{algorithmic}
+\Function{FloydWarshall}{$W,n$}
+  \For{$i,j:=1$ \textbf{até} $n$}
+    \State $D[i,j]:=W[i,j]$
+    \If{$i\ne j$ \textbf{e} $W[i,j]<\infty$} \State $P[i,j]:=i$ \Else \State $P[i,j]:=\nil$ \EndIf
+  \EndFor
+  \For{$k:=1$ \textbf{até} $n$} \Comment{$k$ é o laço \textbf{externo}}
+    \For{$i:=1$ \textbf{até} $n$}
+      \For{$j:=1$ \textbf{até} $n$}
+        \If{$D[i,k]+D[k,j]<D[i,j]$}
+          \State $D[i,j]:=D[i,k]+D[k,j]$;\ $P[i,j]:=P[k,j]$ \Comment{o penúltimo vértice vem do trecho de $k$ a $j$}
+        \EndIf
+      \EndFor
+    \EndFor
+  \EndFor
+  \State \Return $D,P$
+\EndFunction
+\Procedure{Caminho}{$P,i,j$}
+  \If{$i=j$} \State imprima $i$
+  \ElsIf{$P[i,j]=\nil$} \State imprima ``não há caminho''
+  \Else \State \Call{Caminho}{$P,i,P[i,j]$};\ imprima $j$
+  \EndIf
+\EndProcedure
+\end{algorithmic}
+\end{pseudo}
+A matriz $P$ guarda, em $P^k(i,j)$, o \textbf{penúltimo} vértice do caminho mínimo de $i$ a $j$ com intermediários em $\{1,\dots,k\}$. Se o caminho não melhora ao permitir $k$, $P^k(i,j)=P^{k-1}(i,j)$; se melhora, o novo caminho termina com o trecho de $k$ a $j$, e $P^k(i,j)=P^{k-1}(k,j)$. Uma única matriz $D$ basta, com atualizações ``no lugar'': na iteração $k$, a linha e a coluna $k$ não mudam, pois $D(k,k)=0$.
+
+\begin{exemplo}[O digrafo da §\ref{sec:fwmatriz}]\leavevmode
+\begin{center}\small
+\begin{tabular}{c|l}
+$k$ & entradas que diminuem ao permitir $k$ como intermediário\\ \hline
+1 & $D(3,5)\!:\infty\to7$;\ $D(4,2)\!:\infty\to4$;\ $D(4,3)\!:\infty\to6$\\
+2 & $D(1,3)\!:3\to2$;\ $D(1,4)\!:\infty\to4$;\ $D(4,3)\!:6\to5$\\
+3 & $D(1,4)\!:4\to3$;\ $D(2,1)\!:\infty\to2$;\ $D(2,4)\!:3\to2$;\ $D(2,5)\!:\infty\to8$\\
+4 & $D(1,5)\!:6\to5$;\ $D(2,5)\!:8\to4$;\ $D(3,5)\!:7\to3$;\ $D(5,1)\!:\infty\to4$;\ $D(5,2)\!:\infty\to5$;\ $D(5,3)\!:\infty\to6$\\
+5 & nenhuma
+\end{tabular}
+\end{center}
+\begin{center}\small
+\begin{tabular}{c|ccccc}
+$D^5$ & 1 & 2 & 3 & 4 & 5\\ \hline
+1 & 0 & 1 & 2 & 3 & 5\\
+2 & 2 & 0 & 1 & 2 & 4\\
+3 & 1 & 2 & 0 & 1 & 3\\
+4 & 3 & 4 & 5 & 0 & 2\\
+5 & 4 & 5 & 6 & 1 & 0
+\end{tabular}
+\qquad
+\begin{tabular}{c|ccccc}
+$P^5$ & 1 & 2 & 3 & 4 & 5\\ \hline
+1 & -- & 1 & 2 & 3 & 4\\
+2 & 3 & -- & 2 & 3 & 4\\
+3 & 3 & 3 & -- & 3 & 4\\
+4 & 4 & 1 & 2 & -- & 4\\
+5 & 4 & 1 & 2 & 5 & --
+\end{tabular}
+\end{center}
+O caminho de 5 a 3 sai da matriz $P$ de trás para frente: $P(5,3)=2$, $P(5,2)=1$, $P(5,1)=4$ e $P(5,4)=5$. Logo, o caminho é $5\to4\to1\to2\to3$, com custo $1+3+1+1=6=D^5(5,3)$.
+\end{exemplo}
+\begin{itemize}
+  \item \textbf{Pesos negativos.} O algoritmo funciona com arestas de peso negativo desde que \textbf{não haja ciclo negativo}, pois então o caminho mínimo nunca repete vértices. Há um ciclo negativo se e somente se, ao final, algum $D(i,i)$ é negativo.
+  \item \textbf{Floyd-Warshall ou $n$ execuções do Dijkstra?} O Floyd-Warshall custa $\Theta(n^3)$ e é muito simples. Executar o algoritmo de Dijkstra (Capítulo~\ref{cap:dijkstra}) a partir de cada vértice custa $O(n\,(n+m)\log n)$ com heap binário, ou $O(n^3)$ com vetor. Em grafos esparsos e sem pesos negativos, as $n$ execuções do Dijkstra são mais rápidas; em grafos densos, ou com pesos negativos, o Floyd-Warshall é preferível.
+\end{itemize}
+
+\begin{cuidado}[Armadilhas do Floyd-Warshall]
+\begin{itemize}
+  \item Colocar o laço de $k$ \textbf{por dentro} ($i$ e $j$ por fora) dá resposta errada: $k$ precisa ser o laço externo, pois $D^k$ só pode ser calculada depois de toda a $D^{k-1}$.
+  \item $D^k(i,j)$ restringe os vértices \emph{intermediários} a $\{1,\dots,k\}$; os extremos $i$ e $j$ podem ser quaisquer.
+  \item $P(i,j)$ é o \textbf{penúltimo} vértice do caminho, e não o segundo; a reconstrução vai de trás para frente.
+  \item Com ciclo negativo, ``caminho mínimo'' deixa de fazer sentido; o algoritmo detecta a situação por $D(i,i)<0$.
+\end{itemize}
+\end{cuidado}
+
+\begin{chave}
+$D^k(i,j)=\min\{D^{k-1}(i,j),\ D^{k-1}(i,k)+D^{k-1}(k,j)\}$, com $D^0=W$; $k$ é o laço externo; $\Theta(n^3)$ de tempo e $\Theta(n^2)$ de memória, com uma única matriz. Quando o caminho por $k$ melhora, $P(i,j)$ recebe $P(k,j)$. Usar só os prefixos $\{1,\dots,k\}$, e não subconjuntos quaisquer, é o que torna o algoritmo polinomial.
+\end{chave}
+
+% ----------------------------------------------------------------
+\section{Exercícios}
+\excurso
+\begin{exercicio}{fw-sub}[Slides]
+Uma primeira formulação usa $D(i,j,S)=$ custo do caminho mínimo de $i$ a $j$ com intermediários em $S\subseteq V$, com $D(i,j,\emptyset)=W(i,j)$. Escreva a recorrência. Quantos subproblemas ela tem? O que o algoritmo de Floyd-Warshall faz para evitar isso?
+\end{exercicio}
+\begin{exercicio}{fw-slide}[Slides]
+Para a matriz de pesos $W$ da §\ref{sec:fwmatriz}, calcule $D^1,\dots,D^5$ e $P^5$ e reconstrua o caminho mínimo de 5 a 3 e o de 2 a 1. Compare com o Exemplo da §\ref{sec:fw}.
+\end{exercicio}
+
+\excompl
+\begin{exercicio}{fw-neg}[Complementar]
+Execute o Floyd-Warshall no digrafo com arestas $1\to2$ (3), $1\to3$ (8), $1\to5$ ($-4$), $2\to4$ (1), $2\to5$ (7), $3\to2$ (4), $4\to1$ (2), $4\to3$ ($-5$) e $5\to4$ (6). Dê a matriz final. Há ciclo negativo?
+\end{exercicio}
+\begin{exercicio}{fw-fecho}[Complementar]
+O \emph{fecho transitivo} de um digrafo diz, para cada par $(i,j)$, se existe caminho de $i$ a $j$. Adapte o Floyd-Warshall, usando ``ou'' e ``e'' no lugar de $\min$ e $+$. Calcule o fecho para os vértices $1,\dots,5$ com as arestas $1\to2$, $2\to3$, $3\to1$ e $3\to4$.
+\end{exercicio}
+\begin{exercicio}{fw-ciclo}[Complementar]
+Como encontrar o peso do \emph{ciclo} direcionado de menor peso de um digrafo com pesos positivos usando o Floyd-Warshall? Aplique ao digrafo com as arestas $1\to2$ (2), $2\to3$ (3), $3\to1$ (1), $3\to4$ (5) e $4\to3$ (2).
+\end{exercicio}
+\begin{exercicio}{fw-negciclo}[Complementar]
+Prove que, se o digrafo tem um ciclo de peso negativo, ao final do Floyd-Warshall vale $D(i,i)<0$ para algum $i$ do ciclo; e que, se não tem, $D(i,i)=0$ para todo $i$.
+\end{exercicio}
+\begin{exercicio}{fw-dij}[Complementar]
+Um grafo tem $n=10^4$ vértices, $m=5\cdot10^4$ arestas e pesos não negativos. Para obter as distâncias entre todos os pares, compare o custo do Floyd-Warshall com o de $n$ execuções do Dijkstra com heap binário. E se $m\approx n^2/2$?
+\end{exercicio}
+\begin{exercicio}{fw-4v}[Complementar]
+Execute o Floyd-Warshall no digrafo com as arestas $1\to2$ (4), $1\to4$ (10), $2\to3$ (3), $3\to4$ (1), $4\to1$ (2) e $3\to1$ (7), mostrando $D^1,\dots,D^4$.
+\end{exercicio}
+\begin{exercicio}{fw-4vcam}[Complementar]
+No exercício anterior, calcule a matriz $P^4$ e reconstrua os caminhos mínimos de 2 a 1 e de 4 a 3.
+\end{exercicio}
+\begin{exercicio}{fw-negex}[Complementar]
+Dê um digrafo com dois vértices e um ciclo negativo e mostre o que o Floyd-Warshall calcula. Por que os valores de $D$ deixam de ser custos de caminhos?
+\end{exercicio}
+\begin{exercicio}{fw-nd}[Complementar]
+Como aplicar o Floyd-Warshall a um grafo não direcionado? O que se pode dizer da matriz $D$ final? Aresta de peso negativo num grafo não direcionado é um problema? Por quê?
+\end{exercicio}
+\begin{exercicio}{fw-conta}[Complementar]
+Quantas vezes, exatamente, o teste ``$D[i,k]+D[k,j]<D[i,j]$'' é executado? Quanta memória o algoritmo usa com e sem a matriz $P$?
+\end{exercicio}
+\begin{exercicio}{fw-inplace}[Complementar]
+Prove que usar uma única matriz $D$, atualizada no lugar, dá o mesmo resultado que calcular $D^0,D^1,\dots,D^n$ separadamente (suponha que não há ciclos negativos).
+\end{exercicio}
+\begin{exercicio}{fw-largura}[Complementar]
+Cada aresta tem uma \emph{capacidade}, e a capacidade de um caminho é a menor capacidade das suas arestas. Adapte o Floyd-Warshall para calcular, para todo par $(i,j)$, a maior capacidade de um caminho de $i$ a $j$.
+\end{exercicio}
+\begin{exercicio}{fw-diam}[Complementar]
+A \emph{excentricidade} de um vértice $v$ é a maior distância de $v$ a outro vértice, e o \emph{diâmetro} do digrafo é a maior excentricidade. Use a matriz $D^5$ do Exemplo da §\ref{sec:fw} para calcular as excentricidades, o diâmetro e o \emph{centro} (o vértice de menor excentricidade).
+\end{exercicio}
+\begin{exercicio}{fw-aresta}[Complementar]
+Dada a matriz $D$ final, como decidir se a aresta $uv$ pertence a algum caminho mínimo de $i$ a $j$? E a algum caminho mínimo qualquer do grafo?
+\end{exercicio}
+\begin{exercicio}{fw-atualiza}[Complementar]
+Depois de calcular $D$, o peso da aresta $uv$ diminui para $w'$. Mostre como atualizar todas as distâncias em $O(n^2)$.
+\end{exercicio}
+\begin{exercicio}{fw-novo}[Complementar]
+Depois de calcular $D$ para os vértices $1,\dots,n$, acrescenta-se um vértice $n+1$ com algumas arestas de e para ele. Mostre como atualizar a matriz em $O(n^2)$.
+\end{exercicio}
+\begin{exercicio}{fw-contar}[Complementar]
+Com pesos positivos, adapte o Floyd-Warshall para calcular, além da distância, o \emph{número} de caminhos mínimos distintos de $i$ a $j$, para todo par.
+\end{exercicio}
+\begin{exercicio}{fw-bits}[Complementar \estrela]
+Mostre que o fecho transitivo pode ser calculado em $O(n^3/w)$ operações, representando cada linha da matriz como um vetor de bits e operando sobre palavras de $w$ bits.
+\end{exercicio}

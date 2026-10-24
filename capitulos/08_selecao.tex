@@ -1,0 +1,146 @@
+% ================================================================
+\chapter{Seleção em tempo linear: a mediana das medianas}\label{cap:selecao}\label{sec:selecao}
+% ================================================================
+\begin{objetivos}
+\begin{itemize}
+  \item O problema da seleção do $k$-ésimo menor elemento e as soluções ingênuas.
+  \item O quickselect e a sua análise de tempo esperado linear.
+  \item O algoritmo da mediana das medianas, que seleciona em tempo linear no pior caso.
+  \item Por que grupos de 5 funcionam e grupos de 3 não.
+\end{itemize}
+\end{objetivos}
+
+Para achar a mediana de um conjunto --- ou, em geral, o $k$-ésimo menor elemento --- não é preciso ordenar. O quickselect resolve o problema em tempo linear \emph{esperado}, recursando em apenas um dos lados da partição. O algoritmo da mediana das medianas, de Blum, Floyd, Pratt, Rivest e Tarjan, garante tempo linear \emph{no pior caso}, escolhendo como pivô a mediana das medianas de grupos de cinco elementos. Sua análise é um belo exemplo de recorrência com subproblemas de tamanhos diferentes.
+
+\section{O problema e o quickselect}
+No \textbf{problema da seleção}, recebemos um conjunto $A$ de $n$ números e um inteiro $k$, e queremos o $k$-ésimo menor elemento de $A$. Casos particulares são o mínimo ($k=1$), o máximo ($k=n$) e as medianas inferior, $k=\floor{(n+1)/2}$, e superior, $k=\ceil{(n+1)/2}$.
+
+Há várias maneiras de resolver o problema: (1) ordenar e tomar a posição $k$, em $O(n\log n)$; (2) retirar o mínimo $k$ vezes, em $O(kn)$, o que dá $O(n^2)$ para a mediana; (3) o \textbf{quickselect}, que particiona como o quicksort mas recursa em \emph{um} lado só, em $O(n)$ esperado e $O(n^2)$ no pior caso; (4) o algoritmo da \textbf{mediana das medianas}, em $O(n)$ no \textbf{pior caso}.
+
+\begin{pseudo}{Quickselect: tempo esperado $O(n)$}
+\begin{algorithmic}
+\Function{QuickSelect}{$S,k$}
+  \State escolha um pivô $m$ \textbf{aleatório} em $S$
+  \State $S_1:=\{s<m\}$;\ $S_2:=\{s=m\}$;\ $S_3:=\{s>m\}$
+  \If{$|S_1|\ge k$} \State \Return \Call{QuickSelect}{$S_1,k$}
+  \ElsIf{$|S_1|+|S_2|\ge k$} \State \Return $m$
+  \Else \State \Return \Call{QuickSelect}{$S_3,\,k-|S_1|-|S_2|$}
+  \EndIf
+\EndFunction
+\end{algorithmic}
+\end{pseudo}
+\textbf{Análise.} Com probabilidade pelo menos $1/2$, o pivô cai entre o primeiro e o terceiro quartis, e então o lado mantido tem no máximo $3n/4$ elementos. Agrupe as chamadas em \emph{fases}: uma fase termina quando o tamanho cai para no máximo $3n/4$. O número de chamadas numa fase é dominado por uma variável geométrica de parâmetro $1/2$, cuja esperança é 2, e cada chamada custa no máximo $cn$. Assim, $E[T(n)]\le E[T(3n/4)]+2cn$, e, somando a série geométrica, $E[T(n)]\le 2cn\sum_{t\ge0}(3/4)^t=8cn=O(n)$.
+
+\section{O algoritmo da mediana das medianas}
+A ideia é garantir que o pivô seja \emph{sempre} bom: ele é a mediana das medianas de grupos de 5 elementos.
+\begin{pseudo}{Seleção$(S,k)$ pela mediana das medianas}
+\begin{algorithmic}
+\Function{Seleção}{$S,k$}
+  \If{$|S|\le49$} \State ordene $S$ e \Return o $k$-ésimo menor \EndIf
+  \State divida $S$ em $\ceil{|S|/5}$ grupos de até 5 elementos
+  \State determine a mediana de cada grupo \Comment{ordenar 5 elementos custa $O(1)$}
+  \State $M:=$ conjunto das medianas;\quad $m:=$ \Call{Seleção}{$M,\ceil{|M|/2}$} \Comment{recursão sobre $n/5$ elementos}
+  \State $S_1:=\{s\in S: s<m\}$;\ $S_2:=\{s\in S: s=m\}$;\ $S_3:=\{s\in S: s>m\}$
+  \If{$|S_1|\ge k$} \State \Return \Call{Seleção}{$S_1,k$} \Comment{recursão sobre no máximo $3n/4$}
+  \ElsIf{$|S_1|+|S_2|\ge k$} \State \Return $m$
+  \Else \State \Return \Call{Seleção}{$S_3,\ k-|S_1|-|S_2|$}
+  \EndIf
+\EndFunction
+\end{algorithmic}
+\end{pseudo}
+\begin{cuidado}
+O teste que decide ir para $S_1$ é $|S_1|\ge k$, e não $|S_1|=k$: o $k$-ésimo menor está em $S_1$ sempre que há pelo menos $k$ elementos menores que o pivô. E, ao ir para $S_3$, o índice muda para $k-|S_1|-|S_2|$, pois os elementos de $S_1$ e $S_2$ ficaram para trás.
+\end{cuidado}
+
+\section{Análise}
+\begin{lema}
+$|S_1|\le n-3\floor{n/10}$ e $|S_3|\le n-3\floor{n/10}$. Para $n\ge50$, ambos são no máximo $3n/4$.
+\end{lema}
+\begin{proof}
+Das $\floor{n/5}$ medianas de grupos completos, pelo menos metade, isto é, $\floor{\floor{n/5}/2}=\floor{n/10}$, são maiores ou iguais a $m$. Cada uma delas vem de um grupo que tem mais dois elementos maiores ou iguais a ela, e portanto a $m$. Assim, pelo menos $3\floor{n/10}$ elementos são maiores ou iguais a $m$, ou seja, $|S_2|+|S_3|\ge3\floor{n/10}$ e $|S_1|\le n-3\floor{n/10}$. O argumento para $S_3$ é simétrico.
+Para que $n-3\floor{n/10}\le3n/4$ basta $12\floor{n/10}\ge n$, isto é, $2\floor{n/10}\ge n-10\floor{n/10}$. Como o lado direito é no máximo 9, basta $\floor{n/10}\ge5$, ou seja, $n\ge50$. Por isso o caso base é $n\le49$.
+\end{proof}
+
+\begin{teo}
+$T(n)\le 20cn$; portanto, a seleção pela mediana das medianas custa $O(n)$ no pior caso.
+\end{teo}
+\begin{proof}
+$T(n)=O(1)$ para $n\le49$, e $T(n)\le T(n/5)+T(3n/4)+cn$ para $n>49$, pois o cálculo das medianas dos grupos e a partição são lineares. Por indução forte, escolhendo $c$ grande o suficiente para que a base valha:
+\[
+T(n)\le 20c\,\frac n5+20c\,\frac{3n}{4}+cn=4cn+15cn+cn=20cn.\qedhere
+\]
+\end{proof}
+
+\paragraph{Por que grupos de 5?} Para que o tempo seja linear, a soma dos tamanhos dos dois subproblemas precisa ser uma fração menor que 1 de $n$: com grupos de 5, $\frac n5+\frac{3n}4=\frac{19n}{20}<n$. Com grupos de 3, o pivô só garante cerca de $n/3$ elementos de cada lado, e a recorrência $T(n)=T(n/3)+T(2n/3)+cn$, com $\frac13+\frac23=1$, tem solução $\Theta(n\log n)$. Grupos de 7, 9 ou mais também funcionam, com outras constantes.
+
+\paragraph{Aplicação.} Usando como pivô do quicksort a mediana exata, calculada pela mediana das medianas, obtém-se $T(n)=2T(n/2)+O(n)=O(n\log n)$ no \textbf{pior} caso. Na prática, porém, esse quicksort é mais lento que o quicksort com pivô aleatório, por causa das constantes.
+
+\begin{chave}
+Seleção em $O(n)$ no pior caso: grupos de 5, mediana das medianas como pivô, pelo menos $3\floor{n/10}$ elementos de cada lado, $T(n)\le T(n/5)+T(3n/4)+cn\le20cn$. O quickselect com pivô aleatório é mais simples e linear em média. Não é preciso ordenar para achar o $k$-ésimo menor.
+\end{chave}
+
+% ----------------------------------------------------------------
+\section{Exercícios}
+\excurso
+\begin{exercicio}{se-quick}[Slides]
+Escreva um algoritmo de tempo \emph{esperado} $O(n)$ para determinar a mediana de uma lista com $n$ elementos, mais simples que o método da mediana das medianas.
+\end{exercicio}
+\begin{exercicio}{se-qs}[Slides]
+Argumente como o quicksort pode ser implementado com complexidade $O(n\log n)$ no pior caso. Qual o problema dessa abordagem na prática?
+\end{exercicio}
+
+\excompl
+\begin{exercicio}{se-trace}[Complementar]
+Para $S=12,3,25,7,18,\ 1,22,9,15,6,\ 20,2,11,24,5,\ 17,8,23,4,14,\ 10,21,13,19,16$ (grupos de 5 na ordem dada), calcule as medianas dos grupos, o pivô $m$ e os tamanhos de $S_1$ e $S_3$. Confira que ambos são pelo menos $3\floor{n/10}$.
+\end{exercicio}
+\begin{exercicio}{se-grupos}[Complementar]
+Refaça a análise do algoritmo com grupos de 7 e com grupos de 3. Em qual dos casos ele continua linear?
+\end{exercicio}
+\begin{exercicio}{se-kmenores}[Complementar]
+Dê um algoritmo $O(n)$ que devolve os $k$ menores elementos de um conjunto, em qualquer ordem. E se eles forem pedidos em ordem crescente?
+\end{exercicio}
+\begin{exercicio}{se-oleo}[Complementar]
+Um oleoduto horizontal (leste-oeste) deve ligar $n$ poços, cada um por um duto vertical. Dadas as coordenadas $y_1,\dots,y_n$ dos poços, em que altura colocar o oleoduto para minimizar o comprimento total dos dutos verticais? Mostre que a resposta pode ser encontrada em $O(n)$.
+\end{exercicio}
+\begin{exercicio}{se-piorqs}[Complementar]
+Mostre que o quickselect pode custar $\Theta(n^2)$ no pior caso, mesmo para encontrar o mínimo.
+\end{exercicio}
+\begin{exercicio}{se-qstrace}[Complementar]
+Execute o quickselect sobre $[7,2,9,4,3,8,6,1]$ com $k=4$, usando sempre o \emph{último} elemento do conjunto (na ordem dada) como pivô. Mostre $S_1$, $S_2$, $S_3$ e o novo $k$ em cada chamada.
+\end{exercicio}
+\begin{exercicio}{se-n49}[Complementar]
+Calcule $n-3\floor{n/10}$ e $3n/4$ para $n=49$ e para $n=50$. O que isso mostra sobre o caso base do algoritmo?
+\end{exercicio}
+\begin{exercicio}{se-ordmed}[Complementar]
+Suponha que, em vez de calcular a mediana das medianas recursivamente, o algoritmo ordene as $n/5$ medianas com o mergesort para achar a do meio. Qual passa a ser a complexidade?
+\end{exercicio}
+\begin{exercicio}{se-lista}[Complementar]
+O algoritmo da mediana das medianas continua linear se os elementos estiverem numa lista encadeada, em vez de um vetor? Justifique.
+\end{exercicio}
+\begin{exercicio}{se-quartis}[Complementar]
+Mostre como calcular os três quartis de um conjunto de $n$ números em $O(n)$.
+\end{exercicio}
+\begin{exercicio}{se-proximos}[Complementar]
+Dados $n$ números distintos e um inteiro $k$, encontre em $O(n)$ os $k$ números mais próximos da mediana (em valor absoluto da diferença).
+\end{exercicio}
+\begin{exercicio}{se-ponderada}[Complementar \estrela]
+Cada elemento $x_i$ tem um peso $w_i>0$, com $\sum w_i=1$. A \emph{mediana ponderada} é o elemento $x_k$ tal que a soma dos pesos dos elementos menores que $x_k$ é menor que $1/2$ e a soma dos pesos dos maiores é no máximo $1/2$. Encontre-a em $O(n)$.
+\end{exercicio}
+\begin{exercicio}{se-dois}[Complementar \estrela]
+Dados dois vetores ordenados $X$ e $Y$, cada um com $n$ elementos, encontre a mediana dos $2n$ elementos em $O(\log n)$.
+\end{exercicio}
+\begin{exercicio}{se-segundo}[Complementar \estrela]
+Mostre como encontrar o segundo menor de $n$ elementos com $n+\ceil{\log_2n}-2$ comparações, organizando as comparações como um torneio.
+\end{exercicio}
+\begin{exercicio}{se-cinco}[Complementar \estrela]
+Mostre como encontrar a mediana de 5 elementos com apenas 6 comparações.
+\end{exercicio}
+\begin{exercicio}{se-inferior}[Complementar]
+Mostre que todo algoritmo baseado em comparações que encontra a mediana de $n$ elementos distintos faz pelo menos $n-1$ comparações. (Pense no grafo cujas arestas são as comparações feitas.)
+\end{exercicio}
+\begin{exercicio}{se-esperado}[Complementar \estrela]
+Mostre que o número esperado de comparações do quickselect satisfaz \[E[T(n)]\le n+\frac2n\sum_{i=\floor{n/2}}^{n-1}E[T(i)]\] e conclua, por substituição, que $E[T(n)]\le4n$.
+\end{exercicio}
+\begin{exercicio}{se-maior}[Complementar]
+Como usar um algoritmo que seleciona o $k$-ésimo \emph{menor} para encontrar o $k$-ésimo \emph{maior}? E para encontrar o percentil 90 de um conjunto de $n$ notas?
+\end{exercicio}

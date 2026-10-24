@@ -1,0 +1,360 @@
+% ================================================================
+\chapter{Conjuntos disjuntos: Union-Find}\label{cap:uf}\label{sec:uf}
+% ================================================================
+\begin{objetivos}
+\begin{itemize}
+  \item O problema de manter uma partição sob as operações \MakeSet, \Find{} e \Union.
+  \item Implementações por vetor de representantes, por listas encadeadas e por florestas.
+  \item As heurísticas de união por rank e de compressão de caminhos, e a análise $O(m\log^*n)$.
+  \item Como escolher a implementação de acordo com as operações exigidas.
+\end{itemize}
+\end{objetivos}
+
+Quando objetos vão sendo agrupados ao longo do tempo --- usuários que formam comunidades, computadores ligados por cabos, vértices ligados pelas arestas escolhidas pelo algoritmo de Kruskal --- e é preciso responder rapidamente se dois deles já estão no mesmo grupo, a estrutura adequada é a de \textbf{conjuntos disjuntos}, também chamada \emph{Union-Find}. Este capítulo mostra que, com duas heurísticas simples, cada operação passa a custar, na prática, tempo constante.
+
+\begin{figura}[Uma rede de computadores que recebe cabos aos poucos. Depois dos cabos $1$--$2$, $3$--$4$, $2$--$4$ e $5$--$6$, há três grupos (componentes): $\{1,2,3,4\}$, $\{5,6\}$ e $\{7\}$. A pergunta ``1 e 3 se comunicam?'' tem resposta sim; ``1 e 6?'', não.\label{fig:ufrede}]
+\begin{tikzpicture}[x=1.2cm,y=1cm]
+\begin{scope}[on background layer]
+\fill[azul, rounded corners=8pt] (-0.45,-1.45) rectangle (1.45,0.45);
+\fill[feito, rounded corners=8pt] (2.55,-0.45) rectangle (4.45,0.45);
+\fill[destaque, rounded corners=8pt] (5.55,-0.45) rectangle (6.45,0.45);
+\end{scope}
+\node[vtx] (1) at (0,0) {1}; \node[vtx] (2) at (1,0) {2};
+\node[vtx] (3) at (0,-1) {3}; \node[vtx] (4) at (1,-1) {4};
+\node[vtx] (5) at (3,0) {5}; \node[vtx] (6) at (4,0) {6};
+\node[vtx] (7) at (6,0) {7};
+\draw[aresta] (1)--(2) (3)--(4) (2)--(4) (5)--(6);
+\end{tikzpicture}
+\end{figura}
+
+\section{O problema}
+Queremos manter uma partição de um universo de $n$ elementos em conjuntos disjuntos, cada um identificado por um elemento chamado \textbf{representante}, com três operações:
+\begin{itemize}
+  \item \MakeSet$(x)$ cria o conjunto unitário $\{x\}$;
+  \item \Find$(x)$ devolve o representante do conjunto que contém $x$; a pergunta ``$x$ e $y$ estão juntos?'' equivale a testar \Find$(x)=$ \Find$(y)$;
+  \item \Union$(x,y)$ une o conjunto de $x$ ao de $y$.
+\end{itemize}
+Conjuntos \textbf{nunca se separam}: não há uma operação de divisão. Numa sequência típica, há $n$ operações \MakeSet{} seguidas de $m$ operações \Find{} e \Union{} intercaladas; como cada união efetiva diminui o número de conjuntos em um, há no máximo $n-1$ delas.
+
+\begin{exemplo}[A rede da Figura~\ref{fig:ufrede} em operações]\label{ex:ufseq}
+Cada computador começa sozinho, e cada cabo é uma união:
+\begin{center}\small
+\begin{tabular}{@{}ll@{}}
+\toprule
+operação & partição depois dela\\
+\midrule
+\MakeSet$(1),\dots,$\MakeSet$(7)$ & $\{1\},\{2\},\{3\},\{4\},\{5\},\{6\},\{7\}$\\
+\Union$(1,2)$ & $\{1,2\},\{3\},\{4\},\{5\},\{6\},\{7\}$\\
+\Union$(3,4)$ & $\{1,2\},\{3,4\},\{5\},\{6\},\{7\}$\\
+\Union$(2,4)$ & $\{1,2,3,4\},\{5\},\{6\},\{7\}$\\
+\Union$(5,6)$ & $\{1,2,3,4\},\{5,6\},\{7\}$\\
+\bottomrule
+\end{tabular}
+\end{center}
+Agora \Find$(1)$ e \Find$(3)$ devolvem o mesmo representante (qual deles depende da implementação), e \Find$(1)\ne$ \Find$(6)$. Um novo cabo $1$--$3$ não muda nada: \Union$(1,3)$ encontra os dois já no mesmo conjunto.
+\end{exemplo}
+
+As aplicações incluem o cálculo de componentes conexas de um grafo que recebe arestas, o algoritmo de Kruskal para árvores geradoras mínimas (Capítulo~\ref{cap:agm}), a equivalência de nomes em compiladores, grupos em redes sociais e problemas de percolação.
+
+\section{Implementações}
+\subsection*{Vetor de representantes}
+Um vetor $rep[x]$ guarda o representante de cada elemento. \Find{} custa $O(1)$, mas \Union{} precisa trocar o representante de todos os elementos de um dos conjuntos, o que custa $O(n)$ por união.
+
+\begin{exemplo}[Vetor de representantes]
+Depois das uniões do Exemplo~\ref{ex:ufseq}, uma possibilidade é $rep=[1,1,1,1,5,5,7]$: os elementos $1,\dots,4$ têm representante 1, os elementos 5 e 6 têm representante 5, e o 7 é o seu próprio representante. Executar agora \Union$(1,6)$ exige percorrer o vetor e trocar por 1 o representante de todos os elementos cujo representante é 5 (as posições 5 e 6, em destaque); em geral, até $n-1$ posições podem mudar numa única união.
+\begin{figura}
+\small $rep$:\ \vetor{1,1,1,1,5,5,7}\quad$\xrightarrow{\ \Union(1,6)\ }$\quad\vetor[5,6]{1,1,1,1,1,1,7}
+\end{figura}
+\end{exemplo}
+
+\subsection*{Listas encadeadas com ponteiro para o representante}
+Cada conjunto é uma lista encadeada, e um objeto que representa o conjunto guarda a cabeça, a cauda e o tamanho da lista; todo nó tem um ponteiro direto para esse objeto. \MakeSet{} e \Find{} custam $O(1)$, pois \Find{} segue um único ponteiro. \Union{} concatena as listas em $O(1)$, ligando a cauda de uma à cabeça da outra, mas precisa atualizar o ponteiro de todos os nós da lista anexada (Figura~\ref{fig:uflistas}).
+
+\begin{figura}[Conjuntos como listas encadeadas. Cada nó aponta para o próximo (setas pretas) e para o objeto do seu conjunto (setas cinzas), que guarda cabeça, cauda e tamanho. Na união, a lista menor, $\{d,e\}$, é anexada ao fim da maior, e só os seus dois nós mudam de objeto.\label{fig:uflistas}]
+\begin{tikzpicture}[x=1cm,y=1cm, lnode/.style={draw, thick, minimum width=6mm, minimum height=5.5mm, font=\small}, obj/.style={draw, thick, rounded corners=2pt, fill=azul, font=\scriptsize, align=center}]
+\node[obj] (S1) at (1,1.3) {$S_1$: tam $=3$};
+\node[lnode] (a) at (0,0) {$a$}; \node[lnode] (b) at (1,0) {$b$}; \node[lnode] (c) at (2,0) {$c$};
+\draw[seta] (a)--(b); \draw[seta] (b)--(c);
+\foreach \x in {a,b,c} \draw[-{Stealth[length=1.5mm]}, gray] (\x.north) -- (S1.south);
+\node[obj] (S2) at (4.5,1.3) {$S_2$: tam $=2$};
+\node[lnode] (d) at (4,0) {$d$}; \node[lnode] (e) at (5,0) {$e$};
+\draw[seta] (d)--(e);
+\foreach \x in {d,e} \draw[-{Stealth[length=1.5mm]}, gray] (\x.north) -- (S2.south);
+\node[font=\small] at (6.3,0.6) {$\xrightarrow{\ \Union\ }$};
+\begin{scope}[xshift=7.6cm]
+\node[obj] (T) at (2,1.3) {$S_1$: tam $=5$};
+\node[lnode] (a) at (0,0) {$a$}; \node[lnode] (b) at (1,0) {$b$}; \node[lnode] (c) at (2,0) {$c$};
+\node[lnode, fill=destaque] (d) at (3,0) {$d$}; \node[lnode, fill=destaque] (e) at (4,0) {$e$};
+\draw[seta] (a)--(b); \draw[seta] (b)--(c); \draw[seta] (c)--(d); \draw[seta] (d)--(e);
+\foreach \x in {a,b,c} \draw[-{Stealth[length=1.5mm]}, gray] (\x.north) -- (T.south);
+\foreach \x in {d,e} \draw[-{Stealth[length=1.5mm]}, BrickRed, thick] (\x.north) -- (T.south);
+\end{scope}
+\end{tikzpicture}
+\end{figura}
+
+Sem cuidado, isso custa $\Theta(n)$ por união e $\Theta(n^2)$ numa sequência ruim, como anexar sempre a lista grande a um elemento unitário.
+
+\begin{exemplo}[A sequência ruim]
+Com $n=5$ elementos $x_1,\dots,x_5$, faça \Union$(x_2,x_1)$, \Union$(x_3,x_1)$, \Union$(x_4,x_1)$, \Union$(x_5,x_1)$, anexando sempre a lista de $x_1$ (a grande) à do novo elemento. As uniões atualizam $1,2,3,4$ ponteiros: 10 no total, e, em geral, $1+2+\cdots+(n-1)=\Theta(n^2)$. Anexando a menor à maior, cada uma dessas uniões atualizaria um único ponteiro, o do elemento novo: 4 no total.
+\end{exemplo}
+
+A solução é a \textbf{união ponderada}: anexa-se sempre a lista \emph{menor} à maior. Cada vez que o ponteiro de um elemento $x$ é atualizado, o conjunto que contém $x$ pelo menos dobra de tamanho; como nenhum conjunto tem mais de $n$ elementos, o ponteiro de $x$ é atualizado no máximo $\log_2n$ vezes. Assim, $n$ operações \MakeSet{} e $m$ outras operações custam $O(m+n\log n)$: \Union{} custa $O(\log n)$ \textbf{amortizado}. Esta é a única implementação que permite \textbf{listar os membros} de um conjunto em tempo $O(k)$, proporcional ao tamanho $k$ do conjunto, simplesmente percorrendo a lista.
+
+\begin{intuicao}[Por que ``menor na maior'' dá $\log n$]
+Acompanhe um único elemento $x$. Toda vez que o seu ponteiro muda, ele estava na lista menor, e a lista resultante tem pelo menos o dobro do tamanho da que ele estava: $1\to\ge2\to\ge4\to\ge8\to\cdots$. Depois de $k$ mudanças, $x$ está num conjunto com pelo menos $2^k$ elementos, e como $2^k\le n$, são no máximo $\log_2n$ mudanças. Com $n=1000$, cada elemento muda de ponteiro no máximo 9 vezes.
+\end{intuicao}
+
+\subsection*{Florestas}
+Cada conjunto é uma árvore em que cada nó aponta para o pai, $pai[x]$, e a raiz é o representante ($pai[r]=r$). \MakeSet{} faz $pai[x]:=x$; \Find{} sobe até a raiz, em tempo proporcional à altura; \Union{} encontra as duas raízes e faz uma apontar para a outra, em $O(1)$ depois de encontradas.
+
+\begin{figura}[Uma floresta e o seu vetor $pai$. As setas apontam do filho para o pai; as raízes (1 e 5) apontam para si mesmas e são os representantes. \Find$(4)$ percorre $4\to3\to1$.\label{fig:ufflor}]
+\forestset{uf/.style={for tree={circle, draw, thick, minimum size=1.5em, inner sep=0.5pt, font=\scriptsize, s sep=3mm, l sep=3mm, edge={thick, {Stealth[length=1.6mm]}-}}}}
+\begin{forest} uf, baseline [1 [2] [3 [4]]] \end{forest}\quad
+\begin{forest} uf, baseline [5 [6]] \end{forest}\quad
+\begin{forest} uf, baseline [7] \end{forest}
+\hspace{1.2cm}
+\raisebox{-0.6cm}{\small $pai$:\ \vetor{1,1,1,3,5,5,7}}
+\end{figura}
+
+O problema é que, sem nenhum critério, uma sequência de uniões pode formar uma \textbf{cadeia de altura $n-1$}, e então cada \Find{} custa $\Theta(n)$. Por exemplo, \Union$(1,2)$, \Union$(1,3)$, \Union$(1,4)$, \dots, sempre pondo a raiz atual sob o novo elemento, produz a cadeia $1\to2\to3\to\cdots\to n$, e \Find$(1)$ percorre todos os nós.
+
+\subsection*{União por tamanho ou por rank}
+A primeira heurística liga a raiz da árvore \emph{menor} à raiz da maior, medindo o tamanho em número de nós ou por um valor chamado \textbf{rank}. As regras do rank são:
+\begin{itemize}
+  \item todo nó começa com rank 0;
+  \item só o rank de raízes é atualizado: na união de duas raízes de mesmo rank $r$, a nova raiz passa a ter rank $r+1$; com ranks diferentes, a de menor rank vai para baixo e nada muda;
+  \item o rank nunca diminui, e, quando um nó deixa de ser raiz, seu rank nunca mais muda;
+  \item sem compressão de caminhos, o rank é igual à altura; com compressão, é apenas uma cota superior para ela.
+\end{itemize}
+
+\begin{figura}[União por rank. À esquerda, ranks diferentes: a árvore de rank 1 vai para baixo da de rank 2, e a altura não muda. À direita, ranks iguais: a nova raiz ganha um nível, e o seu rank passa de 1 a 2. Os números em vermelho são os ranks.\label{fig:ufrank}]
+\forestset{uf/.style={for tree={circle, draw, thick, minimum size=1.5em, inner sep=0.5pt, font=\scriptsize, s sep=3mm, l sep=3mm, edge={thick, {Stealth[length=1.6mm]}-}}}}
+\begin{tabular}{@{}c@{\hspace{12mm}}c@{}}
+\begin{forest} uf, baseline [$a$,bb=2 [$b$] [$c$ [$d$]]] \end{forest}\ \raisebox{0.3ex}{$\cup$}\
+\begin{forest} uf, baseline [$e$,bb=1 [$f$]] \end{forest}
+\ $\Rightarrow$\
+\begin{forest} uf, baseline [$a$,bb=2 [$b$] [$c$ [$d$]] [$e$,novo [$f$]]] \end{forest}
+&
+\begin{forest} uf, baseline [$g$,bb=1 [$h$]] \end{forest}\ \raisebox{0.3ex}{$\cup$}\
+\begin{forest} uf, baseline [$i$,bb=1 [$j$]] \end{forest}
+\ $\Rightarrow$\
+\begin{forest} uf, baseline [$g$,bb=2 [$h$] [$i$,novo [$j$]]] \end{forest}
+\end{tabular}
+\end{figura}
+
+\begin{teo}[Altura logarítmica]\label{teo:ufaltura}
+Com união por rank (ou por tamanho), toda árvore de rank $h$ tem pelo menos $2^h$ nós. Logo $h\le\floor{\log_2 n}$, e \Find{} custa $O(\log n)$.
+\end{teo}
+\begin{proof}
+Indução no número de operações. Uma árvore de um nó tem rank 0 e $2^0=1$ nó. O rank de uma árvore só aumenta quando se unem duas árvores de mesmo rank $h$; pela hipótese de indução, cada uma tem pelo menos $2^h$ nós, e a nova árvore tem pelo menos $2\cdot2^h=2^{h+1}$ nós e rank $h+1$. Quando a menor é ligada sob a maior, o rank da maior não muda. Como $2^h\le n$, temos $h\le\log_2n$.
+\end{proof}
+Por exemplo, com $n=1000$ elementos nenhuma árvore passa de altura $\floor{\log_21000}=9$, por pior que seja a sequência de uniões; sem a heurística, a altura poderia chegar a $999$.
+
+\begin{cor}
+(i) O número de nós de rank exatamente $k$ é no máximo $n/2^k$: cada um deles é, ou foi, raiz de uma subárvore com pelo menos $2^k$ nós, e essas subárvores são disjuntas. (ii) Todo rank é no máximo $\floor{\log_2n}$. (iii) $\rank(x)<\rank(pai[x])$ para todo $x$ que não é raiz.
+\end{cor}
+
+\subsection*{Compressão de caminhos}
+A segunda heurística aproveita cada \Find: depois de encontrar a raiz, faz-se \emph{todo nó do caminho} apontar diretamente para ela. As buscas futuras por esses nós passam a custar $O(1)$. Há variantes que fazem o trabalho numa só passada: na \emph{separação de caminhos}, cada nó do caminho passa a apontar para o avô; na \emph{divisão de caminhos}, isso é feito em nós alternados. Todas têm a mesma complexidade assintótica.
+
+\begin{figura}[\Find$(E)$ na cadeia $E\to D\to C\to B\to A$ com as três variantes. Todas encurtam o caminho; a compressão completa deixa todos os nós a um passo da raiz.\label{fig:ufcompr}]
+\forestset{uf/.style={for tree={circle, draw, thick, minimum size=1.5em, inner sep=0.5pt, font=\scriptsize, s sep=3mm, l sep=3mm, edge={thick, {Stealth[length=1.6mm]}-}}}}
+\begin{tabular}{@{}c@{\hspace{9mm}}c@{\hspace{9mm}}c@{\hspace{9mm}}c@{}}
+\begin{forest} uf, baseline [$A$ [$B$ [$C$ [$D$ [$E$,novo]]]]] \end{forest} &
+\begin{forest} uf, baseline [$A$ [$B$] [$C$] [$D$] [$E$,novo]] \end{forest} &
+\begin{forest} uf, baseline [$A$ [$B$ [$D$]] [$C$ [$E$,novo]]] \end{forest} &
+\begin{forest} uf, baseline [$A$ [$B$] [$C$ [$D$] [$E$,novo]]] \end{forest}\\[3pt]
+\small (a) antes & \small (b) compressão & \small (c) separação & \small (d) divisão\\[-1pt]
+& \scriptsize todos $\to$ raiz & \scriptsize cada nó $\to$ avô & \scriptsize alternados $\to$ avô
+\end{tabular}
+\end{figura}
+
+\begin{pseudo}{Floresta com união por rank e compressão de caminhos}
+\begin{algorithmic}
+\Procedure{Make-Set}{$x$} \State $pai[x]:=x$;\ $rank[x]:=0$ \EndProcedure
+\Function{Find}{$x$}
+  \If{$pai[x]\ne x$} \State $pai[x]:=$ \Call{Find}{$pai[x]$} \Comment{compressão}
+  \EndIf
+  \State \Return $pai[x]$
+\EndFunction
+\Procedure{Union}{$x,y$}
+  \State $r:=$ \Call{Find}{$x$};\ $s:=$ \Call{Find}{$y$}
+  \If{$r=s$} \Return \EndIf
+  \If{$rank[r]<rank[s]$} \State $pai[r]:=s$
+  \ElsIf{$rank[r]>rank[s]$} \State $pai[s]:=r$
+  \Else \State $pai[s]:=r$;\ $rank[r]:=rank[r]+1$
+  \EndIf
+\EndProcedure
+\end{algorithmic}
+\end{pseudo}
+O \Find{} recursivo acima comprime o caminho na volta da recursão: a chamada sobre $E$ chama a de $D$, que chama a de $C$, e assim por diante até a raiz $A$; na volta, cada chamada faz o seu nó apontar para o valor devolvido, que é $A$. Uma versão iterativa faz duas passadas: a primeira sobe até encontrar a raiz $y$; a segunda percorre o mesmo caminho fazendo $pai[\cdot]:=y$.
+
+\section{União por rank com compressão: $O(m\log^*n)$}
+\begin{intuicao}
+O logaritmo iterado $\lgs n$ responde à pergunta: ``quantas vezes preciso apertar a tecla $\log_2$ da calculadora, começando em $n$, até o visor mostrar um número $\le1$?''. Para $n=1000$: $1000\to9{,}97\to3{,}32\to1{,}73\to0{,}79$, quatro vezes. Essa função cresce tão devagar que, para efeitos práticos, é uma constante.
+\end{intuicao}
+
+Formalmente, seja $\lgs n$ o número de vezes que é preciso aplicar $\log_2$ a $n$ até chegar a um valor $\le1$. Definindo $F(0)=1$ e $F(k)=2^{F(k-1)}$, temos $F=1,2,4,16,65536,2^{65536},\dots$, e $\lgs n$ é o menor $k$ com $F(k)\ge n$:
+\begin{center}\small
+\begin{tabular}{@{}lccccccc@{}}
+\toprule
+$n$ & $1$ & $2$ & $3,4$ & $5,\dots,16$ & $17,\dots,65536$ & $65537,\dots,2^{65536}$\\
+\midrule
+$\lgs n$ & 0 & 1 & 2 & 3 & 4 & 5\\
+\bottomrule
+\end{tabular}
+\end{center}
+Como $2^{65536}$ é muito maior que o número de átomos do universo observável (cerca de $10^{80}\approx2^{266}$), para qualquer $n$ que apareça na prática, $\lgs n\le5$.
+
+Dividimos os ranks em \textbf{grupos}: o grupo $B\ge1$ contém os ranks no intervalo $(F(B-1),F(B)]$, e o grupo 0 contém os ranks $\le F(0)=1$. Assim, o grupo 0 é $\{0,1\}$, o grupo 1 é $\{2\}$, o grupo 2 é $\{3,4\}$, o grupo 3 é $\{5,\dots,16\}$ e o grupo 4 é $\{17,\dots,65536\}$.
+\begin{itemize}
+  \item \textbf{Propriedade A}: como os ranks são no máximo $\log n$, há no máximo $\lgs n$ grupos.
+  \item \textbf{Propriedade B}: para $B\ge1$, o número de nós no grupo $B$ é no máximo $\sum_{r=F(B-1)+1}^{F(B)}\frac{n}{2^r}\le\frac{n}{2^{F(B-1)}}=\frac{n}{F(B)}$; o grupo 0 tem trivialmente no máximo $n=n/F(0)$ nós.
+\end{itemize}
+Num \Find, distribua o custo de cada nó $x$ do caminho. Se $x$ é a raiz ou filho da raiz, ou se $pai[x]$ está num \emph{grupo diferente} do de $x$, o custo é cobrado do próprio \Find; como os ranks crescem ao longo do caminho, há $O(\lgs n)$ mudanças de grupo por \Find, e o total cobrado dessa forma é $O(m\lgs n)$. Caso contrário, quando $pai[x]$ está no mesmo grupo de $x$, o custo é cobrado do nó $x$. A compressão dá a $x$ um novo pai de rank \emph{estritamente maior}, e um nó do grupo $B$ só pode ser cobrado assim no máximo $F(B)$ vezes antes que seu pai passe a outro grupo, depois do que nunca mais é cobrado. O total cobrado dos nós de um grupo é, pela Propriedade B, no máximo $\frac{n}{F(B)}\cdot F(B)=n$, e, somando sobre os $\lgs n$ grupos, $O(n\lgs n)$. O custo total é $O(m\lgs n)$, para $m\ge n$.
+
+\begin{exemplo}[Onde cada passo de um \Find{} é cobrado]
+Suponha um caminho de \Find{} com ranks $0,1,3,4,7,12,20$ (da folha para a raiz; os ranks crescem ao longo do caminho). Os grupos são $0,0,2,2,3,3,4$. Os passos que saem de um nó para um pai de \emph{outro grupo} ($1\to3$, $4\to7$ e $12\to20$), mais os dois últimos nós, são cobrados do \Find: no máximo $\lgs n+2$ por consulta. Os demais ($0\to1$, $3\to4$, $7\to12$) são cobrados dos próprios nós; depois da compressão, todos passam a apontar para a raiz, de rank 20, e esses nós ficam mais perto de ``mudar de grupo''.
+\end{exemplo}
+
+\begin{complemento}
+A análise acima não é a melhor possível. O limite justo, devido a Tarjan, é $O(m\,\alpha(m,n))$, onde $\alpha$ é a inversa da função de Ackermann, que cresce ainda mais devagar que $\lgs$ e não passa de 4 para qualquer entrada concebível. Os dois limites mostram que a estrutura é ``quase linear''.
+\end{complemento}
+
+% ------------------------------------------------------------------
+\section{Qual implementação usar?}\label{sec:ufescolha}
+\begin{table}[h]
+\centering\small
+\caption{Implementações de Union-Find e quando usar cada uma.}\label{tab:uf}
+\begin{tabularx}{\linewidth}{@{}p{3.3cm}cccX@{}}
+\toprule
+Implementação & \MakeSet & \Find & \Union & Quando é a melhor escolha\\
+\midrule
+Vetor de representantes & $O(1)$ & $O(1)$ & $O(n)$ & Quase só consultas e pouquíssimas uniões, com $n$ pequeno.\\
+Listas encadeadas com ponteiro ao representante e união ponderada & $O(1)$ & $O(1)$ \textbf{pior caso} & $O(\log n)$\am & As consultas dominam e cada uma precisa custar $O(1)$ \emph{garantido}; é preciso \textbf{listar os membros} de um grupo em $O(k)$; há memória para cabeça, cauda, tamanho e ponteiros.\\
+Floresta sem critério & $O(1)$ & $O(n)$ & $O(1)$ $+$ \Find s & Nunca; serve apenas para motivar as heurísticas.\\
+Floresta com união por rank ou tamanho, sem compressão & $O(1)$ & $O(\log n)$ & $O(\log n)$ & Quando é preciso \textbf{desfazer uniões}: sem compressão, cada união muda só um ponteiro (e talvez um rank), que pode ser empilhado e restaurado em $O(1)$.\\
+Floresta com rank e compressão de caminhos & $O(1)$ & \multicolumn{2}{c}{$O(\lgs n)$\am\ (ou $\alpha$)} & Caso geral, com muitas operações misturadas e só \Find{} e \Union: praticamente $O(1)$ por operação e memória mínima (vetores $pai$ e $rank$).\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\begin{roteiro}[Cenários típicos]
+\begin{itemize}
+  \item \textbf{Listar os membros do grupo de $u$.} A floresta só tem ponteiros do filho para o pai; listar exigiria testar \Find$(i)=$ \Find$(u)$ para todos os $n$ elementos, em $O(n)$. Com \textbf{listas encadeadas}, percorre-se a lista em $O(k)$; ``mesmo grupo?'' custa $O(1)$ e a união custa $O(\log n)$ amortizado, anexando a menor à maior.
+  \item \textbf{Conectividade enquanto arestas são destruídas.} Union-Find não desfaz uniões, e a compressão destrói a forma das árvores. A solução é \emph{offline}: leia todas as destruições, construa o estado final (sem as arestas que serão destruídas) e processe as destruições \textbf{de trás para frente}, cada uma como uma \Union; guarde as respostas e apresente-as na ordem original.
+  \item \textbf{Operações online com desfazer} (\emph{snapshots}). Use floresta \textbf{sem compressão}, só com união por rank ou tamanho (altura $O(\log n)$ e \Find{} em $O(\log n)$). Cada \Union{} empilha o ponteiro e o rank que alterou; desfazer é desempilhar e restaurar, em $O(1)$.
+  \item \textbf{Algoritmo de Kruskal.} Para cada aresta $uv$, em ordem crescente de peso, testa-se \Find$(u)\ne$ \Find$(v)$ e, em caso afirmativo, faz-se \Union$(u,v)$. A floresta com rank e compressão é a escolha natural.
+\end{itemize}
+\end{roteiro}
+
+\begin{exemplo}[A solução offline, de trás para frente]
+Uma rede tem os cabos $1$--$2$, $2$--$3$ e $3$--$4$, que serão destruídos nessa ordem; queremos o número de componentes após cada destruição. Em vez de destruir, começamos do fim: sem nenhum cabo, há 4 componentes. Reinserimos os cabos na ordem inversa: \Union$(3,4)$ recupera o estado logo após a segunda destruição (3 componentes); \Union$(2,3)$, o estado após a primeira (2 componentes); \Union$(1,2)$, o estado inicial (1 componente). Assim, as respostas, na ordem original das destruições, são $2$, $3$ e $4$ componentes, e cada passo custou só uma \Union.
+\end{exemplo}
+
+\section{Exemplos resolvidos}\label{sec:ufexemplos}
+\begin{exemplo}[Uniões por rank]\label{ex:ufrank}
+Partindo de $\{A\},\dots,\{F\}$, executam-se \Union$(A,B)$, \Union$(C,D)$, \Union$(A,C)$ e \Union$(E,F)$, com união por rank e, em caso de empate, a raiz do primeiro argumento como nova raiz.
+\begin{itemize}
+  \item \Union$(A,B)$: ranks $0=0$, a raiz é $A$ e $\rank(A)=1$.
+  \item \Union$(C,D)$: a raiz é $C$ e $\rank(C)=1$.
+  \item \Union$(A,C)$: ranks $1=1$, a raiz é $A$ e $\rank(A)=2$; a árvore tem $A$ com os filhos $B$ e $C$, e $C$ com o filho $D$.
+  \item \Union$(E,F)$: a raiz é $E$ e $\rank(E)=1$.
+\end{itemize}
+Ao final há \textbf{dois conjuntos}, com representantes $A$ (de $\{A,B,C,D\}$) e $E$ (de $\{E,F\}$).
+\begin{figura}[As quatro uniões do Exemplo~\ref{ex:ufrank}, com os ranks das raízes em vermelho.]
+\forestset{uf/.style={for tree={circle, draw, thick, minimum size=1.5em, inner sep=0.5pt, font=\scriptsize, s sep=3mm, l sep=3mm, edge={thick, {Stealth[length=1.6mm]}-}}}}
+\begin{tabular}{@{}c@{\hspace{8mm}}c@{\hspace{8mm}}c@{}}
+\begin{forest} uf, baseline [$A$,bb=1 [$B$]] \end{forest}\
+\begin{forest} uf, baseline [$C$,bb=1 [$D$]] \end{forest}
+&
+\begin{forest} uf, baseline [$A$,bb=2 [$B$] [$C$,novo [$D$]]] \end{forest}
+&
+\begin{forest} uf, baseline [$A$,bb=2 [$B$] [$C$ [$D$]]] \end{forest}\
+\begin{forest} uf, baseline [$E$,bb=1 [$F$]] \end{forest}\\[3pt]
+\small após \Union$(A,B)$ e \Union$(C,D)$ & \small após \Union$(A,C)$ & \small após \Union$(E,F)$
+\end{tabular}
+\end{figura}
+\end{exemplo}
+\begin{exemplo}[Compressão numa cadeia]
+Na cadeia $pai[B]=A$, $pai[C]=B$, $pai[D]=C$, $pai[E]=D$, o \Find$(E)$ com compressão devolve $A$ e deixa $B,C,D,E$ apontando diretamente para $A$ (Figura~\ref{fig:ufcompr}(b)): a árvore passa a ter altura 1, e as próximas consultas a esses nós custam $O(1)$. Se depois, com $\rank(A)=\rank(D)=1$, for executada \Union$(A,D)$, há empate: a nova raiz é $A$ e $\rank(A)=2$. O rank só aumenta no empate porque, ligando a árvore menor sob a maior, a altura da maior não muda; só com alturas iguais a nova árvore fica um nível mais alta.
+\end{exemplo}
+\begin{exemplo}[Por que usar as duas heurísticas juntas]
+Só com união por rank, \Find{} custa $\Theta(\log n)$ no pior caso, pois há sequências que atingem essa altura. Só com compressão, uma árvore pode ficar alta (uma cadeia) antes de ser comprimida: o custo total de $m$ operações é $O(m\log n)$, e um \Find{} individual pode custar $\Theta(n)$. Juntas, as duas dão $O(m\lgs n)$ no total, ou $O(m\,\alpha)$, praticamente constante por operação.
+\end{exemplo}
+
+\begin{chave}
+\textbf{Listas encadeadas} dão \Find{} $O(1)$ no pior caso, \Union{} $O(\log n)$ amortizado com ``menor na maior'' e listagem de membros em $O(k)$. \textbf{Florestas} com \textbf{rank e compressão} dão $O(\lgs n)$ (ou $\alpha$) amortizado por operação, com memória mínima; \textbf{sem compressão}, quando é preciso desfazer uniões. Sempre o menor sob o maior; sem isso, listas e árvores degeneram.
+\end{chave}
+
+% ----------------------------------------------------------------
+\section{Exercícios}
+\excurso
+\begin{exercicio}{uf-r1}[Monitoria]
+(a) Qual o objetivo da estrutura Union-Find? (b) Explique \MakeSet, \Find{} e \Union. (c) Que informação cada elemento armazena para representar os conjuntos? (d) Como a união por rank evita árvores muito altas?
+\end{exercicio}
+\begin{exercicio}{uf-r2}[Monitoria]
+Refaça, sem consultar o texto, os exemplos da §\ref{sec:ufexemplos}: (a) as uniões \Union$(A,B)$, \Union$(C,D)$, \Union$(A,C)$, \Union$(E,F)$ com união por rank; (b) \Find$(E)$ com compressão na cadeia $A\leftarrow B\leftarrow C\leftarrow D\leftarrow E$; (c) \Union$(A,D)$ com $\rank(A)=\rank(D)=1$; (d) por que usar rank e compressão juntos.
+\end{exercicio}
+\begin{exercicio}{uf-l1}[Lista]
+Considere união por rank sem compressão de caminhos, sempre ligando a árvore de menor rank à de maior. Prove que uma árvore com $n$ elementos tem altura no máximo $\floor{\log n}$ e mostre que a cota é justa, com uma sequência de operações que produz altura $\Theta(\log n)$.
+\end{exercicio}
+\begin{exercicio}{uf-l2}[Lista]
+Considere apenas compressão de caminhos, sem união por rank ou tamanho. Construa uma sequência de operações que produza uma árvore alta antes da compressão e discuta o custo $O(m\log n)$ de $m$ operações.
+\end{exercicio}
+\begin{exercicio}{uf-t4}[Avaliação]
+Uma plataforma tem $10^7$ usuários, cada um inicialmente num grupo só seu. Num dia há $10^5$ uniões de grupos e $10^8$ consultas ``$u$ e $v$ estão no mesmo grupo?''; grupos nunca se separam e o histórico das uniões não importa. (a) Que estrutura usar, e como representar cada grupo: como uma árvore em que cada elemento aponta para outro até o representante, ou como uma lista encadeada em que cada elemento aponta diretamente para o representante? (b) Ao unir dois grupos, que estratégia decide quem é anexado a quem, e por que ela importa?
+\end{exercicio}
+\begin{exercicio}{uf-doc}[Lista]
+Explique, para cada problema, por que o Union-Find tradicional (floresta com compressão) falha e qual adaptação resolve: (a) estradas são destruídas uma a uma e, após cada destruição, pergunta-se se o país continua conexo; (b) uma rede recebe operações online de adicionar cabo, consultar conectividade, salvar um \emph{snapshot} e desfazer tudo até o último \emph{snapshot}; (c) uma rede social precisa de \emph{Juntar}, \emph{MesmoGrupo} e \emph{ListarMembros}$(u)$.
+\end{exercicio}
+\begin{exercicio}{uf-cf}[Lista]
+Problema \emph{Asya and Kittens} (Codeforces 1131F): $n$ gatinhos ocupavam $n$ células enfileiradas, um por célula. Em $n-1$ dias, uma divisória entre duas células vizinhas foi removida por dia, juntando os gatinhos $x_i$ e $y_i$, que estavam em células vizinhas de blocos diferentes. Dados os pares, reconstrua uma ordem inicial possível dos gatinhos.
+\end{exercicio}
+
+\excompl
+\begin{exercicio}{uf-sim}[Complementar]
+Com floresta, união por rank (no empate, a raiz do primeiro argumento vence) e compressão de caminhos, execute em $\{1,\dots,8\}$: \Union$(1,2)$, \Union$(3,4)$, \Union$(5,6)$, \Union$(7,8)$, \Union$(1,3)$, \Union$(5,7)$, \Union$(1,5)$, \Find$(8)$. Dê o vetor $pai$ e os ranks antes e depois do \Find.
+\end{exercicio}
+\begin{exercicio}{uf-ciclo}[Complementar]
+Use Union-Find para decidir se um grafo não direcionado tem ciclo. Qual a complexidade?
+\end{exercicio}
+\begin{exercicio}{uf-rankpai}[Complementar]
+Prove que, com união por rank e compressão de caminhos, $\rank(x)<\rank(pai[x])$ para todo $x$ que não é raiz.
+\end{exercicio}
+\begin{exercicio}{uf-max}[Complementar]
+Estenda a estrutura para responder, em tempo $O(\alpha(n))$ amortizado, ``qual o maior elemento do conjunto de $x$?'' e ``quantos elementos tem o conjunto de $x$?''.
+\end{exercicio}
+\begin{exercicio}{uf-tamanho}[Complementar]
+Mostre que a \emph{união por tamanho}, que pendura a árvore com menos nós sob a outra, também garante altura no máximo $\floor{\log_2n}$.
+\end{exercicio}
+\begin{exercicio}{uf-ingenua}[Complementar]
+Na floresta sem critério, em que \Union$(x,y)$ faz a raiz do conjunto de $x$ apontar para a raiz do conjunto de $y$, dê uma sequência de $n-1$ uniões que produz uma árvore de altura $n-1$, e uma sequência de $n$ operações \Find{} que custa $\Theta(n^2)$ no total.
+\end{exercicio}
+\begin{exercicio}{uf-listas}[Complementar]
+Com listas encadeadas e união ponderada, una os elementos $1,\dots,8$ em rodadas: primeiro aos pares ($\{1,2\},\{3,4\},\dots$), depois os pares aos pares, e por fim os dois grupos de 4. Quantas atualizações de ponteiro ao representante são feitas no total? Generalize para $n=2^k$.
+\end{exercicio}
+\begin{exercicio}{uf-listasprova}[Complementar]
+Prove que, com listas encadeadas e união ponderada, qualquer sequência de $n-1$ uniões faz no máximo $n\log_2n$ atualizações de ponteiro.
+\end{exercicio}
+\begin{exercicio}{uf-semponderada}[Complementar]
+Mostre que, com listas encadeadas \emph{sem} união ponderada, existe uma sequência de $n-1$ uniões que faz $\Theta(n^2)$ atualizações de ponteiro.
+\end{exercicio}
+\begin{exercicio}{uf-logstar}[Complementar]
+Calcule $\lgs n$ para $n=2$, $16$, $65536$, $2^{65536}$ e $10^{80}$ (uma estimativa do número de átomos do universo observável).
+\end{exercicio}
+\begin{exercicio}{uf-comp}[Complementar]
+Um grafo tem os vértices $1,\dots,10$ e as arestas $12$, $34$, $23$, $56$, $78$, $89$, $65$, $97$, processadas nessa ordem por Union-Find. Quais arestas provocam uniões efetivas e quais fecham ciclos? Quantas componentes conexas há ao final?
+\end{exercicio}
+\begin{exercicio}{uf-percol}[Complementar]
+Num tabuleiro $n\times n$, casas vão sendo abertas uma a uma. Queremos saber, após cada abertura, se existe um caminho de casas abertas (vizinhas na horizontal ou na vertical) ligando a primeira linha à última. Como resolver com Union-Find usando dois vértices virtuais? Qual o custo total?
+\end{exercicio}
+\begin{exercicio}{uf-equiv}[Complementar]
+Um compilador recebe declarações de equivalência entre variáveis, como $a\equiv b$, $c\equiv d$, $b\equiv c$, e depois consultas ``$x$ e $y$ ocupam a mesma posição de memória?''. Mostre como resolver com Union-Find e diga quais variáveis ficam equivalentes no exemplo, se também houver $e\equiv f$.
+\end{exercicio}
+\begin{exercicio}{uf-kruskal}[Complementar]
+Quantas operações \Find{} e quantas \Union{} o algoritmo de Kruskal faz num grafo conexo com $n$ vértices e $m$ arestas, no pior caso? Qual o custo dessas operações com rank e compressão, comparado ao da ordenação das arestas?
+\end{exercicio}
+\begin{exercicio}{uf-rankcomp}[Complementar]
+Por que a compressão de caminhos não atualiza os ranks? O que o rank passa a representar quando há compressão, e por que ele ainda serve para decidir as uniões?
+\end{exercicio}

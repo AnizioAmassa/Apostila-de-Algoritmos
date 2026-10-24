@@ -1,0 +1,40 @@
+\respcap{cap:dfsdig}
+\resp{dd-sorv} Tome um caminho direcionado de comprimento máximo; o seu último vértice $u$ é um sumidouro, pois uma aresta $u\to x$ com $x$ fora do caminho daria um caminho maior, e com $x$ no caminho daria um ciclo. Algoritmo linear: guarde o grau de saída de cada vértice e as listas de \emph{entrada}, e ponha numa fila todos os sumidouros. Ao retirar um sumidouro $u$, coloque-o no início da ordenação e decremente o grau de saída de cada $x$ com $x\to u$; quem chegar a zero entra na fila. Cada aresta é processada uma vez: $O(n+m)$. Se a fila esvaziar antes de todos os vértices saírem, há um ciclo.
+
+\resp{dd-porque} Num digrafo acíclico não há arestas de retorno. Numa aresta $vw$ de árvore ou de avanço, $w$ é descendente de $v$ e sai antes dele; numa de cruzamento, $w$ já tinha saído quando $v$ começou. Logo $PS(w)<PS(v)$ para toda aresta, e a ordem por $PS$ decrescente põe $v$ antes de $w$. No exemplo, com as raízes em ordem alfabética, obtém-se $i,j,h,e,f,g,b,a,d,c$.
+
+\resp{dd-papel} Sim. Com as arestas $a\to b$, $a\to c$ e $b\to c$: se a busca a partir de $a$ visita $b$ primeiro, $c$ vira filho de $b$ e $ac$ é de avanço; se visita $c$ primeiro, $c$ termina antes de $b$ começar, e $bc$ passa a ser de cruzamento (e $ac$, de árvore). As componentes são definidas pela existência de caminhos nos dois sentidos, uma propriedade do digrafo, e o algoritmo é correto qualquer que seja a ordem da busca.
+
+\resp{dd-sim} $PE$ dos vértices 1 a 7: $1,2,3,5,6,7,13$; $PS$: $12,11,4,10,9,8,14$. Árvore: $1\to2$, $2\to3$, $2\to4$, $4\to5$ e $5\to6$. Retorno: $3\to1$ e $6\to4$. Avanço: $1\to3$. Cruzamento: $7\to3$ e $7\to6$. $old$: 1 para os vértices 1, 2 e 3; 5 para 4, 5 e 6; 13 para o 7. Componentes, na ordem em que são encontradas: $\{4,5,6\}$ (quando 4 sai), $\{1,2,3\}$ (quando 1 sai) e $\{7\}$.
+
+\resp{dd-roupa} Relógio, meias, cueca, camisa, gravata, calça, sapatos, cinto, paletó. Qualquer outra ordem que respeite as dependências também é válida.
+
+\resp{dd-cond} Se houvesse um ciclo $C_1\to C_2\to\cdots\to C_k\to C_1$ com $k\ge2$, de qualquer vértice de $C_1$ se chegaria a qualquer vértice de $C_2$ (seguindo o ciclo de componentes e andando dentro de cada uma) e vice-versa. Então $C_1\cup C_2$ seria fortemente conexo, contradizendo a maximalidade das componentes.
+
+\resp{dd-unica} Se há um caminho hamiltoniano $v_1\to v_2\to\cdots\to v_n$, toda ordenação topológica precisa pôr $v_i$ antes de $v_{i+1}$, e portanto é única. Se não há, em alguma ordenação topológica dois vértices consecutivos $v_i$ e $v_{i+1}$ não são ligados por aresta, e trocá-los dá outra ordenação válida. Teste: obtenha uma ordenação topológica e verifique se cada par de vértices consecutivos é uma aresta, em $O(n+m)$.
+
+\resp{dd-prereq} Monte o digrafo com uma aresta $a\to b$ se $a$ é pré-requisito de $b$. Se houver ciclo (aresta de retorno numa busca), é impossível. Senão, o menor número de semestres é o número de vértices do caminho mais longo: $sem(v)=1+\max\{sem(u):u\to v\}$ (1 se não há pré-requisitos), calculado em ordem topológica em $O(n+m)$ --- é a programação dinâmica de caminho mais longo num digrafo acíclico do Capítulo~\ref{cap:pd}.
+
+\resp{dd-classif} $PE$ dos vértices 1 a 6: $1,2,3,4,9,10$; $PS$: $8,7,6,5,12,11$. Árvore: $1\to2$, $2\to3$, $3\to4$ e $5\to6$. Retorno: $4\to2$ e $6\to5$. Avanço: $1\to4$. Cruzamento: $5\to3$.
+
+\resp{dd-cfcex} $old$: 1 para o vértice 1; 2 para 2, 3 e 4; 9 para 5 e 6. Componentes, na ordem em que são encontradas: $\{2,3,4\}$ (quando 2 sai), $\{1\}$ e $\{5,6\}$. A aresta $5\to3$ é de cruzamento, mas 3 já saiu da pilha, e não altera $old(5)$.
+
+\resp{dd-kahn} As fontes iniciais são $a$ e $f$; sai $a$, e $b$ vira fonte; sai $b$; sai $f$, e $c$ vira fonte; sai $c$, e $d$ vira fonte; saem $d$ e $e$. Ordem: $a,b,f,c,d,e$.
+
+\resp{dd-ciclo} Como a aresta é de retorno, $w$ é ancestral de $v$. Suba de $v$ até $w$ pelos ponteiros $pai$, guardando os vértices; o ciclo é $w\to\cdots\to v\to w$, impresso na ordem inversa da subida, seguido de $w$.
+
+\resp{dd-forte} Se o digrafo é fortemente conexo, de $s$ se alcança todo vértice e todo vértice alcança $s$, o que equivale a alcançar todos a partir de $s$ no digrafo invertido. Reciprocamente, se isso vale, para quaisquer $u$ e $v$ há caminhos $u\leadsto s\leadsto v$ e $v\leadsto s\leadsto u$. O teste faz uma busca no digrafo e outra no digrafo invertido, em $O(n+m)$.
+
+\resp{dd-kosaraju} Para duas componentes $C$ e $C'$ com uma aresta de $C$ para $C'$, o maior $PS$ de $C$ é maior que o maior $PS$ de $C'$ (se a busca entra primeiro em $C$, termina $C'$ antes; se entra primeiro em $C'$, termina $C'$ inteira antes de alcançar $C$). No digrafo invertido, as arestas vão de $C'$ para $C$. Começando pelo vértice de maior $PS$, a segunda busca está numa componente da qual, no digrafo invertido, só saem arestas para componentes já visitadas; por isso, cada árvore da segunda busca é exatamente uma componente.
+
+\resp{dd-conta} São 4: $a,b,c,d,e$; $a,b,c,e,d$; $b,a,c,d,e$; $b,a,c,e,d$.
+
+\resp{dd-longo} Em ordem topológica $s,a,b,c,t$: $L(s)=0$, $L(a)=3$, $L(b)=2$, $L(c)=\max\{3+4,\ 2+6\}=8$ e $L(t)=\max\{3+2,\ 2+3,\ 8+1\}=9$. O caminho de maior peso é $s\to b\to c\to t$, com peso \textbf{9}.
+
+\resp{dd-semestres} São necessários \textbf{3} semestres: no 1º, $C_1$ e $P_1$; no 2º, $C_2$, $A_1$ e $P_2$; no 3º, $C_3$. O caminho mais longo, $C_1\to C_2\to C_3$ (ou $C_1\to A_1\to C_3$), tem 3 vértices.
+
+\resp{dd-minarestas} Num digrafo fortemente conexo com mais de um vértice, todo vértice tem grau de entrada e de saída positivos. Cada fonte do grafo das componentes precisa receber pelo menos uma nova aresta entrando nela, e cada sumidouro, pelo menos uma saindo dele; uma nova aresta entra em no máximo uma fonte e sai de no máximo um sumidouro. Logo são necessárias pelo menos $\max\{f,s\}$ arestas. (Sabe-se que esse número também é suficiente.)
+
+\resp{dd-lex} Use o algoritmo de Kahn com um heap de mínimo no lugar da fila: entre as fontes disponíveis, retire sempre a de menor nome. Custo $O((n+m)\log n)$.
+
+\resp{dd-nd} Num grafo não direcionado, toda aresta $vw$ é examinada a partir dos dois extremos; quando o primeiro dos dois a ser alcançado, digamos $v$, a examina, $w$ ainda não foi alcançado ou está ativo como descendente, e a aresta vira de árvore ou de retorno. Num digrafo, a aresta $v\to w$ só é examinada a partir de $v$, e $w$ pode já ter sido completamente explorado antes, numa outra parte da floresta, o que dá as arestas de cruzamento; ou pode ser um descendente alcançado por outro caminho, o que dá as de avanço.

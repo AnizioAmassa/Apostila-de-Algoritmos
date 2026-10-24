@@ -1,0 +1,149 @@
+% ================================================================
+\chapter{Caminhos mínimos de uma origem: Dijkstra}\label{cap:dijkstra}\label{sec:dijkstra}
+% ================================================================
+\begin{objetivos}
+\begin{itemize}
+  \item O problema dos caminhos mínimos a partir de uma origem, com pesos não negativos.
+  \item O algoritmo de Dijkstra como uma busca guiada por uma fila de prioridades.
+  \item A prova de correção e o papel dos pesos não negativos.
+  \item As implementações com vetor, heap binário e heap de Fibonacci, e quando usar cada uma.
+\end{itemize}
+\end{objetivos}
+
+Quando as arestas têm pesos, a busca em largura deixa de fornecer distâncias. O algoritmo de Dijkstra generaliza a busca: em vez de uma fila, usa uma \textbf{fila de prioridades} e processa sempre o vértice mais próximo da origem que ainda não teve a distância fixada. É o primeiro algoritmo deste livro em que a escolha da implementação da fila de prioridades --- vetor, heap binário ou heap de Fibonacci --- muda a complexidade de forma decisiva. O exemplo do capítulo usa o digrafo da §\ref{sec:fwmatriz}.
+
+\section{O algoritmo}
+\textbf{Problema:} dado um digrafo com pesos \textbf{não negativos} e uma raiz $s$, calcular os caminhos mínimos de $s$ a todos os vértices. O algoritmo mantém, para cada vértice $w$, um rótulo $L(w)$, que é o custo do melhor caminho de $s$ a $w$ encontrado até o momento, e um ponteiro $pai(w)$. A cada passo, retira da fila de prioridades o vértice de menor rótulo, fixa esse rótulo como definitivo e tenta melhorar os rótulos dos seus vizinhos.
+\begin{pseudo}{Algoritmo de Dijkstra}
+\begin{algorithmic}
+\Procedure{Dijkstra}{$G,W,s$}
+  \State para todo $w$: $L(w):=\infty$;\ $pai(w):=\nil$;\ $w$ desmarcado
+  \State $L(s):=0$;\ insira $s$ em $D$
+  \While{$D\ne\emptyset$}
+    \State $v:=$ elemento de $D$ com menor $L(v)$;\ remova $v$ de $D$;\ marque $v$ \Comment{$L(v)$ agora é definitivo}
+    \For{\textbf{cada} $w\in N_{out}(v)$ desmarcado}
+      \If{$w\notin D$} \State insira $w$ em $D$ com prioridade $L(w)$ \EndIf
+      \If{$L(v)+W(v,w)<L(w)$} \Comment{``relaxamento'' da aresta $vw$}
+        \State $L(w):=L(v)+W(v,w)$;\ reposicione $w$ em $D$;\ $pai(w):=v$
+      \EndIf
+    \EndFor
+  \EndWhile
+\EndProcedure
+\end{algorithmic}
+\end{pseudo}
+\begin{exemplo}[Raiz $a$ no digrafo da §\ref{sec:fwmatriz}]\leavevmode
+\begin{center}\small
+\begin{tabular}{l|ccccc|l}
+Removido & $L(a)$ & $L(b)$ & $L(c)$ & $L(d)$ & $L(e)$ & mudanças em $pai$\\ \hline
+$a$ (0) & \textbf{0} & 1 & 3 & $\infty$ & 6 & $b,c,e\leftarrow a$\\
+$b$ (1) & & \textbf{1} & 2 & 4 & 6 & $c,d\leftarrow b$\\
+$c$ (2) & & & \textbf{2} & 3 & 6 & $d\leftarrow c$\\
+$d$ (3) & & & & \textbf{3} & 5 & $e\leftarrow d$\\
+$e$ (5) & & & & & \textbf{5} & ---
+\end{tabular}
+\end{center}
+Os ponteiros $pai$ formam a \textbf{árvore de caminhos mínimos}: $a\to b\to c\to d\to e$. Por exemplo, o caminho mínimo de $a$ a $e$ é $a,b,c,d,e$, com custo $L(e)=5$, embora a aresta direta custe 6. A primeira linha da matriz de distâncias calculada pelo Floyd-Warshall (Capítulo~\ref{cap:fw}) confirma os valores $0,1,2,3,5$.
+\end{exemplo}
+Para um grafo não direcionado, basta trocar cada aresta $xy$ de peso $p$ pelas arestas direcionadas $x\to y$ e $y\to x$, ambas de peso $p$. E, se todos os pesos são iguais a 1, o algoritmo se comporta como a busca em largura: a fila de prioridades passa a liberar os vértices em ordem de nível, e $L(w)$ é a distância em número de arestas.
+
+\section{Correção}
+\begin{teo}
+Com pesos não negativos, quando um vértice $v$ é removido de $D$, vale $L(v)=\operatorname{dist}(s,v)$.
+\end{teo}
+\begin{proof}
+Sempre vale $L(v)\ge\operatorname{dist}(s,v)$, pois $L(v)$ é o custo de algum caminho. Suponha que $u$ seja o primeiro vértice removido com $L(u)>\operatorname{dist}(s,u)$. Num caminho mínimo de $s$ a $u$, seja $y$ o primeiro vértice ainda não marcado e $x$ o vértice anterior a ele, que já foi marcado e, portanto, tem $L(x)=\operatorname{dist}(s,x)$. Quando $x$ foi marcado, a aresta $xy$ foi relaxada, e então $L(y)\le\operatorname{dist}(s,x)+W(x,y)=\operatorname{dist}(s,y)\le\operatorname{dist}(s,u)<L(u)$. A segunda desigualdade usa que os \textbf{pesos não são negativos}: o trecho do caminho de $y$ até $u$ custa pelo menos 0. Mas então $u$ não tinha o menor rótulo em $D$, uma contradição.
+\end{proof}
+A hipótese sobre os pesos é essencial. Com as arestas $x\to y$ (1), $x\to z$ (2) e $z\to y$ ($-2$), o algoritmo fixa $L(y)=1$, mas o caminho $x,z,y$ custa 0. Para pesos negativos sem ciclos negativos, existem outros algoritmos, como o de Bellman-Ford, em $O(nm)$; para todos os pares, o Floyd-Warshall.
+
+\section{Implementações e complexidade}
+\begin{center}\small
+\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{5.2cm}>{\raggedright\arraybackslash}p{3.6cm}X@{}}
+\toprule
+Estrutura $D$ & Custo & Quando usar\\
+\midrule
+Vetor $L$ com varredura (matriz de adjacência) & $O(n^2)$ & grafo \textbf{denso}, com $m=\Theta(n^2)$\\
+Heap binário de mínimo com a posição de cada vértice & $O((n+m)\log n)$ & grafo esparso\\
+Heap de Fibonacci & $O(m+n\log n)$ & teórico: redução de chave em $O(1)$\am\\
+\bottomrule
+\end{tabularx}
+\end{center}
+Os custos vêm de $n$ inserções, $n$ remoções do mínimo e até $m$ reduções de prioridade (Capítulos~\ref{cap:heap} e~\ref{cap:heapav}). No heap binário, ``reposicionar'' é uma operação \emph{subir}, e exige um vetor $pos[w]$ com a posição de cada vértice no heap.
+
+\begin{cuidado}[Armadilhas do algoritmo de Dijkstra]
+\begin{itemize}
+  \item Usar o algoritmo com uma aresta negativa: o rótulo de um vértice já fixado pode estar errado.
+  \item Esquecer o vetor de posições no heap binário: sem ele, encontrar o vértice a reposicionar custaria $O(n)$.
+  \item Confundir com a árvore geradora mínima: a árvore de caminhos mínimos minimiza a distância de cada vértice à raiz; a AGM (Capítulo~\ref{cap:agm}) minimiza a \emph{soma} dos pesos da árvore. Em geral, são árvores diferentes.
+  \item Num grafo não direcionado, cada aresta deve ser considerada nos dois sentidos.
+\end{itemize}
+\end{cuidado}
+
+\begin{chave}
+Fila de prioridades na chave $L$; remove-se o menor $L$ ainda não fixado; relaxa-se $L(w):=\min\{L(w),L(v)+W(v,w)\}$. Exige pesos não negativos. Custos: $O(n^2)$ com vetor, $O((n+m)\log n)$ com heap binário, $O(m+n\log n)$ com heap de Fibonacci. Os ponteiros $pai$ formam a árvore de caminhos mínimos. Com todos os pesos iguais a 1, é a busca em largura.
+\end{chave}
+
+% ----------------------------------------------------------------
+\section{Exercícios}
+\excurso
+\begin{exercicio}{dj-bfs}[Slides]
+Mostre que o algoritmo de Dijkstra se comporta como uma busca em largura se todos os pesos são iguais a 1: a árvore de caminhos mínimos é uma árvore de largura e cada $L(w)$ é a distância em arestas.
+\end{exercicio}
+\begin{exercicio}{dj-nd}[Slides]
+Como encontrar caminhos mínimos de uma raiz a todos os vértices num grafo \emph{não direcionado} com pesos positivos?
+\end{exercicio}
+\begin{exercicio}{dj-slide}[Slides]
+Execute o algoritmo de Dijkstra a partir de $a$ no digrafo da §\ref{sec:fwmatriz}, mostrando os rótulos $L$ e os pais a cada vértice removido.
+\end{exercicio}
+
+\excompl
+\begin{exercicio}{dj-sim}[Complementar]
+Execute o algoritmo de Dijkstra a partir de $s$ no digrafo com as arestas $s\to t$ (10), $s\to y$ (5), $t\to x$ (1), $t\to y$ (2), $x\to z$ (4), $y\to t$ (3), $y\to x$ (9), $y\to z$ (2), $z\to s$ (7) e $z\to x$ (6). Dê a ordem de remoção, as distâncias e a árvore de caminhos mínimos.
+\end{exercicio}
+\begin{exercicio}{dj-neg}[Complementar]
+Dê um digrafo com três vértices e uma aresta negativa, sem ciclo negativo, em que o algoritmo de Dijkstra erra. Somar uma constante a todos os pesos, para torná-los positivos, resolve? Por quê?
+\end{exercicio}
+\begin{exercicio}{dj-conf}[Complementar]
+Cada aresta $uv$ de uma rede funciona com probabilidade $p(u,v)\in(0,1]$, independentemente das outras. Como encontrar o caminho \emph{mais confiável} (de maior probabilidade de funcionar) de $s$ a $t$ com o algoritmo de Dijkstra?
+\end{exercicio}
+\begin{exercicio}{dj-fontes}[Complementar]
+Há várias fontes $s_1,\dots,s_k$ (por exemplo, quartéis de bombeiros). Como calcular, para cada vértice, a distância até a fonte mais próxima com uma única execução do algoritmo de Dijkstra?
+\end{exercicio}
+\begin{exercicio}{dj-escolha}[Complementar]
+Para um grafo com $n=10^5$ vértices e $m=3\cdot10^5$ arestas, e para outro com $n=10^4$ e $m=5\cdot10^7$, qual implementação do algoritmo de Dijkstra você usaria, vetor ou heap binário? Estime o número de operações.
+\end{exercicio}
+\begin{exercicio}{dj-und}[Complementar]
+Execute o algoritmo de Dijkstra a partir do vértice 1 no grafo não direcionado com as arestas $12$ (7), $13$ (9), $16$ (14), $23$ (10), $24$ (15), $34$ (11), $36$ (2), $45$ (6) e $56$ (9). Dê a ordem de remoção, as distâncias e os pais.
+\end{exercicio}
+\begin{exercicio}{dj-zero}[Complementar]
+O algoritmo de Dijkstra continua correto se algumas arestas têm peso zero? Justifique com a prova de correção.
+\end{exercicio}
+\begin{exercicio}{dj-alvo}[Complementar]
+Se só interessa a distância de $s$ a um único vértice $t$, em que momento o algoritmo pode parar? Por que isso está correto?
+\end{exercicio}
+\begin{exercicio}{dj-vert}[Complementar]
+Cada \emph{vértice} $v$ tem um custo $c(v)\ge0$ de passagem, além dos pesos das arestas. Como transformar o problema para aplicar o algoritmo de Dijkstra?
+\end{exercicio}
+\begin{exercicio}{dj-k}[Complementar]
+Queremos o caminho mínimo de $s$ a $t$ que usa no máximo $k$ arestas. Por que o algoritmo de Dijkstra não resolve isso diretamente? Mostre como resolver com um grafo de estados $(v,j)$, em que $j$ é o número de arestas usadas.
+\end{exercicio}
+\begin{exercicio}{dj-gargalo}[Complementar]
+A capacidade de um caminho é a menor capacidade das suas arestas. Adapte o algoritmo de Dijkstra para encontrar, a partir de $s$, o caminho de maior capacidade até cada vértice.
+\end{exercicio}
+\begin{exercicio}{dj-conta}[Complementar]
+Com pesos positivos, adapte o algoritmo de Dijkstra para contar quantos caminhos mínimos distintos existem de $s$ até cada vértice.
+\end{exercicio}
+\begin{exercicio}{dj-dag}[Complementar]
+Num digrafo \emph{acíclico} com pesos quaisquer, inclusive negativos, mostre como calcular os caminhos mínimos a partir de $s$ em $O(n+m)$, sem fila de prioridades.
+\end{exercicio}
+\begin{exercicio}{dj-longo}[Complementar]
+Por que não basta trocar ``menor'' por ``maior'' no algoritmo de Dijkstra para encontrar caminhos simples \emph{mais longos}?
+\end{exercicio}
+\begin{exercicio}{dj-dial}[Complementar \estrela]
+Se os pesos são inteiros entre 0 e $C$, mostre como implementar o algoritmo de Dijkstra em $O(m+nC)$, usando um vetor de baldes indexado pelo valor do rótulo.
+\end{exercicio}
+\begin{exercicio}{dj-inv}[Complementar]
+Prove que, durante toda a execução, $L(v)\ge\operatorname{dist}(s,v)$ para todo vértice $v$, e que $L(v)$ nunca aumenta.
+\end{exercicio}
+\begin{exercicio}{dj-fib}[Complementar]
+Quantas operações de cada tipo (inserção, remoção do mínimo, redução de chave) o algoritmo de Dijkstra faz no pior caso? Use isso para justificar o custo $O(m+n\log n)$ com heap de Fibonacci.
+\end{exercicio}

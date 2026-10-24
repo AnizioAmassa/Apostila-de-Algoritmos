@@ -1,0 +1,248 @@
+% ================================================================
+\chapter{Divisão e conquista}\label{cap:dc}\label{sec:dc}
+% ================================================================
+\begin{objetivos}
+\begin{itemize}
+  \item O paradigma de divisão e conquista e um roteiro para projetar e analisar algoritmos com ele.
+  \item A contagem de inversões e o subvetor contíguo de soma máxima.
+  \item A multiplicação de matrizes de Strassen.
+  \item Outros exemplos clássicos: busca binária, exponenciação rápida, máximo e mínimo e elemento majoritário.
+\end{itemize}
+\end{objetivos}
+
+O mergesort, o quicksort e a seleção pela mediana das medianas já usaram a mesma ideia: quebrar o problema em pedaços menores do mesmo tipo, resolvê-los recursivamente e combinar as respostas. Este capítulo trata essa ideia como um método de projeto, com um roteiro para escrever o pseudocódigo e analisar a recorrência, e a aplica a vários problemas.
+
+\section{O paradigma}
+Um algoritmo de \textbf{divisão e conquista} tem três passos: (1) \emph{divisão}: quebrar o problema $\Pi$ em subproblemas menores \textbf{do mesmo tipo}, $\Pi_1,\dots,\Pi_k$; (2) \emph{conquista}: resolvê-los recursivamente, resolvendo diretamente os casos pequenos; (3) \emph{combinação}: juntar as soluções dos subproblemas, por um procedimento relativamente simples, numa solução de $\Pi$. Busca-se um \textbf{bom balanceamento}, com partes de tamanhos parecidos, que leva a poucas camadas de recursão. A técnica funciona bem quando os subproblemas são \textbf{disjuntos}; quando eles se repetem muito, a técnica adequada é a programação dinâmica do Capítulo~\ref{cap:pd}.
+
+\begin{roteiro}[Como escrever um algoritmo de divisão e conquista]
+\begin{enumerate}
+  \item \textbf{Assinatura}: uma função \textsc{Resolve}$(V,ini,fim)$ que trabalha num intervalo do vetor, para não copiar vetores. Diga o que a função \textbf{devolve}; às vezes é mais de um valor, como a soma \emph{e} os índices, ou a contagem \emph{e} o vetor ordenado.
+  \item \textbf{Caso base}: $ini=fim$ (ou $n$ menor que uma constante), com resposta direta.
+  \item \textbf{Divisão}: $meio:=\floor{(ini+fim)/2}$.
+  \item \textbf{Conquista}: duas chamadas recursivas, sobre $[ini,meio]$ e $[meio+1,fim]$.
+  \item \textbf{Combinação}: trata o que ``atravessa'' o meio; é a parte criativa e costuma custar $O(n)$.
+  \item \textbf{Complexidade}: escreva a recorrência e resolva-a (§\ref{sec:recorrencias}); por exemplo, $2T(n/2)+\Theta(n)=\Theta(n\log n)$.
+  \item \textbf{Correção}, em uma frase: toda solução está inteira à esquerda, inteira à direita ou cruza o meio, e cada caso é tratado.
+\end{enumerate}
+\end{roteiro}
+
+% ------------------------------------------------------------------
+\section{Contagem de inversões}
+Dada uma sequência $a_1,\dots,a_n$, um par $i<j$ é uma \textbf{inversão} se $a_i>a_j$. O número de inversões mede quão distante uma ordem está da ordem crescente, e serve como medida de semelhança entre dois rankings: se uma pessoa ordena $n$ itens como $1,\dots,n$ e outra pessoa os ordena de outra forma, as inversões da segunda ordem contam os pares em que as duas discordam. A força bruta testa todos os pares, em $\Theta(n^2)$.
+
+\textbf{Divisão e conquista.} Divida a sequência em metades $A$ e $B$; conte recursivamente as inversões dentro de cada uma; e \textbf{combine} contando os pares $(a,b)$ com $a\in A$, $b\in B$ e $a>b$. Esse último passo é fácil se $A$ e $B$ estiverem \emph{ordenadas}: durante a intercalação, ao comparar $a_i$ com $b_j$, se $a_i\le b_j$, então $a_i$ não forma inversão com nenhum elemento restante de $B$; se $a_i>b_j$, então $b_j$ forma inversão com \textbf{todos os elementos restantes de $A$}. Por isso a função também devolve o vetor ordenado: ela é um mergesort ``instrumentado''.
+\begin{pseudo}{Contagem de inversões}
+\begin{algorithmic}
+\Function{CalculaInversões}{$V,ini,fim$} \Comment{conta e deixa $V[ini..fim]$ ordenado}
+  \If{$ini=fim$} \State \Return $0$ \EndIf
+  \State $meio:=\floor{(ini+fim)/2}$
+  \State $a:=$ \Call{CalculaInversões}{$V,ini,meio$}
+  \State $b:=$ \Call{CalculaInversões}{$V,meio+1,fim$}
+  \State $c:=$ \Call{IntercalaContando}{$V,ini,meio,fim$}
+  \State \Return $a+b+c$
+\EndFunction
+\Function{IntercalaContando}{$V,ini,meio,fim$}
+  \State $i:=ini$;\ $j:=meio+1$;\ $k:=1$;\ $cont:=0$
+  \While{$i\le meio$ \textbf{e} $j\le fim$}
+    \If{$V[i]\le V[j]$} \State $W[k]:=V[i]$;\ $i:=i+1$
+    \Else
+      \State $W[k]:=V[j]$;\ $j:=j+1$
+      \State $cont:=cont+(meio-i+1)$ \Comment{$V[j]$ é menor que todos os restantes da esquerda}
+    \EndIf
+    \State $k:=k+1$
+  \EndWhile
+  \State copie os restantes de $V[i..meio]$ e de $V[j..fim]$ para $W$;\ copie $W$ para $V[ini..fim]$
+  \State \Return $cont$
+\EndFunction
+\end{algorithmic}
+\end{pseudo}
+O custo é $T(n)=2T(n/2)+\Theta(n)=\Theta(n\log n)$. Dois detalhes importam: o teste é ``$\le$'', porque elementos iguais não formam inversão, e soma-se $meio-i+1$, a quantidade de elementos que restam em $A$, e não 1. Por exemplo, a sequência $1,5,4,8,10,2,6,9,12,11,3,7$ tem \textbf{22} inversões.
+
+% ------------------------------------------------------------------
+\section{Subvetor contíguo de soma máxima}
+Dado um vetor $A[1..n]$ de inteiros, que podem ser negativos, queremos $i\le j$ que maximizem $A[i]+\dots+A[j]$, isto é, o subvetor contíguo \textbf{não vazio} de maior soma. Pense, por exemplo, nos resultados diários de uma empresa, positivos ou negativos, e na busca do período de dias consecutivos de maior resultado acumulado.
+
+\textbf{Ideia.} O melhor subvetor de $A[ini..fim]$ está (i) inteiro na metade esquerda, (ii) inteiro na direita, ou (iii) \textbf{cruza o meio}, sendo da forma $A[i..meio]\cup A[meio+1..j]$. O caso (iii) se resolve em tempo linear: é o melhor sufixo da esquerda que termina em $meio$ somado ao melhor prefixo da direita que começa em $meio+1$.
+\begin{pseudo}{Subvetor de soma máxima por divisão e conquista (devolve soma, início e fim)}
+\begin{algorithmic}
+\Function{MaxSub}{$A,ini,fim$}
+  \If{$ini=fim$} \State \Return $(A[ini],\,ini,\,ini)$ \Comment{não vazio: um elemento}
+  \EndIf
+  \State $meio:=\floor{(ini+fim)/2}$
+  \State $(s_E,i_E,j_E):=$ \Call{MaxSub}{$A,ini,meio$}
+  \State $(s_D,i_D,j_D):=$ \Call{MaxSub}{$A,meio+1,fim$}
+  \State $(s_C,i_C,j_C):=$ \Call{MaxCruzado}{$A,ini,meio,fim$}
+  \State \Return a tripla de maior soma entre $(s_E,i_E,j_E)$, $(s_D,i_D,j_D)$ e $(s_C,i_C,j_C)$
+\EndFunction
+\Function{MaxCruzado}{$A,ini,meio,fim$}
+  \State $soma:=0$;\ $melhorE:=-\infty$
+  \For{$i:=meio$ \textbf{decrescendo até} $ini$}
+    \State $soma:=soma+A[i]$
+    \If{$soma>melhorE$} \State $melhorE:=soma$;\ $iMax:=i$ \EndIf
+  \EndFor
+  \State $soma:=0$;\ $melhorD:=-\infty$
+  \For{$j:=meio+1$ \textbf{até} $fim$}
+    \State $soma:=soma+A[j]$
+    \If{$soma>melhorD$} \State $melhorD:=soma$;\ $jMax:=j$ \EndIf
+  \EndFor
+  \State \Return $(melhorE+melhorD,\ iMax,\ jMax)$
+\EndFunction
+\end{algorithmic}
+\end{pseudo}
+\begin{itemize}
+  \item \textbf{Complexidade}: $T(n)=2T(n/2)+\Theta(n)=\Theta(n\log n)$.
+  \item \textbf{Todos os elementos negativos}: o algoritmo funciona, porque o caso base devolve um elemento e o subvetor cruzado usa pelo menos $A[meio]$ e $A[meio+1]$; o máximo das três opções acaba sendo o maior elemento. Por exemplo, $[-8,-3,-6,-2,-5,-4]$ dá $-2$.
+  \item Em $[-2,1,-3,4,-1,2,1,-5,4]$, a resposta é a soma $6$, com o subvetor $[4,-1,2,1]$, das posições 4 a 7 (com índices a partir de 1).
+  \item Existem soluções lineares: a programação dinâmica de Kadane (Capítulo~\ref{cap:pd}) e uma divisão e conquista em que cada metade devolve quatro valores (Exercício~\ref{ex:dc-linear}).
+\end{itemize}
+
+% ------------------------------------------------------------------
+\section{Multiplicação de matrizes: o algoritmo de Strassen}
+Multiplicando matrizes $n\times n$ por blocos de tamanho $n/2$, o produto ingênuo faz 8 multiplicações de blocos, e $T(n)=8T(n/2)+\Theta(n^2)=\Theta(n^3)$, sem ganho sobre o método escolar. Strassen mostrou como fazer apenas \textbf{7} multiplicações de blocos, à custa de mais somas e subtrações: $T(n)=7T(n/2)+\Theta(n^2)=\Theta(n^{\log_27})\approx\Theta(n^{2{,}807})$, pelo caso 1 do Teorema Mestre, pois $n^2=O(n^{\log_27-\varepsilon})$.
+\begin{pseudo}{Strassen$(A,B,n)$, com $n$ potência de 2 e soma e subtração de matrizes dadas}
+\begin{algorithmic}
+\Function{Strassen}{$A,B,n$}
+  \If{$n=1$} \State \Return $[\,A[1,1]\cdot B[1,1]\,]$ \EndIf
+  \State particione $A=\begin{bmatrix}A_{11}&A_{12}\\A_{21}&A_{22}\end{bmatrix}$ e $B=\begin{bmatrix}B_{11}&B_{12}\\B_{21}&B_{22}\end{bmatrix}$ em blocos $\frac n2\times\frac n2$
+  \State $M_1:=$ \Call{Strassen}{$A_{11}+A_{22},\ B_{11}+B_{22},\ n/2$}
+  \State $M_2:=$ \Call{Strassen}{$A_{21}+A_{22},\ B_{11},\ n/2$}
+  \State $M_3:=$ \Call{Strassen}{$A_{11},\ B_{12}-B_{22},\ n/2$}
+  \State $M_4:=$ \Call{Strassen}{$A_{22},\ B_{21}-B_{11},\ n/2$}
+  \State $M_5:=$ \Call{Strassen}{$A_{11}+A_{12},\ B_{22},\ n/2$}
+  \State $M_6:=$ \Call{Strassen}{$A_{21}-A_{11},\ B_{11}+B_{12},\ n/2$}
+  \State $M_7:=$ \Call{Strassen}{$A_{12}-A_{22},\ B_{21}+B_{22},\ n/2$}
+  \State $C_{11}:=M_1+M_4-M_5+M_7$;\quad $C_{12}:=M_3+M_5$
+  \State $C_{21}:=M_2+M_4$;\quad $C_{22}:=M_1-M_2+M_3+M_6$
+  \State \Return $\begin{bmatrix}C_{11}&C_{12}\\C_{21}&C_{22}\end{bmatrix}$
+\EndFunction
+\end{algorithmic}
+\end{pseudo}
+Cada chamada faz 18 somas ou subtrações de matrizes $\frac n2\times\frac n2$, de custo $\Theta(n^2)$. Na prática, usa-se o método clássico abaixo de um certo tamanho, pois as constantes de Strassen são maiores e o algoritmo é numericamente menos estável.
+
+% ------------------------------------------------------------------
+\section{Outros exemplos clássicos}
+\begin{pseudo}{Busca binária, potência rápida e máximo e mínimo simultâneos}
+\begin{algorithmic}
+\Function{BuscaBin}{$V,ini,fim,x$} \Comment{$V$ ordenado; $T(n)=T(n/2)+O(1)=O(\log n)$}
+  \If{$ini>fim$} \State \Return $-1$ \EndIf
+  \State $meio:=\floor{(ini+fim)/2}$
+  \If{$V[meio]=x$} \State \Return $meio$
+  \ElsIf{$x<V[meio]$} \State \Return \Call{BuscaBin}{$V,ini,meio-1,x$}
+  \Else \State \Return \Call{BuscaBin}{$V,meio+1,fim,x$}
+  \EndIf
+\EndFunction
+\Function{Pot}{$a,n$} \Comment{$a^n$ com $O(\log n)$ multiplicações}
+  \If{$n=0$} \State \Return $1$ \EndIf
+  \State $t:=$ \Call{Pot}{$a,\floor{n/2}$}
+  \If{$n$ par} \State \Return $t\cdot t$ \Else \State \Return $t\cdot t\cdot a$ \EndIf
+\EndFunction
+\Function{MaxMin}{$V,ini,fim$} \Comment{cerca de $3n/2$ comparações, contra $2n-2$ do método ingênuo}
+  \If{$ini=fim$} \State \Return $(V[ini],V[ini])$ \EndIf
+  \If{$fim=ini+1$} \State \Return $(\max,\min)$ de $V[ini]$ e $V[fim]$, com 1 comparação \EndIf
+  \State $meio:=\floor{(ini+fim)/2}$
+  \State $(M_1,m_1):=$ \Call{MaxMin}{$V,ini,meio$};\ $(M_2,m_2):=$ \Call{MaxMin}{$V,meio+1,fim$}
+  \State \Return $(\max\{M_1,M_2\},\ \min\{m_1,m_2\})$
+\EndFunction
+\end{algorithmic}
+\end{pseudo}
+
+\begin{pseudo}{Elemento majoritário (aparece mais de $n/2$ vezes): $T(n)=2T(n/2)+\Theta(n)=\Theta(n\log n)$}
+\begin{algorithmic}
+\Function{Maj}{$V,ini,fim$} \Comment{devolve o majoritário de $V[ini..fim]$ ou \textsc{nenhum}}
+  \If{$ini=fim$} \State \Return $V[ini]$ \EndIf
+  \State $meio:=\floor{(ini+fim)/2}$
+  \State $a:=$ \Call{Maj}{$V,ini,meio$};\ $b:=$ \Call{Maj}{$V,meio+1,fim$}
+  \For{$c\in\{a,b\}$, $c\ne$ \textsc{nenhum}}
+    \If{$c$ ocorre mais de $(fim-ini+1)/2$ vezes em $V[ini..fim]$} \State \Return $c$ \EndIf \Comment{contagem em $O(n)$}
+  \EndFor
+  \State \Return \textsc{nenhum}
+\EndFunction
+\end{algorithmic}
+\end{pseudo}
+A correção do último algoritmo vem de uma observação simples: se $x$ é majoritário no vetor todo, ele é majoritário em pelo menos uma das metades, pois do contrário apareceria no máximo $n/2$ vezes.
+
+\paragraph{Mais ideias.} O algoritmo de \emph{Karatsuba} multiplica inteiros de $n$ dígitos com 3 produtos de inteiros de $n/2$ dígitos, em $\Theta(n^{\log_23})\approx\Theta(n^{1{,}585})$. O \emph{par de pontos mais próximos} no plano se resolve em $\Theta(n\log n)$, dividindo os pontos pela mediana das abscissas e combinando com uma varredura da faixa central, em que cada ponto precisa ser comparado com no máximo 7 vizinhos. O \emph{pico de um vetor unimodal} e a \emph{raiz de uma função monótona} se encontram por busca binária, em $O(\log n)$; e o número de ocorrências de $x$ num vetor ordenado sai de duas buscas binárias.
+
+\begin{cuidado}[Erros frequentes em pseudocódigo de divisão e conquista]
+\begin{itemize}
+  \item Esquecer o caso base, ou escrevê-lo errado (por exemplo, permitir subvetor vazio quando o problema pede um não vazio).
+  \item Dividir em $[ini,meio-1]$ e $[meio,fim]$ com $meio=\floor{(ini+fim)/2}$: com dois elementos, a recursão não termina. Use $[ini,meio]$ e $[meio+1,fim]$.
+  \item Fazer uma combinação que olha um só elemento de cada lado; o subvetor cruzado precisa do \emph{melhor sufixo} e do \emph{melhor prefixo}.
+  \item Não devolver a informação extra necessária, como os índices no subvetor máximo ou o vetor ordenado na contagem de inversões.
+  \item Não analisar a complexidade.
+\end{itemize}
+\end{cuidado}
+
+\begin{chave}
+Divisão e conquista $=$ dividir ao meio, conquistar com duas chamadas e combinar o que cruza o meio. $2T(n/2)+\Theta(n)=\Theta(n\log n)$; $T(n/2)+O(1)=\Theta(\log n)$; $7T(n/2)+\Theta(n^2)=\Theta(n^{2{,}807})$; $T(n/5)+T(3n/4)+\Theta(n)=\Theta(n)$.
+\end{chave}
+
+% ----------------------------------------------------------------
+\section{Exercícios}
+\excurso
+\begin{exercicio}{dc-t1}[Avaliação]
+Dado um vetor de inteiros, determine por divisão e conquista a maior soma de um subvetor contíguo \textbf{não vazio} e o subvetor responsável, com suas posições inicial e final. Determine a complexidade. Exemplos: $[-2,1,-3,4,-1,2,1,-5,4]$ (soma 6, subvetor $[4,-1,2,1]$) e $[-8,-3,-6,-2,-5,-4]$ (soma $-2$). Compare sua solução com a da §\ref{sec:dc}.
+\end{exercicio}
+\begin{exercicio}{dc-t2}[Avaliação]
+Escreva um algoritmo recursivo que multiplica duas matrizes $n\times n$, com $n$ potência de 2, pela estratégia de Strassen, com as sete multiplicações $M_1,\dots,M_7$, supondo dados procedimentos de soma e subtração de matrizes.
+\end{exercicio}
+\begin{exercicio}{dc-balanc}[Slides]
+Prove: um algoritmo de divisão e conquista $c$-balanceado ($c>1$; cada uma das $k$ partes tem tamanho no máximo $n/c$, e os tamanhos diferem por uma constante), que gasta tempo linear para dividir e combinar, roda em $O(n\log n)$.
+\end{exercicio}
+\begin{exercicio}{dc-inv}[Slides]
+Escreva o pseudocódigo completo do algoritmo de contagem de inversões por divisão e conquista.
+\end{exercicio}
+
+\excompl
+\begin{exercicio}{dc-contar}[Complementar]
+Conte as inversões de (a) $2,4,1,3,5$; (b) $5,4,3,2,1$; (c) $3,1,4,1,5,9,2,6$ (pares iguais não são inversão). Qual o máximo possível para $n$ elementos?
+\end{exercicio}
+\begin{exercicio}{dc-pico}[Complementar]
+Um vetor $V[1..n]$ é \emph{unimodal}: estritamente crescente até uma posição $p$ e estritamente decrescente depois dela. Encontre $p$ em $O(\log n)$.
+\end{exercicio}
+\begin{exercicio}{dc-ocorr}[Complementar]
+Conte quantas vezes $x$ aparece num vetor ordenado em $O(\log n)$.
+\end{exercicio}
+\begin{exercicio}{dc-kara}[Complementar]
+Multiplique dois inteiros de $n$ dígitos com três produtos de inteiros de $n/2$ dígitos (Karatsuba): escreva $x=x_1B^{n/2}+x_0$ e $y=y_1B^{n/2}+y_0$ e use $(x_1+x_0)(y_1+y_0)$. Qual a recorrência e a sua solução?
+\end{exercicio}
+\begin{exercicio}{dc-maxmin}[Complementar]
+Mostre que o \textsc{MaxMin} faz $\frac{3n}2-2$ comparações quando $n$ é potência de 2.
+\end{exercicio}
+\begin{exercicio}{dc-maj}[Complementar \estrela]
+Dê um algoritmo $O(n)$, com memória $O(1)$, para encontrar o elemento majoritário, se existir.
+\end{exercicio}
+\begin{exercicio}{dc-bbin}[Complementar]
+Escreva a busca binária de forma iterativa e prove que ela faz no máximo $\floor{\log_2n}+1$ comparações com elementos do vetor.
+\end{exercicio}
+\begin{exercicio}{dc-pot}[Complementar]
+Mostre que \textsc{Pot}$(a,n)$ faz no máximo $2\floor{\log_2n}+2$ multiplicações. Quantas faz para $n=13$?
+\end{exercicio}
+\begin{exercicio}{dc-linear}[Complementar]
+Mostre como resolver o subvetor de soma máxima por divisão e conquista em $O(n)$, fazendo cada chamada devolver quatro valores: a soma total do intervalo, o melhor prefixo, o melhor sufixo e o melhor subvetor.
+\end{exercicio}
+\begin{exercicio}{dc-blocos}[Complementar]
+Escreva a multiplicação de matrizes por blocos com 8 multiplicações recursivas e mostre que ela custa $\Theta(n^3)$. Quantas somas de blocos ela faz por chamada?
+\end{exercicio}
+\begin{exercicio}{dc-faltante}[Complementar]
+Um vetor ordenado contém os inteiros de 1 a $n+1$, exceto um. Encontre o que falta em $O(\log n)$.
+\end{exercicio}
+\begin{exercicio}{dc-fixo}[Complementar]
+Dado um vetor ordenado $A[1..n]$ de inteiros \emph{distintos}, decida em $O(\log n)$ se existe $i$ com $A[i]=i$.
+\end{exercicio}
+\begin{exercicio}{dc-uns}[Complementar]
+Um vetor ordenado contém apenas zeros seguidos de uns. Conte os uns em $O(\log n)$. E se o tamanho do vetor for desconhecido (pode-se consultar qualquer posição, e posições além do fim devolvem um valor especial)?
+\end{exercicio}
+\begin{exercicio}{dc-signif}[Complementar \estrela]
+Um par $i<j$ é uma \emph{inversão significativa} se $a_i>2a_j$. Conte as inversões significativas em $O(n\log n)$.
+\end{exercicio}
+\begin{exercicio}{dc-par}[Complementar \estrela]
+Descreva o algoritmo de divisão e conquista para o par de pontos mais próximos no plano e justifique por que cada ponto da faixa central precisa ser comparado com um número constante de vizinhos.
+\end{exercicio}
+\begin{exercicio}{dc-skyline}[Complementar \estrela]
+Prédios retangulares são dados por triplas $(e_i,d_i,h_i)$: o prédio ocupa o intervalo $[e_i,d_i]$ e tem altura $h_i$. O \emph{contorno} (\emph{skyline}) é a curva formada pelo ponto mais alto em cada abscissa. Calcule o contorno de $n$ prédios em $O(n\log n)$.
+\end{exercicio}
+\begin{exercicio}{dc-recs}[Complementar]
+Escreva e resolva as recorrências da busca binária, da potência rápida, do \textsc{MaxMin} e do elemento majoritário por divisão e conquista.
+\end{exercicio}

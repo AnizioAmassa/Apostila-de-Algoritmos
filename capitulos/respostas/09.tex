@@ -1,0 +1,42 @@
+\respcap{cap:dc}
+\resp{dc-t1} Ver §\ref{sec:dc}: o melhor subvetor está inteiro na metade esquerda, inteiro na direita ou cruza o meio; o cruzado é o melhor sufixo que termina em $meio$ mais o melhor prefixo que começa em $meio+1$, ambos calculados em $O(n)$. $T(n)=2T(n/2)+\Theta(n)=\Theta(n\log n)$. O caso base com um elemento garante subvetor não vazio e resolve o caso em que todos os elementos são negativos.
+
+\resp{dc-t2} Ver §\ref{sec:dc}: particione $A$ e $B$ em blocos $\frac n2\times\frac n2$, calcule recursivamente $M_1,\dots,M_7$ e combine $C_{11}=M_1+M_4-M_5+M_7$, $C_{12}=M_3+M_5$, $C_{21}=M_2+M_4$ e $C_{22}=M_1-M_2+M_3+M_6$. $T(n)=7T(n/2)+\Theta(n^2)=\Theta(n^{\log_27})$.
+
+\resp{dc-balanc} Na árvore de recursão, os subproblemas de um mesmo nível são partes disjuntas da entrada, então a soma dos seus tamanhos é no máximo $n$, e o trabalho linear de dividir e combinar, somado no nível, é $O(n)$. Como o tamanho cai por um fator de pelo menos $c$ a cada nível, há no máximo $\log_cn+1$ níveis. O total é $O(n\log_cn)=O(n\log n)$. Para partes iguais, é a recorrência $T(n)=c\,T(n/c)+an$, resolvida pelo caso 2 do Teorema Mestre.
+
+\resp{dc-inv} Ver as funções \textsc{CalculaInversões} e \textsc{IntercalaContando} da §\ref{sec:dc}: um mergesort que, ao copiar um elemento da metade direita, soma $meio-i+1$, a quantidade de elementos que restam na esquerda, todos maiores que ele. $\Theta(n\log n)$.
+
+\resp{dc-contar} (a) 3: $(2,1)$, $(4,1)$ e $(4,3)$. (b) $10=\binom52$. (c) 8. O máximo é $\binom n2$, atingido pelo vetor decrescente.
+
+\resp{dc-pico} Compare $V[meio]$ com $V[meio+1]$: se $V[meio]<V[meio+1]$, o pico está em $[meio+1,fim]$; senão, está em $[ini,meio]$. $T(n)=T(n/2)+O(1)=O(\log n)$.
+
+\resp{dc-ocorr} Faça duas buscas binárias: uma pela primeira posição com $V[i]\ge x$ e outra pela primeira posição com $V[i]>x$; a resposta é a diferença entre elas. $O(\log n)$.
+
+\resp{dc-kara} $xy=x_1y_1B^n+\big((x_1+x_0)(y_1+y_0)-x_1y_1-x_0y_0\big)B^{n/2}+x_0y_0$: são três produtos de números com cerca de $n/2$ dígitos, mais somas e deslocamentos em $O(n)$. $T(n)=3T(n/2)+\Theta(n)=\Theta(n^{\log_23})\approx\Theta(n^{1{,}585})$, contra $\Theta(n^2)$ do método escolar.
+
+\resp{dc-maxmin} $T(2)=1$ e $T(n)=2T(n/2)+2$: uma comparação para o máximo e outra para o mínimo na combinação. Por indução, $T(n)=\frac{3n}2-2$, pois $2\big(\frac{3n}4-2\big)+2=\frac{3n}2-2$. Os valores são $1,4,10,22$ para $n=2,4,8,16$, contra $2n-2$ do método ingênuo.
+
+\resp{dc-maj} Algoritmo de votação de Boyer e Moore: mantenha um candidato e um contador. Para cada elemento, se o contador é 0, o elemento vira o candidato, com contador 1; senão, some 1 se ele é igual ao candidato e subtraia 1 se é diferente. Cada decremento ``cancela'' um par de elementos diferentes, e um elemento majoritário não pode ser totalmente cancelado; logo, se existir, ele é o candidato final. Uma segunda passada confere se o candidato aparece mais de $n/2$ vezes. Tempo $O(n)$ e memória $O(1)$.
+
+\resp{dc-bbin} \textbf{Enquanto} $ini\le fim$: $meio:=\floor{(ini+fim)/2}$; se $V[meio]=x$, devolva $meio$; se $x<V[meio]$, faça $fim:=meio-1$; senão, $ini:=meio+1$. Ao final, devolva $-1$. Cada iteração reduz o tamanho $s$ do intervalo para no máximo $\floor{s/2}$, então, partindo de $n$, após $t$ iterações sobram no máximo $\floor{n/2^t}$ elementos; o intervalo fica vazio após no máximo $\floor{\log_2n}+1$ iterações, cada uma com uma comparação (contando o teste de igualdade e o de ordem como uma comparação de três resultados).
+
+\resp{dc-pot} Cada nível da recursão faz uma ou duas multiplicações, e há $\floor{\log_2n}+1$ níveis com $n\ge1$; logo, no máximo $2\floor{\log_2n}+2$ multiplicações. Para $n=13=1101_2$: os níveis com $n=1$, $3$ e $13$ são ímpares (2 multiplicações cada, contando a do nível $n=1$, que multiplica $1\cdot1\cdot a$) e o nível com $n=6$ é par (1 multiplicação): 7 ao todo, ou 5 se não contarmos as duas multiplicações por 1 do nível $n=1$.
+
+\resp{dc-linear} Para cada intervalo, devolva $(tot,pref,suf,melhor)$. No caso base, com um elemento $a$, todos valem $a$. Na combinação de $E$ (esquerda) com $D$ (direita): $tot=tot_E+tot_D$; $pref=\max\{pref_E,\ tot_E+pref_D\}$; $suf=\max\{suf_D,\ tot_D+suf_E\}$; $melhor=\max\{melhor_E,\ melhor_D,\ suf_E+pref_D\}$. A combinação custa $O(1)$, e $T(n)=2T(n/2)+O(1)=\Theta(n)$.
+
+\resp{dc-blocos} $C_{11}=A_{11}B_{11}+A_{12}B_{21}$, $C_{12}=A_{11}B_{12}+A_{12}B_{22}$, $C_{21}=A_{21}B_{11}+A_{22}B_{21}$ e $C_{22}=A_{21}B_{12}+A_{22}B_{22}$: 8 produtos recursivos e 4 somas de blocos $\frac n2\times\frac n2$ por chamada. $T(n)=8T(n/2)+\Theta(n^2)=\Theta(n^{\log_28})=\Theta(n^3)$.
+
+\resp{dc-faltante} Antes do número que falta, $A[i]=i$; a partir dele, $A[i]=i+1$. Por busca binária, encontre a primeira posição $i$ com $A[i]\ne i$: o número que falta é $i$ (ou $n+1$, se não houver tal posição). $O(\log n)$.
+
+\resp{dc-fixo} Como os elementos são inteiros distintos e ordenados, $A[i+1]-(i+1)\ge A[i]-i$: a função $g(i)=A[i]-i$ é não decrescente. Faça uma busca binária por um zero de $g$: se $g(meio)<0$, procure à direita; se $g(meio)>0$, à esquerda. $O(\log n)$.
+
+\resp{dc-uns} Busca binária pela primeira posição com valor 1; o número de uns é $n$ menos essa posição mais 1. Se $n$ é desconhecido, consulte as posições $1,2,4,8,\dots$ até encontrar um 1 (ou o fim): isso delimita, em $O(\log n)$ consultas, um intervalo onde fazer a busca binária (busca exponencial).
+
+\resp{dc-signif} Como na contagem de inversões, recursione nas metades, que voltam ordenadas. Antes de intercalar, conte os pares cruzados com dois ponteiros: para cada $a_i$ da esquerda, em ordem crescente, avance um ponteiro $j$ na direita enquanto $a_i>2b_j$; o número de elementos da direita já ultrapassados é a contagem de $a_i$, e o ponteiro nunca volta, porque os $a_i$ crescem. Esse passo custa $O(n)$; depois intercale normalmente. Total $O(n\log n)$.
+
+\resp{dc-par} Ordene os pontos pela abscissa e divida-os pela mediana. Resolva cada lado, obtendo as distâncias mínimas $\delta_E$ e $\delta_D$, e seja $\delta=\min\{\delta_E,\delta_D\}$. Um par melhor teria de cruzar a reta divisória e ter os dois pontos na faixa de largura $2\delta$ em torno dela. Ordenando os pontos da faixa pela ordenada, cada ponto só precisa ser comparado com os 7 seguintes: num retângulo $\delta\times2\delta$ acima dele cabem no máximo 8 pontos com distâncias mútuas $\ge\delta$ dentro de cada lado. Mantendo as listas ordenadas por ordenada durante a recursão (como no mergesort), a combinação custa $O(n)$ e o total é $O(n\log n)$.
+
+\resp{dc-skyline} Represente um contorno como uma lista de pontos $(x,h)$ em que a altura muda. Divida os prédios em duas metades, calcule recursivamente os dois contornos e \emph{intercale-os} como no mergesort: percorra as duas listas em ordem de $x$, mantendo a altura atual de cada contorno, e em cada $x$ registre $\max\{h_1,h_2\}$ sempre que esse máximo mudar. A intercalação custa $O(n)$ e o total é $O(n\log n)$.
+
+\resp{dc-recs} Busca binária: $T(n)=T(n/2)+O(1)=\Theta(\log n)$. Potência: $T(n)=T(n/2)+O(1)=\Theta(\log n)$ multiplicações. \textsc{MaxMin}: $T(n)=2T(n/2)+2$, isto é, $\frac{3n}2-2$ comparações. Elemento majoritário: $T(n)=2T(n/2)+\Theta(n)=\Theta(n\log n)$, por causa das contagens na combinação.
