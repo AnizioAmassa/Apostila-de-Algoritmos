@@ -27,8 +27,8 @@ O counting sort ordena inteiros no intervalo $[0,k]$. Ele trabalha em três etap
 \begin{pseudo}{Counting-Sort$(A,n,k)$}
 \begin{algorithmic}
 \For{$i:=0$ \textbf{até} $k$} \State $C[i]:=0$ \EndFor
-\For{$j:=1$ \textbf{até} $n$} \State $C[A[j]]:=C[A[j]]+1$ \EndFor \Comment{$C[i]=\#\{j: A[j]=i\}$}
-\For{$i:=1$ \textbf{até} $k$} \State $C[i]:=C[i]+C[i-1]$ \EndFor \Comment{$C[i]=\#\{j: A[j]\le i\}$}
+\For{$j:=1$ \textbf{até} $n$} \Comment{ao fim, $C[i]=\#\{j: A[j]=i\}$} \State $C[A[j]]:=C[A[j]]+1$ \EndFor
+\For{$i:=1$ \textbf{até} $k$} \Comment{ao fim, $C[i]=\#\{j: A[j]\le i\}$} \State $C[i]:=C[i]+C[i-1]$ \EndFor
 \For{$j:=n$ \textbf{decrescendo até} $1$} \Comment{de trás para frente: estável}
   \State $B[C[A[j]]]:=A[j]$;\ $C[A[j]]:=C[A[j]]-1$
 \EndFor

@@ -39,7 +39,7 @@ Os números de Fibonacci são $F_0=0$, $F_1=1$ e $F_n=F_{n-1}+F_{n-2}$. A recurs
 Se o caminho mais curto de Belo Horizonte a Curitiba passa por São Paulo, então o seu trecho de Belo Horizonte a São Paulo é um caminho mais curto entre essas duas cidades. De fato, se houvesse um caminho mais curto de Belo Horizonte a São Paulo, poderíamos ``recortá-lo'' e ``colá-lo'' no lugar do trecho original, obtendo um caminho até Curitiba mais curto que o ótimo, uma contradição. É essa propriedade que permite escrever a distância até Curitiba em termos de distâncias até cidades intermediárias, e ela é a base do algoritmo de Floyd-Warshall (Capítulo~\ref{cap:fw}) e do de Dijkstra (Capítulo~\ref{cap:dijkstra}).
 \end{exemplo}
 
-\begin{pseudo}{Fibonacci: recursão ingênua $\Theta(\varphi^n)$; memorização $O(n)$; de baixo para cima, $O(n)$ com memória $O(1)$}
+\begin{pseudo}{Fibonacci: recursão $\Theta(\varphi^n)$; memorização $O(n)$; de baixo para cima, $O(n)$ e memória $O(1)$}
 \begin{algorithmic}
 \Function{FibMemo}{$n$} \Comment{$F[\,]$ começa preenchido com $-1$}
   \If{$F[n]=-1$}

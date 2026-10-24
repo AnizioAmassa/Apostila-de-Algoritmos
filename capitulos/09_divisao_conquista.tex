@@ -299,7 +299,7 @@ Nos três, a divisão produz subproblemas do mesmo tipo, mas a combinação é t
   \State $meio:=\floor{(ini+fim)/2}$
   \State $a:=$ \Call{Maj}{$V,ini,meio$};\ $b:=$ \Call{Maj}{$V,meio+1,fim$}
   \For{$c\in\{a,b\}$, $c\ne$ \textsc{nenhum}}
-    \If{$c$ ocorre mais de $(fim-ini+1)/2$ vezes em $V[ini..fim]$} \State \Return $c$ \EndIf \Comment{contagem em $O(n)$}
+    \If{$c$ ocorre mais de $(fim-ini+1)/2$ vezes em $V[ini..fim]$} \Comment{contagem em $O(n)$} \State \Return $c$ \EndIf
   \EndFor
   \State \Return \textsc{nenhum}
 \EndFunction

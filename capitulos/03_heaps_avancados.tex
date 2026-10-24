@@ -89,7 +89,7 @@ A operação central é a \textbf{fusão}, e as demais são escritas em termos d
 \EndProcedure
 \Procedure{Fusão}{$H',H''$}
   \State $H := H'\cup H''$ \Comment{intercala as listas de raízes por ordem crescente: $O(\log n)$}
-  \While{$H$ contém duas árvores $B,B'$ de mesma ordem} \Comment{a menor ordem repetida primeiro}
+  \While{$H$ contém duas árvores $B,B'$ de mesma ordem} \Comment{menor ordem primeiro}
     \If{$B.raiz.chave \ge B'.raiz.chave$} \State subordinar $B'$ a $B$
     \Else \State subordinar $B$ a $B'$
     \EndIf

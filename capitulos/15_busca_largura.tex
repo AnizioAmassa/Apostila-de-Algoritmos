@@ -29,7 +29,7 @@ A regra da busca em largura é ``\emph{esgotar o pai antes de processar os filho
       \For{\textbf{cada} $w\in N(v)$}
         \If{$L(w)=0$} \Comment{aresta-\textbf{pai}}
           \State $pai(w):=v$;\ $nivel(w):=nivel(v)+1$;\ $t:=t+1$;\ $L(w):=t$;\ insira $w$ no fim de $F$
-        \ElsIf{$nivel(w)=nivel(v)$ \textbf{e} $w\in F$} \Comment{$w\in F$: para não classificar duas vezes}
+        \ElsIf{$nivel(w)=nivel(v)$ \textbf{e} $w\in F$} \Comment{não classificar duas vezes}
           \State se $pai(w)=pai(v)$, $vw$ é uma aresta-\textbf{irmão}; senão, uma aresta-\textbf{primo}
         \ElsIf{$nivel(w)=nivel(v)+1$} \State $vw$ é uma aresta-\textbf{tio}
         \EndIf

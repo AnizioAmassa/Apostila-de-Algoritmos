@@ -126,7 +126,6 @@ Toda operação sobre um heap altera uma posição e depois restaura a proprieda
   \item se \emph{diminuiu}, pode ter ficado menor que um filho, e precisa \textbf{descer}.
 \end{itemize}
 
-\begin{minipage}[t]{0.46\linewidth}
 \begin{pseudo}{subir$(i)$ -- após \emph{aumentar} a prioridade de $i$}
 \begin{algorithmic}
 \Procedure{subir}{$i$}
@@ -140,8 +139,6 @@ Toda operação sobre um heap altera uma posição e depois restaura a proprieda
 \EndProcedure
 \end{algorithmic}
 \end{pseudo}
-\end{minipage}\hfill
-\begin{minipage}[t]{0.5\linewidth}
 \begin{pseudo}{descer$(i,n)$ -- após \emph{diminuir} a prioridade de $i$}
 \begin{algorithmic}
 \Procedure{descer}{$i,n$}
@@ -158,9 +155,6 @@ Toda operação sobre um heap altera uma posição e depois restaura a proprieda
 \EndProcedure
 \end{algorithmic}
 \end{pseudo}
-\end{minipage}
-
-\medskip
 Ambos percorrem um único caminho da árvore, logo custam $O(\log n)$. Um detalhe essencial do \emph{descer} é que ele troca o nó com o \textbf{maior} dos filhos: se trocasse com o menor, o maior filho ficaria abaixo de um valor menor que ele, e a propriedade continuaria violada.
 
 \begin{exemplo}[Por que trocar com o maior filho]
