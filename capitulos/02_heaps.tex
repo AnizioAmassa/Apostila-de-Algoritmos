@@ -12,7 +12,7 @@
 
 Muitas aplicações precisam, repetidamente, do elemento \emph{mais importante} de uma coleção que muda o tempo todo: o próximo processo a ser executado, o paciente mais grave de uma emergência, o próximo evento de uma simulação, o vértice mais próximo no algoritmo de Dijkstra. O tipo abstrato que atende a essas aplicações é a \textbf{lista de prioridades}, e sua implementação clássica é o \textbf{heap binário}: um vetor com uma ordem parcial que permite todas as operações em tempo logarítmico e a construção em tempo linear.
 
-\section{Listas de prioridades}
+\section{Listas de prioridades}\label{sec:listaprior}
 Uma lista de prioridades é uma tabela em que cada elemento tem uma \textbf{prioridade}, e que oferece as operações de
 \begin{itemize}
   \item \emph{seleção} do elemento de maior prioridade;
@@ -58,7 +58,7 @@ construção & $\Theta(n)$ & $\Theta(n\log n)$ & $O(n)$\\
 \end{center}
 Cada lista tem alguma operação de atualização que custa $\Omega(n)$. O heap abre mão de manter a ordem total e mantém só o necessário para que o máximo esteja sempre num lugar conhecido; com isso, todas as operações ficam logarítmicas.
 
-\section{Definição e representação}
+\section{Definição e representação}\label{sec:heapdef}
 \begin{intuicao}
 Pense num organograma em que cada chefe é mais importante que seus subordinados diretos. Quem está no topo é o mais importante de todos, mas nada se exige entre colegas do mesmo nível, nem entre pessoas de departamentos diferentes. Um heap é exatamente isso: uma hierarquia em que \emph{cada pai domina os seus filhos}, e nada mais.
 \end{intuicao}
@@ -115,11 +115,11 @@ Alguns fatos sobre os índices aparecem em todas as demonstrações deste capít
   \item neste capítulo, a altura de um nó é medida em níveis: \textbf{folhas têm altura 1}.
 \end{itemize}
 
-\begin{exemplo}[Fazendo contas com índices]
+\begin{exemplo}[Fazendo contas com índices]\label{ex:indices}
 Num heap com $n=10$ elementos: o pai do nó $7$ é $\floor{7/2}=3$; os filhos do nó $4$ são $8$ e $9$; o nó $5$ tem só o filho esquerdo $10$, pois $11>n$; as folhas são as posições $6,\dots,10$ (são $\ceil{10/2}=5$ folhas); o nó $9$ está no nível $\floor{\log_29}+1=4$, e a árvore tem $\floor{\log_210}+1=4$ níveis.
 \end{exemplo}
 
-\section{As operações subir e descer}
+\section{As operações subir e descer}\label{sec:subirdescer}
 Toda operação sobre um heap altera uma posição e depois restaura a propriedade de heap, que pode ter sido violada em apenas um ponto:
 \begin{itemize}
   \item se a prioridade de um nó \emph{aumentou}, ele pode ter ficado maior que o pai, e precisa \textbf{subir};
@@ -167,7 +167,7 @@ Ambos percorrem um único caminho da árvore, logo custam $O(\log n)$. Um detalh
 Suponha que a raiz de $[4,9,7]$ precise descer. Trocando com o maior filho, 9, obtemos $[9,4,7]$, um heap. Trocando com o menor, 7, obteríamos $[7,9,4]$, e agora o filho 9 é maior que o pai 7: a violação não foi corrigida, só mudou de lugar.
 \end{exemplo}
 
-\section{Inserção, remoção e alteração de prioridade}
+\section{Inserção, remoção e alteração de prioridade}\label{sec:heapops}
 Com \emph{subir} e \emph{descer}, as demais operações são imediatas:
 \begin{itemize}
   \item para \textbf{inserir}, o novo elemento ocupa a primeira posição livre do vetor, a $n+1$, e sobe;
@@ -232,7 +232,7 @@ Removemos o máximo de $H=[90,55,82,41,30,64,75,37]$. O último elemento, 37, va
 \end{figura}
 \end{exemplo}
 
-\begin{exemplo}[Alteração de prioridade]
+\begin{exemplo}[Alteração de prioridade]\label{ex:heapalt}
 No mesmo heap $H=[90,55,82,41,30,64,75,37]$:
 \begin{itemize}
   \item \textbf{aumentar} a prioridade do nó 6 de 64 para 95: ele sobe trocando com 82 (posição 3) e com 90 (posição 1), e o heap fica $[95,55,90,41,$\allowbreak$30,82,75,37]$;
@@ -244,7 +244,7 @@ No mesmo heap $H=[90,55,82,41,30,64,75,37]$:
 É comum inverter as duas operações ao alterar uma prioridade, escrevendo algo como ``\textbf{se} $H[i]>H[\floor{i/2}]$ \textbf{então} descer$(i)$ \textbf{senão} subir$(i)$''. O correto é o contrário: se o novo valor ficou maior que o pai, a violação é \emph{com o pai}, e o elemento precisa \textbf{subir}; se não ficou, a única violação possível é com os filhos, e ele precisa \textbf{descer}. Em pseudocódigo: \textbf{se} $i>1$ \textbf{e} $H[i]>H[\floor{i/2}]$ \textbf{então} subir$(i)$ \textbf{senão} descer$(i,n)$.
 \end{cuidado}
 
-\section{Construção em tempo linear}
+\section{Construção em tempo linear}\label{sec:arranjar}
 Para transformar um vetor arbitrário num heap, a primeira ideia é inseri-lo elemento a elemento: \textbf{para} $i:=2,\dots,n$ \textbf{faça} subir$(i)$. Isso custa $O(n\log n)$, e de fato $\Theta(n\log n)$ no pior caso, por exemplo quando a entrada é crescente e cada elemento sobe até a raiz.
 
 Uma ideia melhor é trabalhar de baixo para cima. As folhas, isto é, as posições $i>\floor{n/2}$, já são heaps de um único elemento. Percorrendo os demais nós do último para o primeiro, cada um encontra as duas subárvores dos filhos já organizadas como heaps, e basta fazê-lo descer.
@@ -320,14 +320,14 @@ pois $\sum_{j\ge1}\frac{j-1}{2^j}=\sum_{j\ge1}\frac{j}{2^j}-\sum_{j\ge1}\frac1{2
 \end{proof}
 A intuição é a da Figura~\ref{fig:alturas}: metade dos nós (as folhas) não custa nada, um quarto custa no máximo uma troca, um oitavo no máximo duas, e assim por diante; só a raiz pode descer $\log n$ níveis. Na construção por inserções sucessivas acontece o contrário: os muitos nós de baixo são justamente os que podem subir mais.
 
-\begin{exemplo}[Mais duas construções]\leavevmode
+\begin{exemplo}[Mais duas construções]\label{ex:construcoes}\leavevmode
 \begin{itemize}
   \item $[12,30,21,8,$\allowbreak$27,40,16,35,19]$, com $n=9$, processa $i=4,3,2,1$. Em $i=4$, troca $8\leftrightarrow35$; em $i=3$, $21\leftrightarrow40$; em $i=2$, $30\leftrightarrow35$, e o 30 para na posição 4, pois os seus novos filhos, 8 e 19, são menores; em $i=1$, $12\leftrightarrow40$ e depois $12\leftrightarrow21$. Resultado: $[40,35,21,30,$\allowbreak$27,12,16,8,19]$.
   \item $[6,9,14,3,12,10,2]$ processa $i=3,2,1$: nada muda em $i=3$, pois 14 já é maior que 10 e 2; em $i=2$, $9\leftrightarrow12$; em $i=1$, $6\leftrightarrow14$ e depois $6\leftrightarrow10$. Resultado: $[14,12,10,3,9,6,2]$.
 \end{itemize}
 \end{exemplo}
 
-\section{Heapsort}
+\section{Heapsort}\label{sec:heapsort}
 O heap leva a um algoritmo de ordenação simples: construa o heap e, repetidamente, troque a raiz (o maior elemento restante) com a última posição da parte ainda não ordenada e faça a nova raiz descer. O vetor fica dividido em duas partes: à esquerda, um heap que encolhe; à direita, a parte já ordenada, que cresce.
 \begin{pseudo}{Heapsort}
 \begin{algorithmic}
@@ -416,7 +416,7 @@ onde $L$ é o número de nós da subárvore esquerda da raiz: com $h=\floor{\log
 A raiz é necessariamente $n$. O formato da árvore é fixo, então $L$ é determinado por $n$. Escolhem-se quais $L$ dos $n-1$ valores restantes vão para a esquerda, de $\binom{n-1}{L}$ modos; cada lado precisa ser um heap sobre os seus valores, e o número de heaps depende só da quantidade de valores.
 \end{proof}
 
-\begin{exemplo}[Os três heaps de $\{1,2,3,4\}$]
+\begin{exemplo}[Os três heaps de $\{1,2,3,4\}$]\label{ex:tresheaps}
 Com $n=4$, a raiz é 4, a subárvore esquerda tem as posições 2 e 4 ($L=2$) e a direita, só a posição 3. Escolhemos quais 2 dos valores $\{1,2,3\}$ vão para a esquerda, de $\binom32=3$ modos, e cada escolha dá um único heap: $\{1,2\}$ dá $[4,2,3,1]$; $\{1,3\}$ dá $[4,3,2,1]$; $\{2,3\}$ dá $[4,3,1,2]$.
 \end{exemplo}
 
@@ -434,75 +434,75 @@ Heap $=$ vetor com ``pai $\ge$ filho''. Sobe-se após um aumento e desce-se apó
 % ----------------------------------------------------------------
 \section{Exercícios}
 \excurso
-\begin{exercicio}{hp-l1}[Lista]
+\begin{exercicio}{hp-l1}[Lista]<ex:ehheap>
 Verifique se as sequências correspondem a um heap binário (de máximo):\\
 (a)~$33\ 32\ 28\ 31\ 26\ 29\ 25\ 30\ 27$;\qquad (b)~$33\ 32\ 28\ 31\ 29\ 26\ 25\ 30\ 27$.
 \end{exercicio}
-\begin{exercicio}{hp-l2}[Lista]
+\begin{exercicio}{hp-l2}[Lista]<sec:heapprops>
 Prove ou dê contraexemplo: se $S$ é um heap e $s_i,s_j$ são chaves com $i<j$ e $s_i<s_j$, então trocar $s_i$ com $s_j$ produz um heap.
 \end{exercicio}
-\begin{exercicio}{hp-l3}[Lista]
+\begin{exercicio}{hp-l3}[Lista]<sec:heapprops>
 Repita o exercício anterior com $i<j$ e $s_i>s_j$.
 \end{exercicio}
-\begin{exercicio}{hp-l4}[Lista]
+\begin{exercicio}{hp-l4}[Lista]<sec:heapprops>
 Determine o número de permutações de $1,\dots,n$ que são heaps de mínimo.
 \end{exercicio}
-\begin{exercicio}{hp-l5}[Lista]
+\begin{exercicio}{hp-l5}[Lista]<ex:arranjar>
 Aplique o algoritmo linear de construção à lista $18\ 25\ 41\ 34\ 14\ 10\ 52\ 50\ 48$.
 \end{exercicio}
-\begin{exercicio}{hp-l6}[Lista]
+\begin{exercicio}{hp-l6}[Lista]<lema:alturas>
 Prove que no máximo $\ceil{n/2^j}$ nós têm altura $j$ numa árvore binária completa com $n$ nós.
 \end{exercicio}
-\begin{exercicio}{hp-l16}[Lista]
+\begin{exercicio}{hp-l16}[Lista]<sec:subirdescer>
 Escreva os algoritmos de inserção, remoção, aumento e diminuição de prioridade e construção de heaps binários \textbf{sem recursão}.
 \end{exercicio}
-\begin{exercicio}{hp-r1}[Monitoria]
+\begin{exercicio}{hp-r1}[Monitoria]<sec:heapdef>
 (a) Defina heap e a propriedade que $s_1,\dots,s_n$ satisfazem. (b) Por que o elemento de maior prioridade é selecionado em $O(1)$? (c) Dê a complexidade de pior caso de seleção, inserção, remoção do máximo, alteração de prioridade e construção.
 \end{exercicio}
-\begin{exercicio}{hp-r2}[Monitoria]
+\begin{exercicio}{hp-r2}[Monitoria]<sec:heapops,sec:arranjar>
 No heap $H=[95,60,78,39,28,66,70,33]$: (a) a prioridade 66 passa a 98; (b) remove-se a raiz. Construa, pelo procedimento baseado em \emph{descer}, heaps a partir de (c) $[20,15,30,40,10,25,5]$ e (d) $[7,2,15,9,1,20,13]$. Mostre as trocas em cada caso.
 \end{exercicio}
-\begin{exercicio}{hp-r5}[Monitoria]
+\begin{exercicio}{hp-r5}[Monitoria]<sec:heapops>
 Um aluno escreveu: ``$H[i]:=nova$; \textbf{se} $H[i]>H[\floor{i/2}]$ \textbf{então} Descer$(i)$ \textbf{senão} Subir$(i)$''. Qual é o erro? Corrija e explique.
 \end{exercicio}
-\begin{exercicio}{hp-tele}[Slides]
+\begin{exercicio}{hp-tele}[Slides]<sec:listaprior>
 Problema \emph{Telemarketing} (Beecrowd 2330): $n$ vendedores, numerados de 1 a $n$, atendem $L$ ligações em ordem; cada ligação vai para o vendedor livre de menor número, que fica ocupado pela duração da ligação. Quantas ligações cada vendedor atende? Projete a solução com heap e dê a complexidade.
 \end{exercicio}
 
 \excompl
-\begin{exercicio}{hp-dario}[Complementar]
+\begin{exercicio}{hp-dario}[Complementar]<sec:heapdef>
 Num heap $d$-ário (cada nó tem até $d$ filhos), em vetor indexado a partir de 1: (a) quais são os índices do pai e dos filhos do nó $i$? (b) Qual a altura? (c) Quanto custam \emph{subir} e \emph{descer}? (d) Por que um $d$ maior pode ser bom quando há muito mais aumentos de prioridade do que remoções?
 \end{exercicio}
-\begin{exercicio}{hp-kmerge}[Complementar]
+\begin{exercicio}{hp-kmerge}[Complementar]<sec:heapops>
 Dadas $k$ listas ordenadas com $n$ elementos no total, intercale-as numa única lista ordenada em $O(n\log k)$.
 \end{exercicio}
-\begin{exercicio}{hp-kmaiores}[Complementar]
+\begin{exercicio}{hp-kmaiores}[Complementar]<sec:heapops>
 Um fluxo de $n$ números chega um a um, e você tem memória $O(k)$. Como obter os $k$ maiores ao final? Qual o tempo?
 \end{exercicio}
-\begin{exercicio}{hp-verif}[Complementar]
+\begin{exercicio}{hp-verif}[Complementar]<ex:ehheap>
 Escreva um algoritmo $O(n)$ que decide se um vetor é um heap.
 \end{exercicio}
-\begin{exercicio}{hp-estavel}[Complementar]
+\begin{exercicio}{hp-estavel}[Complementar]<ex:heapsort>
 Mostre, com um exemplo de 3 elementos, que o heapsort não é estável.
 \end{exercicio}
-\begin{exercicio}{hp-crescente}[Complementar]
+\begin{exercicio}{hp-crescente}[Complementar]<sec:arranjar>
 Mostre que construir um heap de máximo inserindo $1,2,\dots,n$, nessa ordem, por inserções sucessivas custa $\Theta(n\log n)$, enquanto o \emph{arranjar} sobre o mesmo vetor custa $O(n)$.
 \end{exercicio}
-\begin{exercicio}{hp-ins}[Complementar]
+\begin{exercicio}{hp-ins}[Complementar]<ex:heapins>
 Insira $15,40,25,50,10,45$, nessa ordem, num heap de máximo inicialmente vazio. Mostre o vetor após cada inserção.
 \end{exercicio}
-\begin{exercicio}{hp-rem2}[Complementar]
+\begin{exercicio}{hp-rem2}[Complementar]<ex:heaprem>
 Remova o máximo duas vezes do heap $[90,70,80,30,60,50,40,10,20]$, mostrando o vetor após cada remoção.
 \end{exercicio}
-\begin{exercicio}{hp-sort5}[Complementar]
+\begin{exercicio}{hp-sort5}[Complementar]<ex:heapsort>
 Execute o heapsort sobre $[4,10,3,5,1]$, mostrando o vetor após o \emph{arranjar} e após cada passo do laço principal.
 \end{exercicio}
-\begin{exercicio}{hp-remi}[Complementar]
+\begin{exercicio}{hp-remi}[Complementar]<sec:heapops>
 Escreva uma operação que remove o elemento da posição $i$ (não necessariamente a raiz) de um heap em $O(\log n)$. Por que, depois de pôr o último elemento na posição $i$, às vezes é preciso subir e às vezes descer?
 \end{exercicio}
-\begin{exercicio}{hp-mediana}[Complementar]
+\begin{exercicio}{hp-mediana}[Complementar]<sec:listaprior>
 Mostre como manter a mediana de um conjunto que recebe inserções, com inserção em $O(\log n)$ e consulta à mediana em $O(1)$, usando um heap de máximo e um heap de mínimo.
 \end{exercicio}
-\begin{exercicio}{hp-comp}[Complementar \estrela]
+\begin{exercicio}{hp-comp}[Complementar \estrela]<sec:arranjar>
 Mostre que o \emph{arranjar} faz no máximo $2n$ comparações entre chaves (para $n$ grande), contando as comparações feitas em cada passo do \emph{descer}.
 \end{exercicio}

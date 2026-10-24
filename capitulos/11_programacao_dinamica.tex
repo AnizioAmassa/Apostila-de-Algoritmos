@@ -12,7 +12,7 @@
 
 Na divisão e conquista, os subproblemas são disjuntos. Em muitos problemas, porém, a decomposição natural gera subproblemas que \emph{se repetem}, e a recursão ingênua refaz o mesmo trabalho um número exponencial de vezes. A programação dinâmica resolve cada subproblema distinto uma única vez e guarda a resposta numa tabela. Este capítulo apresenta a técnica e três aplicações; uma quarta, o algoritmo de Floyd-Warshall, é o assunto do próximo capítulo.
 
-\section{A técnica}
+\section{A técnica}\label{sec:pdtecnica}
 No método geral de decomposição, subproblemas idênticos podem aparecer muitas vezes ao longo do processo. Se cada aparição for resolvida de novo, o algoritmo pode ser exponencial mesmo que o número de subproblemas \emph{distintos} seja polinomial. A \textbf{programação dinâmica} mantém uma tabela com uma entrada para cada subproblema distinto: na primeira vez em que um subproblema é considerado, ele é resolvido normalmente; nas vezes seguintes, sua solução é simplesmente lida da tabela.
 
 \begin{exemplo}[Fibonacci: o mesmo cálculo, muitas vezes]\label{ex:fib}
@@ -301,7 +301,7 @@ A tabela tem uma coluna por item e uma linha por capacidade (Figura~\ref{fig:moc
   \item \textbf{Memória $O(W)$.} Um único vetor $K[0..W]$ basta: para cada item, percorra $w$ \textbf{decrescendo} de $W$ até $p_i$ e faça $K[w]:=\max\{K[w],K[w-p_i]+v_i\}$. Com $w$ \emph{crescendo}, o mesmo item poderia ser reaproveitado, e o algoritmo passaria a resolver a mochila \emph{ilimitada}.
 \end{itemize}
 
-\begin{exemplo}[Por que $w$ decresce no vetor único]
+\begin{exemplo}[Por que $w$ decresce no vetor único]\label{ex:vetorunico}
 Um único item, de peso 2 e valor 3, e capacidade 4; o vetor começa com $K=(0,0,0,0,0)$, para $w=0,\dots,4$. Com $w$ \textbf{decrescendo}: $K[4]:=\max\{0,K[2]+3\}=3$, $K[3]:=3$, $K[2]:=3$; resultado $(0,0,3,3,3)$, correto: o item cabe uma vez e vale 3. Com $w$ \textbf{crescendo}: $K[2]:=3$, $K[3]:=3$ e $K[4]:=\max\{0,K[2]+3\}=6$, porque $K[2]$ \emph{já foi atualizado com este mesmo item}; resultado $(0,0,3,3,6)$, como se o item tivesse sido levado duas vezes. Decrescendo, $K[w-p_i]$ ainda guarda o valor ``sem o item $i$'', que é o $M(w-p_i,i-1)$ da recorrência.
 \end{exemplo}
 
@@ -322,71 +322,71 @@ Programação dinâmica $=$ recorrência com subproblemas que se repetem $+$ tab
 % ----------------------------------------------------------------
 \section{Exercícios}
 \excurso
-\begin{exercicio}{pd-max}[Lista]
+\begin{exercicio}{pd-max}[Lista]<sec:cadeia>
 Na variante da multiplicação de cadeia de matrizes em que se quer \emph{maximizar} o número de multiplicações escalares, vale a subestrutura ótima?
 \end{exercicio}
-\begin{exercicio}{pd-lis}[Lista]
+\begin{exercicio}{pd-lis}[Lista]<sec:pdtecnica>
 Dê um algoritmo $O(n^2)$ para a maior subsequência estritamente crescente de $n$ números. Se puder, dê um $O(n\log n)$.
 \end{exercicio}
-\begin{exercicio}{pd-pal}[Lista]
+\begin{exercicio}{pd-pal}[Lista]<sec:lcs>
 Dê um algoritmo eficiente para o maior palíndromo que é \emph{subsequência} de uma string; para ``character'', a resposta é ``carac''. Qual o tempo?
 \end{exercicio}
-\begin{exercicio}{pd-dag}[Lista]
+\begin{exercicio}{pd-dag}[Lista]<sec:pdtecnica>
 Num grafo acíclico dirigido com pesos reais nas arestas e dois vértices $s$ e $t$, descreva uma programação dinâmica para o caminho simples de maior peso de $s$ a $t$.
 \end{exercicio}
-\begin{exercicio}{pd-ilim}[Lista]
+\begin{exercicio}{pd-ilim}[Lista]<sec:mochila>
 Resolva por programação dinâmica a mochila \emph{inteira} (ilimitada): cada item é um tipo e pode ser usado quantas vezes se quiser.
 \end{exercicio}
-\begin{exercicio}{pd-corte}[Lista]
+\begin{exercicio}{pd-corte}[Lista]<sec:cadeia>
 Cortar uma string de $n$ caracteres em duas partes custa $n$. Dados os pontos de corte $L[1..m]$, determine a ordem de cortes de menor custo total e o custo. Para $n=20$ e cortes após os caracteres 2, 8 e 10, cortar da esquerda para a direita custa 50, e da direita para a esquerda, 38.
 \end{exercicio}
-\begin{exercicio}{pd-rec}[Slides]
+\begin{exercicio}{pd-rec}[Slides]<ex:lcs>
 Modifique o algoritmo da subsequência comum máxima para devolver uma subsequência, e não só o tamanho. Aplique a $X=\mathrm{ABCBDAB}$ e $Y=\mathrm{BDCABA}$.
 \end{exercicio}
-\begin{exercicio}{pd-mon}[Monitoria]
+\begin{exercicio}{pd-mon}[Monitoria]<ex:cadeia,ex:mochila>
 (a) Monte a tabela $m[i,j]$ para $r=(10,100,5,50)$ e para $r=(20,50,10,1,100)$, com a ordem ótima. (b) Monte a tabela da mochila com $W=4$ e itens $(p,v)=(1,2),(3,7),(2,1)$. (c) Explique por que $\Theta(nW)$ é pseudopolinomial.
 \end{exercicio}
-\begin{exercicio}{pd-apa}[Material de apoio]
+\begin{exercicio}{pd-apa}[Material de apoio]<sec:lcs,sec:mochila>
 (a) Encontre a maior subsequência comum de $X=\mathrm{dacdba}$ e $Y=\mathrm{cadcda}$. (b) Resolva a mochila 0-1 com capacidade 100 e itens (valor, peso) $=(50,20),(70,30),(90,40),(120,50),(140,60)$. (c) Dê um algoritmo linear para o subvetor contíguo de soma máxima e aplique-o a $5,15,-30,10,-5,40,10$.
 \end{exercicio}
-\begin{exercicio}{pd-l6a}[Material de apoio]
+\begin{exercicio}{pd-l6a}[Material de apoio]<sec:cadeia>
 (a) Encontre a parentização ótima para as dimensões $\langle5,10,3,12,5,50,6\rangle$. (b) Adapte o algoritmo para calcular a tabela $s$ e escreva um algoritmo recursivo que multiplica $A_i\cdots A_j$ na ordem ótima. (c) Adapte o algoritmo da subsequência comum máxima para imprimir \emph{todas} as subsequências comuns mais longas.
 \end{exercicio}
-\begin{exercicio}{pd-l6b}[Material de apoio]
+\begin{exercicio}{pd-l6b}[Material de apoio]<sec:cadeia>
 (a) Quantas árvores binárias de busca guardam 6 chaves diferentes? (b) Construa uma árvore binária de busca ótima para as palavras com números de acessos \emph{case} (15), \emph{else} (5), \emph{end} (5), \emph{if} (35), \emph{of} (5) e \emph{then} (35), em que o custo é a soma, sobre as palavras, de (acessos)$\times$(profundidade $+1$).
 \end{exercicio}
-\begin{exercicio}{pd-l6c}[Material de apoio]
+\begin{exercicio}{pd-l6c}[Material de apoio]<sec:pdtecnica>
 (a) Subsequência crescente de \emph{soma} máxima em $O(n^2)$. (b) Festa da empresa: numa árvore hierárquica com notas de sociabilidade, escolha convidados sem convidar ninguém junto com o seu chefe imediato, maximizando a soma das notas. (c) Torres gêmeas: dadas duas sequências de raios de lajotas, encontre a maior torre comum obtida removendo lajotas e mantendo a ordem. (d) Bandeiras: quantas sequências de $n$ faixas brancas, azuis e vermelhas existem sem duas faixas de mesma cor vizinhas e com toda faixa azul entre uma branca e uma vermelha?
 \end{exercicio}
-\begin{exercicio}{pd-mc458}[Material de apoio]
+\begin{exercicio}{pd-mc458}[Material de apoio]<ex:vetorunico>
 (a) Mochila exata (\emph{subset sum}) com pesos $2,7,5,2$: complete a tabela (``O'' $=$ há solução sem o item; ``I'' $=$ só usando o item; ``--'' $=$ não há solução) para os itens 3 e 4 e capacidades $0..14$. (b) Como reduzir a memória da mochila para $O(K)$? (c) Encontre a submatriz consecutiva de soma máxima numa matriz $m\times n$. (d) Corte uma laje de mármore $n\times m$, com cortes horizontais ou verticais de ponta a ponta, para maximizar o lucro, dados os preços $p_{ab}$ de cada retângulo $a\times b$, em $O(n^2m^2)$.
 \end{exercicio}
 
 \excompl
-\begin{exercicio}{pd-edit}[Complementar]
+\begin{exercicio}{pd-edit}[Complementar]<sec:lcs>
 A \emph{distância de edição} entre duas strings é o menor número de inserções, remoções e substituições de caracteres que transforma uma na outra. Dê a recorrência e a complexidade, e calcule a distância entre ``kitten'' e ``sitting''.
 \end{exercicio}
-\begin{exercicio}{pd-troco}[Complementar]
+\begin{exercicio}{pd-troco}[Complementar]<sec:pdtecnica>
 Com moedas de valores $\{1,3,4\}$, qual o menor número de moedas para dar troco de 6? O que faz o algoritmo guloso? Escreva a programação dinâmica e preencha $T(0..10)$.
 \end{exercicio}
-\begin{exercicio}{pd-haste}[Complementar]
+\begin{exercicio}{pd-haste}[Complementar]<sec:pdtecnica>
 Uma haste de comprimento $n$ pode ser cortada em pedaços de comprimentos inteiros; um pedaço de comprimento $i$ vale $p_i$. Com $p=(1,5,8,9,10,17,17,20)$ para $i=1,\dots,8$, qual o maior valor obtido de uma haste de comprimento 8? Dê a recorrência.
 \end{exercicio}
-\begin{exercicio}{pd-grade}[Complementar]
+\begin{exercicio}{pd-grade}[Complementar]<sec:pdtecnica>
 Num tabuleiro de $4\times4$ casas, quantos caminhos levam uma peça da casa do canto superior esquerdo à do canto inferior direito, andando uma casa por vez para a direita ou para baixo? E se a casa da linha 2, coluna 2 estiver bloqueada?
 \end{exercicio}
-\begin{exercicio}{pd-part}[Complementar]
+\begin{exercicio}{pd-part}[Complementar]<sec:mochila>
 Decida por programação dinâmica se um multiconjunto de inteiros positivos pode ser dividido em duas partes de mesma soma. Teste com $\{3,1,1,2,2,1\}$ e $\{2,3,7\}$. Qual a complexidade?
 \end{exercicio}
-\begin{exercicio}{pd-catalan}[Complementar]
+\begin{exercicio}{pd-catalan}[Complementar]<sec:cadeia>
 Seja $P(n)$ o número de parentizações de um produto de $n$ matrizes. Mostre que $P(1)=1$ e $P(n)=\sum_{k=1}^{n-1}P(k)P(n-k)$, e calcule $P(n)$ para $n\le6$.
 \end{exercicio}
-\begin{exercicio}{pd-lcsmem}[Complementar]
+\begin{exercicio}{pd-lcsmem}[Complementar]<sec:lcs>
 Escreva uma versão do algoritmo da subsequência comum máxima que calcula apenas o tamanho usando memória $O(\min\{n,m\})$.
 \end{exercicio}
-\begin{exercicio}{pd-formas}[Complementar]
+\begin{exercicio}{pd-formas}[Complementar]<sec:mochila>
 De quantas maneiras é possível dar troco de 5 com moedas de valores $\{1,2,5\}$, sem considerar a ordem das moedas? E de 10? Escreva a programação dinâmica que conta as maneiras.
 \end{exercicio}
-\begin{exercicio}{pd-substring}[Complementar]
+\begin{exercicio}{pd-substring}[Complementar]<sec:lcs>
 O maior \emph{substring} comum de duas strings exige que os símbolos sejam contíguos nas duas. Dê uma programação dinâmica em $O(nm)$ e aplique-a a ``ABABC'' e ``BABCA''.
 \end{exercicio}

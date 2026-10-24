@@ -95,7 +95,7 @@ $W$ & 1\,($a$) & 2\,($b$) & 3\,($c$) & 4\,($d$) & 5\,($e$)\\ \hline
 \end{tikzpicture}
 \end{figura}
 
-\section{O algoritmo de Floyd-Warshall}
+\section{O algoritmo de Floyd-Warshall}\label{sec:fwalg}
 \textbf{Problema:} dado um digrafo com vértices $1,\dots,n$ e matriz de pesos $W$, calcular $\operatorname{dist}(i,j)$ para todos os pares ordenados $(i,j)$. A ideia é limitar, passo a passo, quais vértices podem aparecer \emph{no meio} dos caminhos:
 \[
 D^k(i,j)=\text{custo do caminho mínimo de }i\text{ a }j\text{ cujos vértices \emph{intermediários} estão em }\{1,\dots,k\}.
@@ -170,7 +170,7 @@ Na iteração $k=1$, cada entrada $D(i,j)$ é comparada com $D(i,1)+D(1,j)$: o c
 \end{figura}
 \end{exemplo}
 
-\begin{exemplo}[O digrafo da §\ref{sec:fwmatriz}]\leavevmode
+\begin{exemplo}[O digrafo da §\ref{sec:fwmatriz}]\label{ex:fwcompleto}\leavevmode
 \begin{center}\small
 \begin{tabularx}{\linewidth}{c|X}
 $k$ & entradas que diminuem ao permitir $k$ como intermediário\\ \hline
@@ -207,7 +207,7 @@ O caminho de 5 a 3 sai da matriz $P$ de trás para frente: $P(5,3)=2$, $P(5,2)=1
   \item \textbf{Floyd-Warshall ou $n$ execuções do Dijkstra?} O Floyd-Warshall custa $\Theta(n^3)$ e é muito simples. Executar o algoritmo de Dijkstra (Capítulo~\ref{cap:dijkstra}) a partir de cada vértice custa $O(n\,(n+m)\log n)$ com heap binário, ou $O(n^3)$ com vetor. Em grafos esparsos e sem pesos negativos, as $n$ execuções do Dijkstra são mais rápidas; em grafos densos, ou com pesos negativos, o Floyd-Warshall é preferível.
 \end{itemize}
 
-\begin{exemplo}[Pesos negativos, com e sem ciclo negativo]
+\begin{exemplo}[Pesos negativos, com e sem ciclo negativo]\label{ex:fwneg}
 No digrafo com as arestas $1\to2$ (4), $2\to3$ ($-2$) e $1\to3$ (3), a aresta direta de 1 a 3 custa 3, mas o caminho $1\to2\to3$ custa $4-2=2$. O algoritmo encontra isso na iteração $k=2$: $D(1,3)=\min\{3,\,D(1,2)+D(2,3)\}=\min\{3,2\}=2$. Não há ciclos, e a diagonal termina toda nula.
 
 Já no digrafo com as arestas $1\to2$ (1), $2\to3$ ($-4$) e $3\to1$ (2), o ciclo $1\to2\to3\to1$ pesa $1-4+2=-1$: dando voltas nele, o custo diminui sem limite, e ``caminho mínimo'' deixa de fazer sentido. Ao final do algoritmo, os três elementos da diagonal são negativos (por exemplo, $D(1,1)=-1$, o peso do ciclo), e é por esse sinal que o ciclo negativo é detectado.
@@ -229,65 +229,65 @@ $D^k(i,j)=\min\{D^{k-1}(i,j),\ D^{k-1}(i,k)+D^{k-1}(k,j)\}$, com $D^0=W$; $k$ é
 % ----------------------------------------------------------------
 \section{Exercícios}
 \excurso
-\begin{exercicio}{fw-sub}[Slides]
+\begin{exercicio}{fw-sub}[Slides]<sec:fwalg>
 Uma primeira formulação usa $D(i,j,S)=$ custo do caminho mínimo de $i$ a $j$ com intermediários em $S\subseteq V$, com $D(i,j,\emptyset)=W(i,j)$. Escreva a recorrência. Quantos subproblemas ela tem? O que o algoritmo de Floyd-Warshall faz para evitar isso?
 \end{exercicio}
-\begin{exercicio}{fw-slide}[Slides]
+\begin{exercicio}{fw-slide}[Slides]<ex:fwcompleto>
 Para a matriz de pesos $W$ da §\ref{sec:fwmatriz}, calcule $D^1,\dots,D^5$ e $P^5$ e reconstrua o caminho mínimo de 5 a 3 e o de 2 a 1. Compare com o Exemplo da §\ref{sec:fw}.
 \end{exercicio}
 
 \excompl
-\begin{exercicio}{fw-neg}[Complementar]
+\begin{exercicio}{fw-neg}[Complementar]<sec:fwalg>
 Execute o Floyd-Warshall no digrafo com arestas $1\to2$ (3), $1\to3$ (8), $1\to5$ ($-4$), $2\to4$ (1), $2\to5$ (7), $3\to2$ (4), $4\to1$ (2), $4\to3$ ($-5$) e $5\to4$ (6). Dê a matriz final. Há ciclo negativo?
 \end{exercicio}
-\begin{exercicio}{fw-fecho}[Complementar]
+\begin{exercicio}{fw-fecho}[Complementar]<sec:fwalg>
 O \emph{fecho transitivo} de um digrafo diz, para cada par $(i,j)$, se existe caminho de $i$ a $j$. Adapte o Floyd-Warshall, usando ``ou'' e ``e'' no lugar de $\min$ e $+$. Calcule o fecho para os vértices $1,\dots,5$ com as arestas $1\to2$, $2\to3$, $3\to1$ e $3\to4$.
 \end{exercicio}
-\begin{exercicio}{fw-ciclo}[Complementar]
+\begin{exercicio}{fw-ciclo}[Complementar]<sec:fwalg>
 Como encontrar o peso do \emph{ciclo} direcionado de menor peso de um digrafo com pesos positivos usando o Floyd-Warshall? Aplique ao digrafo com as arestas $1\to2$ (2), $2\to3$ (3), $3\to1$ (1), $3\to4$ (5) e $4\to3$ (2).
 \end{exercicio}
-\begin{exercicio}{fw-negciclo}[Complementar]
+\begin{exercicio}{fw-negciclo}[Complementar]<ex:fwneg>
 Prove que, se o digrafo tem um ciclo de peso negativo, ao final do Floyd-Warshall vale $D(i,i)<0$ para algum $i$ do ciclo; e que, se não tem, $D(i,i)=0$ para todo $i$.
 \end{exercicio}
-\begin{exercicio}{fw-dij}[Complementar]
+\begin{exercicio}{fw-dij}[Complementar]<sec:fwalg>
 Um grafo tem $n=10^4$ vértices, $m=5\cdot10^4$ arestas e pesos não negativos. Para obter as distâncias entre todos os pares, compare o custo do Floyd-Warshall com o de $n$ execuções do Dijkstra com heap binário. E se $m\approx n^2/2$?
 \end{exercicio}
-\begin{exercicio}{fw-4v}[Complementar]
+\begin{exercicio}{fw-4v}[Complementar]<ex:fwk1>
 Execute o Floyd-Warshall no digrafo com as arestas $1\to2$ (4), $1\to4$ (10), $2\to3$ (3), $3\to4$ (1), $4\to1$ (2) e $3\to1$ (7), mostrando $D^1,\dots,D^4$.
 \end{exercicio}
-\begin{exercicio}{fw-4vcam}[Complementar]
+\begin{exercicio}{fw-4vcam}[Complementar]<ex:fwcompleto>
 No exercício anterior, calcule a matriz $P^4$ e reconstrua os caminhos mínimos de 2 a 1 e de 4 a 3.
 \end{exercicio}
-\begin{exercicio}{fw-negex}[Complementar]
+\begin{exercicio}{fw-negex}[Complementar]<ex:fwneg>
 Dê um digrafo com dois vértices e um ciclo negativo e mostre o que o Floyd-Warshall calcula. Por que os valores de $D$ deixam de ser custos de caminhos?
 \end{exercicio}
-\begin{exercicio}{fw-nd}[Complementar]
+\begin{exercicio}{fw-nd}[Complementar]<sec:fwmatriz>
 Como aplicar o Floyd-Warshall a um grafo não direcionado? O que se pode dizer da matriz $D$ final? Aresta de peso negativo num grafo não direcionado é um problema? Por quê?
 \end{exercicio}
-\begin{exercicio}{fw-conta}[Complementar]
+\begin{exercicio}{fw-conta}[Complementar]<sec:fwalg>
 Quantas vezes, exatamente, o teste ``$D[i,k]+D[k,j]<D[i,j]$'' é executado? Quanta memória o algoritmo usa com e sem a matriz $P$?
 \end{exercicio}
-\begin{exercicio}{fw-inplace}[Complementar]
+\begin{exercicio}{fw-inplace}[Complementar]<sec:fwalg>
 Prove que usar uma única matriz $D$, atualizada no lugar, dá o mesmo resultado que calcular $D^0,D^1,\dots,D^n$ separadamente (suponha que não há ciclos negativos).
 \end{exercicio}
-\begin{exercicio}{fw-largura}[Complementar]
+\begin{exercicio}{fw-largura}[Complementar]<sec:fwalg>
 Cada aresta tem uma \emph{capacidade}, e a capacidade de um caminho é a menor capacidade das suas arestas. Adapte o Floyd-Warshall para calcular, para todo par $(i,j)$, a maior capacidade de um caminho de $i$ a $j$.
 \end{exercicio}
-\begin{exercicio}{fw-diam}[Complementar]
+\begin{exercicio}{fw-diam}[Complementar]<ex:fwcompleto>
 A \emph{excentricidade} de um vértice $v$ é a maior distância de $v$ a outro vértice, e o \emph{diâmetro} do digrafo é a maior excentricidade. Use a matriz $D^5$ do Exemplo da §\ref{sec:fw} para calcular as excentricidades, o diâmetro e o \emph{centro} (o vértice de menor excentricidade).
 \end{exercicio}
-\begin{exercicio}{fw-aresta}[Complementar]
+\begin{exercicio}{fw-aresta}[Complementar]<sec:fwalg>
 Dada a matriz $D$ final, como decidir se a aresta $uv$ pertence a algum caminho mínimo de $i$ a $j$? E a algum caminho mínimo qualquer do grafo?
 \end{exercicio}
-\begin{exercicio}{fw-atualiza}[Complementar]
+\begin{exercicio}{fw-atualiza}[Complementar]<sec:fwalg>
 Depois de calcular $D$, o peso da aresta $uv$ diminui para $w'$. Mostre como atualizar todas as distâncias em $O(n^2)$.
 \end{exercicio}
-\begin{exercicio}{fw-novo}[Complementar]
+\begin{exercicio}{fw-novo}[Complementar]<sec:fwalg>
 Depois de calcular $D$ para os vértices $1,\dots,n$, acrescenta-se um vértice $n+1$ com algumas arestas de e para ele. Mostre como atualizar a matriz em $O(n^2)$.
 \end{exercicio}
-\begin{exercicio}{fw-contar}[Complementar]
+\begin{exercicio}{fw-contar}[Complementar]<sec:fwalg>
 Com pesos positivos, adapte o Floyd-Warshall para calcular, além da distância, o \emph{número} de caminhos mínimos distintos de $i$ a $j$, para todo par.
 \end{exercicio}
-\begin{exercicio}{fw-bits}[Complementar \estrela]
+\begin{exercicio}{fw-bits}[Complementar \estrela]<sec:fwalg>
 Mostre que o fecho transitivo pode ser calculado em $O(n^3/w)$ operações, representando cada linha da matriz como um vetor de bits e operando sobre palavras de $w$ bits.
 \end{exercicio}

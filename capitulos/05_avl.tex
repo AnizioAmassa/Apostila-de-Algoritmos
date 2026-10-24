@@ -12,7 +12,7 @@
 
 Heaps são ótimos para encontrar o máximo, mas não sabem procurar uma chave qualquer. Para um \textbf{dicionário ordenado} --- buscar, inserir e remover por chave, listar as chaves em ordem, encontrar sucessor e predecessor --- usamos árvores binárias de busca. Seu custo é proporcional à altura, que pode degenerar até $n$. As árvores AVL impedem a degeneração com uma condição local de balanceamento, restaurada após cada atualização por meio de rotações que custam $O(1)$.
 
-\section{Árvores binárias de busca}
+\section{Árvores binárias de busca}\label{sec:abb}
 Uma lista sequencial ordenada permite busca binária em $\Theta(\log n)$, mas inserções e remoções custam $\Omega(n)$, pois exigem deslocar elementos; uma lista encadeada insere rapidamente, mas a busca custa $\Omega(n)$. A árvore binária de busca combina busca eficiente com uma estrutura dinâmica.
 \begin{defi}
 Uma \textbf{árvore binária de busca} (ABB) é uma árvore binária em que, para todo nó $p$, a chave de $p$ é maior ou igual às chaves da subárvore esquerda de $p$ e menor ou igual às da subárvore direita. Equivalentemente, o percurso \emph{em ordem} lista as chaves em ordem crescente.
@@ -86,7 +86,7 @@ A altura de uma ABB com $n$ nós está entre $\floor{\log_2n}+1$ e $n$ (medida e
 
 Árvores completas minimizam a altura, mas mantê-las completas depois de cada inserção exige reorganizações globais de custo $\Omega(n)$. A saída é exigir algo mais fraco: que a árvore seja \textbf{balanceada}, isto é, que tenha altura $O(\log n)$ e que o mesmo valha para cada subárvore, e que o balanceamento possa ser restaurado em tempo $O(\log n)$.
 
-\section{Árvores AVL}
+\section{Árvores AVL}\label{sec:avldef}
 \begin{defi}
 Uma árvore binária é \textbf{AVL} se, em todo nó $v$, as alturas das subárvores esquerda e direita diferem de no máximo 1. O \textbf{balanço} de $v$ é
 \[
@@ -133,14 +133,14 @@ Essas árvores mínimas são chamadas \textbf{árvores de Fibonacci}, e $N(h)=F_
 \end{tabular}
 \end{figura}
 
-\begin{exemplo}[Quão alta pode ser uma AVL?]
+\begin{exemplo}[Quão alta pode ser uma AVL?]\label{ex:avlaltura}
 A recorrência dá $N(1),\dots,N(5)=1,2,4,7,12$, os tamanhos das árvores da Figura~\ref{fig:avlfib}. Como uma AVL de altura 5 tem pelo menos 12 nós, uma AVL com 10 nós tem altura no máximo 4, e essa altura é possível, pois $N(4)=7\le10$; uma árvore completa com 10 nós também tem altura 4. A diferença entre a melhor e a pior AVL é pequena, e continua pequena para $n$ grande: com um milhão de nós, a altura de uma AVL é no máximo 28, contra 20 de uma árvore completa e até $10^6$ de uma ABB degenerada.
 \end{exemplo}
 
 Assim, a busca numa AVL custa $O(\log n)$. Resta mostrar que a inserção e a remoção, incluindo o rebalanceamento, também custam $O(\log n)$.
 
 % ------------------------------------------------------------------
-\section{Inserção e atualização dos balanços}
+\section{Inserção e atualização dos balanços}\label{sec:avlins}
 A inserção começa como numa ABB: a nova chave vira uma folha (se a chave já existe, nada é feito). Em seguida, percorre-se o caminho de volta, do pai do novo nó em direção à raiz, atualizando os balanços. Suponha que a inserção ocorreu na subárvore \textbf{esquerda} de um nó $p$; o caso direito é simétrico, com os sinais trocados.
 \begin{center}
 \small
@@ -180,7 +180,7 @@ Na árvore $20^{+1}(10,\ 30^{+1}(\cdot,40))$ (Figura~\ref{fig:avlupd}(a)):
 \end{figura}
 \end{exemplo}
 
-\section{As rotações}
+\section{As rotações}\label{sec:rotacoes}
 Seja $p$ o nó desregulado mais profundo. Há quatro casos, determinados pelo sinal do balanço de $p$ e pelo do filho do lado mais pesado.
 \begin{center}
 \small
@@ -241,7 +241,7 @@ Os casos direita-direita e direita-esquerda são os espelhos desses: na rotaçã
 No caso esquerda-direita, uma rotação simples à direita em $p$ não resolve: a subárvore pesada, a de $v$, mudaria de lado junto com $u$ e continuaria pendurada no lugar errado, só que agora do lado direito. A primeira rotação (à esquerda em $u$) transforma o ``zigue-zague'' $p\to u\to v$ numa ``linha reta'' $p\to v\to u$, e a segunda (à direita em $p$) é o caso esquerda-esquerda comum. Teste com $30,10,20$: rotacionar só em 30 daria $10(\cdot,30(20,\cdot))$, ainda desregulado.
 \end{intuicao}
 
-\section{Pseudocódigo da inserção}
+\section{Pseudocódigo da inserção}\label{sec:avlpseudo}
 Cada nó tem os campos \texttt{esq}, \texttt{dir}, \texttt{chave} e \texttt{bal}; $\nil$ é o ponteiro nulo e $pt\ptr.campo$ acessa um campo do nó apontado por $pt$. A chamada externa é \textsc{Ins-AVL}$(x,ptraiz)$. A função devolve um valor lógico $h$ que indica se \textbf{a altura da subárvore aumentou}; só nesse caso o pai precisa atualizar o seu balanço.
 
 \begin{pseudo}{Inserção em árvore AVL}
@@ -320,7 +320,7 @@ Cada nó tem os campos \texttt{esq}, \texttt{dir}, \texttt{chave} e \texttt{bal}
 \end{cuidado}
 
 % ------------------------------------------------------------------
-\section{Remoção}
+\section{Remoção}\label{sec:avlrem}
 A remoção começa como numa ABB (se o nó tem dois filhos, o maior elemento da subárvore esquerda toma o seu lugar) e sobe a partir do nó \emph{fisicamente removido}, atualizando os balanços. Agora a pergunta é se a altura \textbf{diminuiu}. Para uma remoção na subárvore \textbf{direita} de $p$ (o caso esquerdo é simétrico):
 \begin{center}
 \small
@@ -418,7 +418,7 @@ Depois de $20$ e $40$, temos $20^{+1}(\cdot,40)$. Inserir $60$ deixa $\bal(20)=+
 \end{figura}
 \end{exemplo}
 
-\begin{exemplo}[Inserindo $50,40,30,20,10$ e depois $11$]
+\begin{exemplo}[Inserindo $50,40,30,20,10$ e depois $11$]\label{ex:avl5040}
 Inserir $30$ deixa $\bal(50)=-2$ com o filho $40$ de balanço $-1$: rotação simples à direita em 50, resultando em $40(30,50)$. Inserir $20$ dá $40^{-1}(30^{-1}(20,\cdot),\ 50)$. Inserir $10$: subindo, $\bal(20)=-1$ e $\bal(30)=-2$, de modo que o \textbf{primeiro desregulado é 30}, e não 40; faz-se a rotação simples à direita em 30, e a árvore fica $40^{-1}(20^{0}(10^{0},30^{0}),\ 50^{0})$.
 \begin{center}
 \begin{forest} bst
@@ -439,7 +439,7 @@ No exemplo anterior, ao inserir 10, é tentador rotacionar em 40, a raiz. Mas a 
 \end{cuidado}
 
 % ------------------------------------------------------------------
-\section{Heap, ABB ou AVL?}
+\section{Heap, ABB ou AVL?}\label{sec:avlescolha}
 \begin{roteiro}[Como escolher]
 \begin{itemize}
   \item \textbf{Fila de prioridade pura} (sempre atender o elemento de maior prioridade): \textbf{heap}. O máximo sai em $O(1)$, inserir e remover custam $O(\log n)$, e a estrutura é um vetor simples. A AVL também faria tudo em $O(\log n)$, mas não dá o máximo em $O(1)$ sem um ponteiro extra e é mais pesada.
@@ -498,74 +498,74 @@ AVL: $\bal=h_D-h_E\in\{-1,0,1\}$ e altura no máximo $1{,}44\log n$ (árvores de
 % ----------------------------------------------------------------
 \section{Exercícios}
 \excurso
-\begin{exercicio}{avl-r1}[Monitoria]
+\begin{exercicio}{avl-r1}[Monitoria]<sec:avldef>
 (a) Defina árvore binária de busca balanceada. (b) Defina árvore AVL. (c) Qual a relação entre árvores AVL e árvores balanceadas? (d) Defina o fator de balanço de um nó.
 \end{exercicio}
-\begin{exercicio}{avl-r2}[Monitoria]
+\begin{exercicio}{avl-r2}[Monitoria]<sec:avlins,sec:rotacoes>
 Um nó é inserido na subárvore esquerda de $p$. (a) Para $\bal(p)=1$, $0$ e $-1$ antes da inserção, diga o novo balanço, se a altura de $T(p)$ mudou e se é preciso continuar subindo. (b) Se $\bal(p)=-2$ e o filho esquerdo $u$ tem $\bal(u)=-1$, qual rotação deve ser feita? E se $\bal(u)=+1$? Qual a diferença entre os dois casos?
 \end{exercicio}
-\begin{exercicio}{avl-r4}[Monitoria]
+\begin{exercicio}{avl-r4}[Monitoria]<sec:avlpseudo>
 No pseudocódigo da inserção: (a) qual a finalidade da variável lógica $h$? (b) Por que \textsc{AtualizaBalanço} só é chamada quando $h$ é verdadeiro? (c) Por que o ponteiro $pt$ precisa ser atualizado após uma rotação? (d) Um aluno escreveu os três testes de \textsc{AtualizaBalanço} como ``se'' consecutivos: o que dá errado?
 \end{exercicio}
-\begin{exercicio}{avl-r5}[Monitoria]
+\begin{exercicio}{avl-r5}[Monitoria]<sec:avlexemplos>
 Insira (a) $40,20,10,30,35$ e (b) $10,20,30,40,50$ numa AVL vazia, indicando os balanços, as rotações (simples ou dupla, e a direção) e a árvore final. (c) Em seguida, insira 49 na árvore de (b).
 \end{exercicio}
-\begin{exercicio}{avl-t5}[Avaliação]
+\begin{exercicio}{avl-t5}[Avaliação]<ex:teste1q5>
 Na AVL $50(30(20(10,25),40),\,70(60,80))$, que armazena códigos de produtos, insira $5,15,35,45$, nessa ordem. (a) Após cada inserção, verifique os balanços e desenhe a árvore após cada rotação. (b) Quando a árvore deixar de ser AVL, identifique o primeiro nó desbalanceado encontrado ao subir da folha para a raiz, o caso e a rotação necessária. (c) Por que uma ABB comum poderia ter desempenho muito pior que a AVL se os códigos chegassem numa ordem desfavorável?
 \end{exercicio}
-\begin{exercicio}{avl-l3}[Lista]
+\begin{exercicio}{avl-l3}[Lista]<sec:avlrem>
 Construa uma AVL em que remover um único nó exija rotações em \emph{todos} os ancestrais; o nó removido deve ter pelo menos três ancestrais.
 \end{exercicio}
-\begin{exercicio}{avl-l4}[Lista]
+\begin{exercicio}{avl-l4}[Lista]<sec:abb>
 Descreva em alto nível uma estratégia para a fusão de duas árvores AVL.
 \end{exercicio}
-\begin{exercicio}{avl-l5}[Lista]
+\begin{exercicio}{avl-l5}[Lista]<sec:avlescolha>
 É possível usar árvores AVL como estrutura de conjuntos disjuntos? Qual seria a complexidade de \Find{} e \Union?
 \end{exercicio}
-\begin{exercicio}{avl-r6}[Monitoria]
+\begin{exercicio}{avl-r6}[Monitoria]<sec:avlescolha>
 (a) Uma base de registros tem inserções e remoções frequentes e consultas rápidas por chave: ABB simples ou AVL? (b) Uma fila de impressão sempre processa a tarefa de maior prioridade: heap ou AVL? Justifique.
 \end{exercicio}
-\begin{exercicio}{avl-pseudo}[Slides]
+\begin{exercicio}{avl-pseudo}[Slides]<sec:avlpseudo,sec:avlrem>
 Escreva o pseudocódigo das rotações, da inserção e da remoção em árvores AVL.
 \end{exercicio}
-\begin{exercicio}{avl-juiz}[Slides]
+\begin{exercicio}{avl-juiz}[Slides]<sec:abb>
 Resolva os problemas 1195 (\emph{Árvore Binária de Busca}), 1200 e 1201 (\emph{Operações em ABP I e II}) e 1191 (\emph{Recuperação da Árvore}) do Beecrowd, e o problema SID do SPOJ. No 1191, dados os percursos em pré-ordem e em ordem de uma árvore binária, deve-se imprimir o percurso em pós-ordem.
 \end{exercicio}
-\begin{exercicio}{avl-rn}[Pesquisa]
+\begin{exercicio}{avl-rn}[Pesquisa]<sec:rn>
 Apresente a definição de árvore rubro-negra e suas propriedades; justifique por que elas garantem altura $O(\log n)$; explique os algoritmos de inserção e remoção, com rotações e recolorações.
 \end{exercicio}
 
 \excompl
-\begin{exercicio}{avl-1a7}[Complementar]
+\begin{exercicio}{avl-1a7}[Complementar]<sec:avlexemplos>
 Insira $1,2,3,4,5,6,7$ numa AVL vazia. Em quais inserções ocorrem rotações, e de que tipo? Qual a árvore final?
 \end{exercicio}
-\begin{exercicio}{avl-3rot}[Complementar]
+\begin{exercicio}{avl-3rot}[Complementar]<ex:avl4020>
 Insira $10,20,30,25,28,27$ numa AVL vazia, indicando cada rotação e a árvore final com os balanços.
 \end{exercicio}
-\begin{exercicio}{avl-rem}[Complementar]
+\begin{exercicio}{avl-rem}[Complementar]<ex:avlrem>
 Na árvore final do Exercício~\ref{ex:avl-1a7}, remova $1$, depois $3$, depois $2$ (na remoção de nó com dois filhos, use o maior da subárvore esquerda). Indique balanços e rotações.
 \end{exercicio}
-\begin{exercicio}{avl-altmax}[Complementar]
+\begin{exercicio}{avl-altmax}[Complementar]<ex:avlaltura>
 Qual a altura máxima (em níveis) de uma AVL com 20 nós? E com 32 nós? Use $N(h)=1+N(h-1)+N(h-2)$.
 \end{exercicio}
-\begin{exercicio}{avl-inordem}[Complementar]
+\begin{exercicio}{avl-inordem}[Complementar]<sec:rotacoes>
 Prove que as rotações simples e duplas preservam o percurso em ordem e, portanto, a propriedade de ABB.
 \end{exercicio}
-\begin{exercicio}{avl-catalan}[Complementar]
+\begin{exercicio}{avl-catalan}[Complementar]<sec:abb>
 Quantas ABBs distintas armazenam as chaves $\{1,2,3\}$? E $\{1,2,3,4\}$? Dê a recorrência.
 \end{exercicio}
-\begin{exercicio}{avl-rem30}[Complementar]
+\begin{exercicio}{avl-rem30}[Complementar]<ex:teste1q5,ex:avlrem>
 Na árvore final do Exemplo~\ref{ex:teste1q5}, remova a raiz 30 (substituindo-a pelo maior elemento da subárvore esquerda). Indique os balanços e a rotação necessária.
 \end{exercicio}
-\begin{exercicio}{avl-seq}[Complementar]
+\begin{exercicio}{avl-seq}[Complementar]<sec:avlexemplos>
 Insira $3,2,1,4,5,6,7,16,15,14$, nessa ordem, numa AVL vazia. Em quais inserções há rotação, de que tipo e em que nó? Qual a árvore final?
 \end{exercicio}
-\begin{exercicio}{avl-hmin}[Complementar]
+\begin{exercicio}{avl-hmin}[Complementar]<teo:avlaltura>
 Mostre que toda árvore binária com $n$ nós tem altura (em níveis) pelo menos $\ceil{\log_2(n+1)}$. Conclua que a altura de uma AVL é $\Theta(\log n)$.
 \end{exercicio}
-\begin{exercicio}{avl-verif}[Complementar]
+\begin{exercicio}{avl-verif}[Complementar]<sec:avldef>
 Escreva um algoritmo $O(n)$ que decide se uma árvore binária é uma árvore AVL (isto é, uma ABB que satisfaz a condição de balanceamento).
 \end{exercicio}
-\begin{exercicio}{avl-suc}[Complementar]
+\begin{exercicio}{avl-suc}[Complementar]<sec:abb>
 Escreva um algoritmo que encontra o sucessor de um nó numa ABB em tempo $O(h)$, supondo que cada nó tem um ponteiro para o pai.
 \end{exercicio}

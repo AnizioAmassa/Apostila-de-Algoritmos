@@ -179,12 +179,27 @@
 % ------------------------------------------------------------------
 % Exercícios com link para a resposta (Apêndice B)
 % ------------------------------------------------------------------
+% \begin{exercicio}{rótulo}[origem]<ref1,ref2>: os rótulos entre < > apontam a seção,
+% o exemplo ou a figura que o exercício pratica e aparecem no cabeçalho como "ver §X".
 \newcounter{exerc}[chapter]
 \renewcommand{\theexerc}{\thechapter.\arabic{exerc}}
-\NewDocumentEnvironment{exercicio}{m o}{%
+\makeatletter
+\def\ap@sec{sec}\def\ap@ex{ex}\def\ap@fig{fig}\def\ap@teo{teo}\def\ap@lema{lema}
+\def\ap@umaref#1:#2\@nil{\def\ap@tipo{#1}%
+  \ifx\ap@tipo\ap@sec \S\ref{#1:#2}%
+  \else\ifx\ap@tipo\ap@ex Exemplo~\ref{#1:#2}%
+  \else\ifx\ap@tipo\ap@fig Figura~\ref{#1:#2}%
+  \else\ifx\ap@tipo\ap@teo Teorema~\ref{#1:#2}%
+  \else\ifx\ap@tipo\ap@lema Lema~\ref{#1:#2}%
+  \else\ref{#1:#2}\fi\fi\fi\fi\fi}
+\newcommand{\verref}[1]{ver~\def\ap@sep{}%
+  \@for\ap@r:=#1\do{\ap@sep\def\ap@sep{ e~}\expandafter\ap@umaref\ap@r\@nil}}
+\makeatother
+\NewDocumentEnvironment{exercicio}{m o !d<>}{%
   \par\addvspace{7pt}\refstepcounter{exerc}\label{ex:#1}%
   \noindent{\color{capcor}\bfseries\theexerc}%
   \IfValueT{#2}{\enspace{\small\color{gray!75!black}\textsf{[#2]}}}%
+  \IfValueT{#3}{\enspace{\small\color{gray!75!black}(\verref{#3})}}%
   \hfill{\scriptsize\hyperref[resp:#1]{resposta: p.~\pageref*{resp:#1}}}%
   \par\nopagebreak\noindent\ignorespaces}{\par}
 \newcommand{\resp}[1]{\par\addvspace{6pt}\noindent\phantomsection\label{resp:#1}%

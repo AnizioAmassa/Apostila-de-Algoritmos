@@ -16,7 +16,7 @@ Na busca em profundidade, a próxima aresta examinada parte sempre do vértice v
 É a estratégia de quem explora um labirinto desenrolando um novelo de lã: em cada encruzilhada, segue por um corredor ainda não explorado; quando chega a um beco sem saída, ou a um lugar onde já esteve, volta pelo fio até a última encruzilhada com corredores novos. O fio é a pilha de recursão: ele contém exatamente o caminho da entrada até a posição atual. A busca em largura, ao contrário, avança em ondas, como um grupo que se divide em todas as direções ao mesmo tempo.
 \end{intuicao}
 
-\section{O algoritmo}
+\section{O algoritmo}\label{sec:dfsalg}
 A regra da busca em profundidade é ``\emph{esgotar o filho antes de esgotar o pai}'': a busca é naturalmente recursiva, ou, de forma equivalente, usa uma pilha. Um relógio global $t$ marca, para cada vértice $v$, a sua profundidade de entrada $PE(v)$, quando ele é alcançado, e a sua profundidade de saída $PS(v)$, quando todos os seus vizinhos já foram examinados.
 \begin{pseudo}{Busca em profundidade, com o cálculo de $back(v)$ e dos blocos}
 \begin{algorithmic}
@@ -61,7 +61,7 @@ Na Figura~\ref{fig:dfs}, a busca começa em $e$ (instante 1) e examina os vizinh
 No instante 5, quando $d$ entra, a pilha de recursão é $e,c,a,b,d$: exatamente o caminho da raiz até $d$ na árvore. É por isso que uma aresta para um vértice ativo sempre vai a um ancestral.
 \end{exemplo}
 
-\section{Propriedades}
+\section{Propriedades}\label{sec:dfsprop}
 \begin{itemize}
   \item Se $G$ é conexo, as arestas de árvore formam uma \textbf{árvore geradora}, a árvore de profundidade. Se não é, o laço externo produz uma floresta, com uma árvore por componente.
   \item Num grafo \textbf{não direcionado}, só existem arestas de \textbf{árvore} e de \textbf{retorno}. Toda aresta de retorno liga um vértice $v$ a um \textbf{ancestral} de $v$ na árvore e fecha um ciclo.
@@ -79,7 +79,7 @@ No instante 5, quando $d$ entra, a pilha de recursão é $e,c,a,b,d$: exatamente
 \end{tikzpicture}
 \end{figura}
 
-\section{Aplicações}
+\section{Aplicações}\label{sec:dfsapl}
 \begin{enumerate}
   \item \textbf{Conexidade.} O número de vezes que o laço externo chama \textsc{P} é o número de componentes conexas; $G$ é conexo se e somente se esse número é 1.
   \item \textbf{Caminho de $v$ a $w$.} Execute \textsc{P}$(v)$. Se ao final $PE(w)=0$, não há caminho; senão, suba de $w$ até $v$ pelos ponteiros $pai$, colocando cada vértice à esquerda do caminho. Esse caminho \textbf{não} é necessariamente o mais curto; para isso, use a busca em largura. Um labirinto pode ser tratado da mesma forma, modelado como um grafo.
@@ -87,7 +87,7 @@ No instante 5, quando $d$ entra, a pilha de recursão é $e,c,a,b,d$: exatamente
   \item \textbf{Bipartição.} $G$ é bipartido (2-colorível) se e somente se não contém ciclo ímpar. Durante a busca, dê à raiz a cor 0 e, a cada aresta de árvore, faça $cor(w):=1-cor(v)$. Uma aresta de retorno com $cor(w)=cor(v)$ fecha um ciclo ímpar, e então o grafo não é bipartido.
 \end{enumerate}
 
-\begin{exemplo}[As aplicações no grafo da Figura~\ref{fig:dfs}]
+\begin{exemplo}[As aplicações no grafo da Figura~\ref{fig:dfs}]\label{ex:dfsapl}
 \textbf{Conexidade}: a chamada \textsc{P}$(e)$ alcança os sete vértices, e o laço externo não faz mais nenhuma chamada: o grafo é conexo. Num grafo com as componentes $\{1,2\}$ e $\{3,4,5\}$, o laço faria duas chamadas, uma para cada componente.
 \textbf{Caminho}: para ir de $e$ até $a$, sobe-se de $a$ pelos pais, $pai(a)=c$ e $pai(c)=e$, e o caminho é $e,c,a$.
 \textbf{Ciclo}: a primeira aresta de retorno encontrada é $bc$; subindo de $b$ até $c$ pelos pais ($b\to a\to c$) e fechando com $bc$, obtém-se o ciclo $c,a,b,c$.
@@ -156,65 +156,65 @@ Recursão ou pilha; $PE$ e $PS$; intervalos de vida aninhados (descendente $\iff
 % ----------------------------------------------------------------
 \section{Exercícios}
 \excurso
-\begin{exercicio}{bp-arv}[Slides]
+\begin{exercicio}{bp-arv}[Slides]<sec:dfsprop>
 Dado um grafo conexo $G$ e uma árvore geradora $T$ de $G$, decida se $T$ é uma árvore de profundidade de $G$, isto é, se existe uma busca em profundidade em $G$ que produz $T$.
 \end{exercicio}
-\begin{exercicio}{bp-pilha}[Slides]
+\begin{exercicio}{bp-pilha}[Slides]<fig:dfs,sec:articulacoes>
 Simule o cálculo dos blocos com a pilha de arestas no grafo da figura (raiz $e$, vizinhos em ordem alfabética), mostrando o conteúdo da pilha quando cada bloco é impresso.
 \end{exercicio}
-\begin{exercicio}{bp-pontes}[Slides]
+\begin{exercicio}{bp-pontes}[Slides]<sec:articulacoes>
 Faça pequenos acréscimos ao procedimento com $back(v)$ para listar as articulações e as pontes do grafo.
 \end{exercicio}
-\begin{exercicio}{bp-demarc}[Slides]
+\begin{exercicio}{bp-demarc}[Slides]<sec:articulacoes>
 Verifique se cada bloco tem o seu próprio demarcador, isto é, se o número de demarcadores é igual ao número de blocos.
 \end{exercicio}
-\begin{exercicio}{bp-apl}[Slides]
+\begin{exercicio}{bp-apl}[Slides]<sec:dfsapl>
 Descreva como a busca em profundidade resolve: (a) contar as componentes conexas; (b) encontrar um caminho de $v$ a $w$; (c) encontrar um ciclo ou concluir que o grafo é acíclico; (d) decidir se o grafo é 2-colorível.
 \end{exercicio}
 
 \excompl
-\begin{exercicio}{bp-sim}[Complementar]
+\begin{exercicio}{bp-sim}[Complementar]<ex:articulacoes>
 Execute a busca em profundidade, com o cálculo de $back$, a partir do vértice 1 no grafo com as arestas $12$, $13$, $23$, $34$, $45$, $46$, $56$ e $67$ (vizinhos em ordem crescente). Dê $PE$, $PS$, $back$, as arestas de retorno, as articulações, as pontes e os blocos.
 \end{exercicio}
-\begin{exercicio}{bp-cruz}[Complementar]
+\begin{exercicio}{bp-cruz}[Complementar]<sec:dfsprop>
 Prove que, numa busca em profundidade num grafo \emph{não direcionado}, não existem arestas de cruzamento: toda aresta liga um vértice a um ancestral ou a um descendente.
 \end{exercicio}
-\begin{exercicio}{bp-m}[Complementar]
+\begin{exercicio}{bp-m}[Complementar]<sec:dfsapl>
 Mostre que um grafo não direcionado com $m\ge n$ arestas tem um ciclo, e use isso para decidir se há ciclo em tempo $O(n)$, independentemente de $m$.
 \end{exercicio}
-\begin{exercicio}{bp-iter}[Complementar]
+\begin{exercicio}{bp-iter}[Complementar]<sec:dfsalg>
 Escreva a busca em profundidade sem recursão, com uma pilha explícita, mantendo os mesmos valores de $PE$ e $PS$ da versão recursiva.
 \end{exercicio}
-\begin{exercicio}{bp-trace}[Complementar]
+\begin{exercicio}{bp-trace}[Complementar]<ex:dfs>
 Execute a busca em profundidade a partir do vértice 1 no grafo com as arestas $12$, $13$, $24$, $25$, $36$, $37$, $48$, $58$, $67$ e $78$ (vizinhos em ordem crescente). Dê $PE$, $PS$, as arestas de árvore e as de retorno. O grafo tem articulações?
 \end{exercicio}
-\begin{exercicio}{bp-parenteses}[Complementar]
+\begin{exercicio}{bp-parenteses}[Complementar]<sec:dfsprop>
 Prove o teorema dos parênteses: para quaisquer vértices $u$ e $v$, os intervalos $[PE(u),PS(u)]$ e $[PE(v),PS(v)]$ são disjuntos ou um está contido no outro.
 \end{exercicio}
-\begin{exercicio}{bp-branco}[Complementar \estrela]
+\begin{exercicio}{bp-branco}[Complementar \estrela]<sec:dfsprop>
 Prove o \emph{teorema do caminho livre}: $v$ é descendente de $u$ na floresta de profundidade se e somente se, no instante $PE(u)$, existe um caminho de $u$ a $v$ formado apenas por vértices ainda não alcançados pela busca.
 \end{exercicio}
-\begin{exercicio}{bp-comp}[Complementar]
+\begin{exercicio}{bp-comp}[Complementar]<sec:dfsapl>
 Quantas componentes conexas tem o grafo com os vértices $1,\dots,9$ e as arestas $12$, $23$, $31$, $45$, $67$, $78$, $89$ e $96$? Quais vértices são raízes da floresta de profundidade, se a busca percorre os vértices em ordem crescente?
 \end{exercicio}
-\begin{exercicio}{bp-cicloex}[Complementar]
+\begin{exercicio}{bp-cicloex}[Complementar]<ex:dfsapl>
 No grafo do Exercício~\ref{ex:bp-trace}, use a primeira aresta de retorno encontrada para exibir um ciclo.
 \end{exercicio}
-\begin{exercicio}{bp-bipex}[Complementar]
+\begin{exercicio}{bp-bipex}[Complementar]<ex:dfsapl>
 Use a 2-coloração por busca em profundidade para decidir se é bipartido o grafo com as arestas $12$, $23$, $34$, $41$ e $13$. Indique a aresta que revela o ciclo ímpar, se houver.
 \end{exercicio}
-\begin{exercicio}{bp-arvore}[Complementar]
+\begin{exercicio}{bp-arvore}[Complementar]<sec:articulacoes>
 Quais são as pontes e as articulações de uma árvore? E de um ciclo? E de um caminho com $n\ge3$ vértices?
 \end{exercicio}
-\begin{exercicio}{bp-blocos}[Complementar]
+\begin{exercicio}{bp-blocos}[Complementar]<ex:articulacoes>
 Encontre as articulações, as pontes e os blocos do grafo com as arestas $12$, $23$, $31$, $34$, $45$, $56$, $64$ e $47$.
 \end{exercicio}
-\begin{exercicio}{bp-biconexo}[Complementar]
+\begin{exercicio}{bp-biconexo}[Complementar]<sec:articulacoes>
 Um grafo é \emph{biconexo} se é conexo e não tem articulações. Como decidir isso em $O(n+m)$? Mostre que, num grafo biconexo com pelo menos 3 vértices, toda aresta está em algum ciclo.
 \end{exercicio}
-\begin{exercicio}{bp-labirinto}[Complementar]
+\begin{exercicio}{bp-labirinto}[Complementar]<sec:dfsapl>
 Dê um exemplo de grafo e de vértices $v$ e $w$ em que o caminho de $v$ a $w$ encontrado pela busca em profundidade é mais longo que o caminho mínimo.
 \end{exercicio}
-\begin{exercicio}{bp-euler}[Complementar \estrela]
+\begin{exercicio}{bp-euler}[Complementar \estrela]<sec:dfsalg>
 Um \emph{circuito euleriano} percorre cada aresta exatamente uma vez e volta ao início. Sabendo que um grafo conexo tem circuito euleriano se e somente se todos os vértices têm grau par, mostre como encontrar o circuito em $O(n+m)$ com uma busca que avança por arestas ainda não usadas.
 \end{exercicio}

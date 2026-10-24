@@ -11,7 +11,7 @@
 
 Conhecer cada estrutura e cada algoritmo isoladamente não basta: na prática, o problema chega descrito em palavras, ou na forma de um programa lento, e é preciso decidir qual ferramenta usar. Este capítulo reúne os critérios espalhados pelos capítulos anteriores e os organiza num método.
 
-\section{Um método de escolha}
+\section{Um método de escolha}\label{sec:metodo}
 \begin{roteiro}[Como escolher]
 \begin{enumerate}
   \item \textbf{Liste as operações} que o problema (ou o código) faz repetidamente: buscar por chave, achar o máximo, inserir, remover, unir grupos, ordenar, selecionar o $k$-ésimo.
@@ -107,7 +107,7 @@ Para a ordenação, as perguntas podem ser feitas numa ordem fixa, como no fluxo
   \item procurar um elemento por varredura a cada consulta: use \textbf{hash} (sem ordem) ou \textbf{AVL} (com ordem).
 \end{itemize}
 
-\begin{exemplo}[Do código lento ao código rápido: o par mais próximo numa reta]
+\begin{exemplo}[Do código lento ao código rápido: o par mais próximo numa reta]\label{ex:parproximo}
 Um programa recebe as posições $x_1,\dots,x_n$ de $n$ postes ao longo de uma estrada e precisa da menor distância entre dois postes. O código atual compara todos os pares:
 \begin{pseudo}{Versão quadrática}
 \begin{algorithmic}
@@ -118,7 +118,7 @@ Um programa recebe as posições $x_1,\dots,x_n$ de $n$ postes ao longo de uma e
 São $\binom n2$ comparações: com $n=10^6$, cerca de $5\cdot10^{11}$ operações, mais de uma hora. A observação que salva é que, \emph{depois de ordenar}, o par mais próximo é necessariamente formado por dois vizinhos: se $x_{(1)}\le x_{(2)}\le\dots\le x_{(n)}$ e $i<j-1$, então $x_{(j)}-x_{(i)}\ge x_{(i+1)}-x_{(i)}$. Basta ordenar, em $O(n\log n)$, e comparar os $n-1$ pares vizinhos, em $O(n)$: cerca de $2\cdot10^7$ operações, uma fração de segundo. Por exemplo, para as posições $17,\,3,\,42,\,25,\,9,\,40$, a ordem é $3,9,17,25,40,42$, as diferenças entre vizinhos são $6,8,8,15,2$, e a resposta é 2 (os postes em 40 e 42). Se as posições forem inteiros num intervalo pequeno, a ordenação pode até ser linear, com counting ou radix sort.
 \end{exemplo}
 
-\section{Resumo das complexidades}
+\section{Resumo das complexidades}\label{sec:resumocompl}
 \begin{center}
 \small
 \textbf{Listas de prioridades} ($n$ elementos; \am\ indica custo amortizado)\\[2pt]
@@ -161,14 +161,14 @@ Bucket sort & $\Theta(n^2)$ & $\Theta(n)$ (uniforme) & $\Theta(n)$ & depende\\
 \end{itemize}
 \end{cuidado}
 
-\section{Exemplos}
+\section{Exemplos}\label{sec:rvexemplos}
 \begin{exemplo}[Uma agenda de compromissos]
 Um aplicativo guarda compromissos com data e hora, insere e remove compromissos com frequência, mostra o próximo compromisso e lista todos os compromissos de uma semana. As operações dominantes são inserção, remoção de um compromisso específico, ``próximo compromisso'' e consulta por intervalo. Um heap daria o próximo compromisso, mas não remove um elemento qualquer pela chave nem lista um intervalo; uma tabela hash não mantém ordem. Uma \textbf{AVL} indexada por data e hora faz tudo: inserção e remoção em $O(\log n)$, mínimo em $O(\log n)$ e a semana em $O(\log n+k)$, com $k$ compromissos listados.
 \end{exemplo}
 \begin{exemplo}[Ordenando frações com pouca memória]
 Um sistema embarcado precisa ordenar $10^5$ frações $p/q$, com numeradores e denominadores inteiros de até 18 dígitos, guardadas de forma exata, sem arredondar para ponto flutuante. Comparar duas frações é fácil --- com denominadores positivos, $p/q<r/s$ se e somente se $ps<rq$ ---, mas uma fração não serve diretamente de índice: counting, radix e bucket sort ficam de fora, e só resta comparar. Não há memória para um vetor auxiliar do tamanho da entrada, o que descarta o mergesort, e o tempo precisa ser garantido, o que descarta o quicksort. O \textbf{heapsort} atende a tudo: $\Theta(n\log n)$ comparações no pior caso, cerca de $1{,}7\cdot10^6$, sem memória extra. A falta de estabilidade não atrapalha, porque frações iguais podem sair em qualquer ordem.
 \end{exemplo}
-\begin{exemplo}[Juntando dois catálogos]
+\begin{exemplo}[Juntando dois catálogos]\label{ex:catalogos}
 Duas lojas que se fundiram têm catálogos com $10^6$ códigos de produto cada um, ambos já em ordem crescente, e querem um catálogo único, ordenado e sem códigos repetidos. Juntar as listas e ordenar tudo de novo custaria $\Theta(n\log n)$ e jogaria fora uma informação valiosa: as duas listas já estão ordenadas. A \textbf{intercalação} do mergesort (Capítulo~\ref{cap:sortcomp}) resolve em $\Theta(n)$: percorre as duas listas com um índice em cada, copia sempre o menor código e, quando os dois códigos apontados são iguais, copia um só e avança os dois índices. Por exemplo, $(3,8,15,21)$ e $(5,8,9,21,30)$ dão $(3,5,8,9,15,21,30)$, numa única passada pelas duas listas.
 \end{exemplo}
 
@@ -180,75 +180,75 @@ Identifique a operação dominante e o tipo das chaves. Heap para extremos; bino
 \section{Exercícios}
 Para cada situação, diga qual estrutura de dados ou algoritmo você usaria e justifique com as complexidades envolvidas.
 \excompl
-\begin{exercicio}{rv-maior}[Complementar]
+\begin{exercicio}{rv-maior}[Complementar]<sec:escolhageral>
 \textbf{Enquanto} houver tarefas na lista $L$ \textbf{faça}: percorra $L$ para achar a de maior prioridade, execute-a e remova-a de $L$; novas tarefas podem ser acrescentadas a $L$ durante a execução.
 \end{exercicio}
-\begin{exercicio}{rv-kesimo}[Complementar]
+\begin{exercicio}{rv-kesimo}[Complementar]<sec:escolhageral>
 Para cada uma de $q$ consultas: copie o vetor $V$ (que não muda) de tamanho $n$, ordene a cópia com um \texttt{sort} genérico e devolva o elemento da posição $k_i$.
 \end{exercicio}
-\begin{exercicio}{rv-grupos}[Complementar]
+\begin{exercicio}{rv-grupos}[Complementar]<sec:escolhageral>
 Uma rede social recebe $10^6$ pedidos de amizade, que unem comunidades, e $10^8$ perguntas ``$u$ e $v$ estão na mesma comunidade?''. O código atual responde cada pergunta com uma busca em largura no grafo de amizades.
 \end{exercicio}
-\begin{exercicio}{rv-dic}[Complementar]
+\begin{exercicio}{rv-dic}[Complementar]<sec:escolhageral>
 Um sistema guarda produtos por código, com inserções e remoções frequentes, e precisa responder ``quais códigos estão entre $a$ e $b$?''. Hoje os códigos ficam num vetor ordenado e cada inserção desloca os elementos.
 \end{exercicio}
-\begin{exercicio}{rv-idades}[Complementar]
+\begin{exercicio}{rv-idades}[Complementar]<fig:fluxosort>
 Ordenar as idades (inteiros entre 0 e 120) de $10^8$ pessoas com o \texttt{sort} da biblioteca.
 \end{exercicio}
-\begin{exercicio}{rv-filas}[Complementar]
+\begin{exercicio}{rv-filas}[Complementar]<sec:escolhageral>
 Um sistema de atendimento tem uma fila de prioridade por guichê; quando um guichê fecha, sua fila é unida à de outro guichê. Fechamentos são frequentes e o tempo de cada operação precisa ser previsível. Hoje cada fila é um heap binário.
 \end{exercicio}
-\begin{exercicio}{rv-emerg}[Complementar]
+\begin{exercicio}{rv-emerg}[Complementar]<sec:escolhageral>
 Um pronto-socorro mantém os pacientes em espera ordenados por gravidade. Chegam e são atendidos milhares de pacientes por dia; a gravidade de um paciente raramente muda; o sistema roda num dispositivo com pouca memória.
 \end{exercicio}
-\begin{exercicio}{rv-cancel}[Complementar]
+\begin{exercicio}{rv-cancel}[Complementar]<sec:escolhageral>
 Um simulador mantém eventos futuros ordenados por horário; a todo momento processa o próximo evento, cria novos eventos e às vezes cancela um evento já agendado, identificado por um número.
 \end{exercicio}
-\begin{exercicio}{rv-palavras}[Complementar]
+\begin{exercicio}{rv-palavras}[Complementar]<sec:escolhageral>
 Um corretor ortográfico precisa verificar, para cada palavra de um texto, se ela está num dicionário fixo de $10^6$ palavras. Não há atualizações nem consultas por ordem alfabética.
 \end{exercicio}
-\begin{exercicio}{rv-posicao}[Complementar \estrela]
+\begin{exercicio}{rv-posicao}[Complementar \estrela]<sec:escolhageral>
 Um placar online recebe pontuações e precisa responder ``qual a posição de $x$ no ranking?'' e ``quem está na posição $r$?'', com inserções e remoções frequentes.
 \end{exercicio}
-\begin{exercicio}{rv-mediana}[Complementar]
+\begin{exercicio}{rv-mediana}[Complementar]<sec:escolhageral>
 Um sensor envia medições continuamente, e após cada medição é preciso exibir a mediana de todas as medições recebidas até então.
 \end{exercicio}
-\begin{exercicio}{rv-externo}[Complementar]
+\begin{exercicio}{rv-externo}[Complementar]<fig:fluxosort>
 Ordenar um arquivo de 500 GB de registros num computador com 16 GB de memória.
 \end{exercicio}
-\begin{exercicio}{rv-quase}[Complementar]
+\begin{exercicio}{rv-quase}[Complementar]<fig:fluxosort>
 Um vetor de $10^6$ elementos está ordenado, exceto por uns poucos elementos fora do lugar, cada um a no máximo 10 posições da posição correta.
 \end{exercicio}
-\begin{exercicio}{rv-dup}[Complementar]
+\begin{exercicio}{rv-dup}[Complementar]<sec:escolhageral>
 Decidir se há strings repetidas numa lista de $10^7$ strings.
 \end{exercicio}
-\begin{exercicio}{rv-remocoes}[Complementar]
+\begin{exercicio}{rv-remocoes}[Complementar]<sec:escolhageral>
 Uma malha de estradas recebe uma lista de interdições, uma por vez, e após cada interdição é preciso dizer quantas regiões desconectadas existem. Toda a lista de interdições é conhecida de antemão.
 \end{exercicio}
-\begin{exercicio}{rv-topk}[Complementar]
+\begin{exercicio}{rv-topk}[Complementar]<sec:escolhageral>
 Um servidor processa um fluxo de $10^9$ requisições e, ao final, deve informar as 100 mais demoradas, usando pouca memória.
 \end{exercicio}
-\begin{exercicio}{rv-reais}[Complementar]
+\begin{exercicio}{rv-reais}[Complementar]<fig:fluxosort>
 Ordenar $10^6$ números reais em $[0,1)$ cuja distribuição é desconhecida e possivelmente muito concentrada perto de 0.
 \end{exercicio}
-\begin{exercicio}{rv-prefixo}[Complementar]
+\begin{exercicio}{rv-prefixo}[Complementar]<sec:metodo>
 Um programa responde a $q$ perguntas ``qual a soma de $V[i..j]$?'' sobre um vetor fixo, somando os elementos de $i$ a $j$ a cada pergunta.
 \end{exercicio}
-\begin{exercicio}{rv-busca}[Complementar]
+\begin{exercicio}{rv-busca}[Complementar]<sec:escolhageral>
 A cada consulta, um programa percorre uma lista de $n$ registros para descobrir se existe um registro com uma dada chave; há muitas consultas, inserções e remoções, e também é preciso, de vez em quando, listar os registros em ordem de chave.
 \end{exercicio}
-\begin{exercicio}{rv-desfazer}[Complementar]
+\begin{exercicio}{rv-desfazer}[Complementar]<sec:escolhageral>
 Um editor de redes permite ligar computadores, consultar se dois computadores se comunicam e desfazer as últimas ligações feitas.
 \end{exercicio}
-\begin{exercicio}{rv-estimativa}[Complementar]
+\begin{exercicio}{rv-estimativa}[Complementar]<sec:metodo>
 Com a regra de $10^8$ operações simples por segundo, estime o tempo de um algoritmo $\Theta(n^2)$ e o de um $\Theta(n\log n)$ para $n=5\cdot10^5$, desprezando as constantes. E o de um $\Theta(n^3)$ para $n=2000$? Quais deles servem para uma resposta interativa?
 \end{exercicio}
-\begin{exercicio}{rv-postes}[Complementar]
+\begin{exercicio}{rv-postes}[Complementar]<ex:parproximo>
 Aplique a solução rápida do par mais próximo numa reta (ordenar e comparar só os vizinhos) às posições $31,4,18,45,12,27,40,9$: dê a ordem, as diferenças entre vizinhos e a menor distância. Quantas diferenças são calculadas, contra quantos pares na versão quadrática?
 \end{exercicio}
-\begin{exercicio}{rv-catalogos}[Complementar]
+\begin{exercicio}{rv-catalogos}[Complementar]<ex:catalogos>
 Junte, sem códigos repetidos, os catálogos ordenados $(2,7,11,15,20)$ e $(3,7,9,15,22,30)$ pela intercalação do exemplo dos dois catálogos. Quantas comparações entre códigos são feitas?
 \end{exercicio}
-\begin{exercicio}{rv-painel}[Complementar]
+\begin{exercicio}{rv-painel}[Complementar]<ex:painel>
 No painel do Exemplo~\ref{ex:painel}, com uma lista duplamente encadeada por valor de carga e inserção no início da lista, os servidores A, B, C, D e E informam, nessa ordem, as cargas 70, 95, 70, 40 e 95. (a) Quais listas ficam não vazias, e em que ordem estão os servidores em cada uma? (b) Depois, C passa a 99 e B a 60. Quais listas mudam? (c) Quais são os três servidores mais carregados, e qual é o relatório completo em ordem decrescente de carga?
 \end{exercicio}

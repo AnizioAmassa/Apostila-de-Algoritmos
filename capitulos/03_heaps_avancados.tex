@@ -55,7 +55,7 @@ A altura de $B_k$ é $k$ quando medida em arestas, e $k+1$ quando medida em nív
 \end{cuidado}
 
 % ------------------------------------------------------------------
-\section{Heap binomial}
+\section{Heap binomial}\label{sec:heapbinomial}
 \begin{defi}
 Um \textbf{heap binomial} é uma floresta $H$ de árvores binomiais em que (1) cada árvore satisfaz a condição de heap (filho $\le$ pai) e (2) as árvores têm \textbf{ordens distintas}, isto é, há no máximo uma árvore de cada ordem. As raízes ficam numa lista, em ordem crescente de ordem.
 \end{defi}
@@ -125,7 +125,7 @@ Sejam $H_1=\{7,\ 9\to3\}$ e $H_2=\{5,\ 8\to6\}$, cada um com $3=11_2$ elementos:
 \end{figura}
 \end{exemplo}
 
-\begin{exemplo}[{Fusão de $H_1=\{B_1,B_2,B_3\}$ com $H_2=\{B_0,B_1,B_3\}$}]
+\begin{exemplo}[{Fusão de $H_1=\{B_1,B_2,B_3\}$ com $H_2=\{B_0,B_1,B_3\}$}]\label{ex:fusaoformas}
 Olhando apenas para os formatos: os heaps têm $14=1110_2$ e $11=1011_2$ elementos. A $B_0$ de $H_2$ fica sozinha na ordem 0. Na ordem 1, as duas $B_1$ formam uma $B_2$ (o ``vai um''); na ordem 2, essa $B_2$ se junta à $B_2$ de $H_1$ e forma uma $B_3$; na ordem 3 há, então, três árvores --- as $B_3$ de $H_1$ e de $H_2$ e a que acabou de se formar ---, e, como na soma $1+1+1=11_2$, uma delas fica e as outras duas formam uma $B_4$. São três links, e o resultado é $\{B_0,B_3,B_4\}$, isto é, $25=11001_2=1110_2+1011_2$.
 \end{exemplo}
 
@@ -191,7 +191,7 @@ incremento & contador & bits trocados ($t_i$) & $\Phi$ (bits 1) & $\Delta\Phi$ &
 Os custos reais oscilam (1, 2, 1, 3, 1, 2, 1, 4), mas o custo amortizado é sempre 2. Em geral, com $\Phi=$ número de bits iguais a 1, um incremento que zera $t$ bits e liga um tem custo amortizado $a=(t+1)+(1-t)=2$. Logo $m$ incrementos trocam no máximo $2m$ bits: na tabela, $15\le16$. É o mesmo argumento que mostra que as inserções num heap binomial custam $O(1)$ amortizado: inserir é somar 1.
 \end{exemplo}
 
-\begin{exemplo}[Pilha com desempilhamento múltiplo]
+\begin{exemplo}[Pilha com desempilhamento múltiplo]\label{ex:pilha}
 Cada operação desempilha $k\ge0$ elementos e depois empilha um; uma operação isolada pode custar $\Theta(n)$. Com $\Phi=$ número de elementos na pilha, uma operação que encontra $p$ elementos tem custo amortizado $a=(1+k)+(p-k+1)-p=2$. Logo $m$ operações custam no máximo $2m=O(m)$.
 
 Pelo método do banqueiro, a mesma conta fica assim: cada operação paga 2 créditos; um paga o empilhamento e o outro fica ``grudado'' no elemento empilhado, para pagar o seu futuro desempilhamento. Na sequência com $k=0,0,0,3,0$, os custos reais são $1,1,1,4,1$, o total é $8$, e os créditos pagos somam $2\cdot5=10$. Na quarta operação, os três créditos guardados nos elementos da pilha pagam os três desempilhamentos.
@@ -334,7 +334,7 @@ Use o potencial $\Phi(H)=t(H)+2\,m(H)$, onde $t$ é o número de raízes e $m$ o
   \item \textbf{Aumento de prioridade} com $c$ cortes em cascata: custo real $O(c)$; $t$ aumenta de $c$ e $m$ diminui de pelo menos $c-2$, então $\Delta\Phi\le c+2(2-c)=4-c$, e o custo amortizado é $O(1)$. Na linguagem do banqueiro, o corte de um nó marcado é pago pelos créditos deixados pela operação que o marcou.
 \end{itemize}
 
-\begin{exemplo}[O potencial nos exemplos anteriores]
+\begin{exemplo}[O potencial nos exemplos anteriores]\label{ex:potencial}
 No Exemplo~\ref{ex:consolida}, depois das 7 inserções há $t=7$ raízes e nenhuma marca: $\Phi=7$. A remoção do máximo examinou 6 raízes e fez 4 links, mas terminou com $t=2$, e $\Phi$ caiu de 7 para 2: a queda de 5 unidades ``pagou'' quase todo o trabalho. No Exemplo~\ref{ex:cascata}, houve $c=2$ cortes; $t$ aumentou de 2, e o número de marcas não mudou (a de $Y$ sumiu e a de $Z$ apareceu), logo $\Delta\Phi=2+2\cdot0=2$, e o custo amortizado é $2+2=4$, constante. Cada corte a mais na cascata desmarcaria mais um nó, e o potencial cairia 2 para pagá-lo.
 \end{exemplo}
 
@@ -395,74 +395,74 @@ Heap binomial $=$ árvores $B_k$ de ordens distintas $=$ bits de $n$; fusão $=$
 % ----------------------------------------------------------------
 \section{Exercícios}
 \excurso
-\begin{exercicio}{hb-l7}[Lista]
+\begin{exercicio}{hb-l7}[Lista]<sec:heapbinomial>
 Desenvolva um algoritmo $O(n)$ para construir um heap binomial com $n$ elementos.
 \end{exercicio}
-\begin{exercicio}{hb-l8}[Lista]
+\begin{exercicio}{hb-l8}[Lista]<sec:heapbinomial>
 Um heap binomial tem $k$ árvores. Que alturas elas devem ter para que a inserção seja o pior caso, isto é, faça o número máximo de passos?
 \end{exercicio}
-\begin{exercicio}{hb-l10}[Lista]
+\begin{exercicio}{hb-l10}[Lista]<ex:rembin>
 $H$ é um heap binomial com $k$ árvores, e a árvore cuja raiz tem a maior prioridade tem altura $h$. Determine as alturas das árvores de $H$ e o valor de $h$ para que a remoção do máximo faça o número máximo de passos.
 \end{exercicio}
-\begin{exercicio}{hb-l11}[Lista]
+\begin{exercicio}{hb-l11}[Lista]<ex:fusaobin>
 Prove ou dê contraexemplo: se $H_1$ e $H_2$ têm $k_1$ e $k_2$ árvores e sua fusão $H$ tem $k$ árvores, então $k\ge\min\{k_1,k_2\}$.
 \end{exercicio}
-\begin{exercicio}{hb-l12}[Lista]
+\begin{exercicio}{hb-l12}[Lista]<ex:fusaobin>
 Prove ou dê contraexemplo: nas mesmas condições, $k\le k_1+k_2$.
 \end{exercicio}
-\begin{exercicio}{hb-l13}[Lista]
+\begin{exercicio}{hb-l13}[Lista]<sec:fib>
 Determine a altura mínima e a máxima de uma árvore de um heap de Fibonacci em função do posto $k$.
 \end{exercicio}
-\begin{exercicio}{hb-l14}[Lista]
+\begin{exercicio}{hb-l14}[Lista]<sec:heapbinomial,sec:fib>
 Escreva os algoritmos de seleção, inserção, remoção, aumento e diminuição de prioridade, construção e fusão para heaps binomiais e para heaps de Fibonacci.
 \end{exercicio}
-\begin{exercicio}{hb-r6}[Monitoria]
+\begin{exercicio}{hb-r6}[Monitoria]<sec:binomial>
 (a) O que caracteriza uma árvore binomial $B_k$? Quantos nós tem? Qual a relação entre o grau da raiz e $k$? (b) Como um heap binomial representa uma coleção de árvores binomiais? (c) Duas árvores $B_2$ de um heap binomial de mínimo têm raízes de chaves 10 e 15: qual é o resultado do \emph{link}, sua ordem, seu número de nós e o grau da raiz? (d) Como achar o elemento de maior prioridade e qual o custo? (e) Qual o custo da união e por que ela não percorre os $n$ elementos?
 \end{exercicio}
-\begin{exercicio}{hb-r9}[Monitoria]
+\begin{exercicio}{hb-r9}[Monitoria]<sec:fib>
 (a) Qual a principal diferença estrutural entre heap de Fibonacci e heap binomial? (b) Quais operações são $O(1)$ amortizado? Quanto custa remover o mínimo (\emph{Extract-Min})? (c) Na \emph{Decrease-Key}$(x,k)$ de um heap de mínimo, por que alterar a chave pode violar a propriedade de heap e o que se faz? (d) Para que servem os cortes em cascata, e por que a operação é $O(1)$ amortizado mesmo fazendo vários cortes?
 \end{exercicio}
-\begin{exercicio}{hb-m1}[Monitoria]
+\begin{exercicio}{hb-m1}[Monitoria]<ex:fusaoformas>
 Faça a fusão de $H_1=\{B_0,B_2,B_4\}$ com $H_2=\{B_0,B_1\}$ como uma soma binária: quais subordinações acontecem, em que ordem, e qual o resultado em binário?
 \end{exercicio}
-\begin{exercicio}{hb-m2}[Monitoria]
+\begin{exercicio}{hb-m2}[Monitoria]<ex:cascata>
 Num heap de Fibonacci de máximo, o nó interno $X$ tem pai $Y$ marcado e avô $Z$ marcado. A prioridade de $X$ aumenta e viola a ordem. Descreva os cortes em cascata, os nós movidos para a lista de raízes e as mudanças nas marcas.
 \end{exercicio}
-\begin{exercicio}{hb-m3}[Monitoria]
+\begin{exercicio}{hb-m3}[Monitoria]<sec:fib>
 Por que não podemos simplesmente cortar um nó do pai sem marcar nem cortar em cascata? O que aconteceria com a relação entre a ordem de uma árvore e o seu número de nós?
 \end{exercicio}
-\begin{exercicio}{hb-t1}[Avaliação]
+\begin{exercicio}{hb-t1}[Avaliação]<sec:escolhaheap>
 Um aeroporto mantém uma fila de prioridade por setor de controle de tráfego. Fusões de filas (transferências entre setores, unificação de setores) são muito frequentes, com filas de centenas de milhares de aeronaves; alterações de prioridade são raras; e o tempo de \emph{cada} fusão precisa ser previsível, pois as janelas de processamento são rígidas. Qual heap você escolheria? Justifique e explique por que os outros dois são menos adequados.
 \end{exercicio}
-\begin{exercicio}{hb-t2}[Avaliação]
+\begin{exercicio}{hb-t2}[Avaliação]<sec:escolhaheap>
 Uma central de atendimento médico mantém cerca de $2\cdot10^6$ chamadas numa fila de prioridade, com $2\cdot10^6$ inserções, $2\cdot10^6$ remoções da chamada mais urgente e poucas alterações de prioridade. Cada chamada ocupa 16 bytes, endereços ocupam 8 bytes e a estrutura pode usar no máximo $40$ MB $=41\,943\,040$ bytes. Qual estrutura você usaria? Considere a complexidade das operações, a necessidade de fusão, a memória por elemento e a simplicidade.
 \end{exercicio}
-\begin{exercicio}{hb-t3}[Avaliação]
+\begin{exercicio}{hb-t3}[Avaliação]<sec:escolhaheap>
 Um supercomputador tem cerca de $5\cdot10^6$ tarefas numa fila de prioridade. Num período típico há $5\cdot10^6$ inserções, $5\cdot10^6$ remoções da tarefa mais prioritária, $8\cdot10^7$ aumentos de prioridade (feitos sem retirar e reinserir a tarefa) e poucas uniões de filas. O custo total da execução é o que importa. Qual heap é mais adequado? Por que os outros dois são menos vantajosos?
 \end{exercicio}
 
 \excompl
-\begin{exercicio}{hb-vetor}[Complementar]
+\begin{exercicio}{hb-vetor}[Complementar]<sec:amort>
 Um vetor dinâmico dobra de capacidade quando fica cheio, copiando todos os elementos. Mostre, com o método do potencial e $\Phi=2\cdot(\text{número de elementos})-\text{capacidade}$, que cada inserção custa $O(1)$ amortizado.
 \end{exercicio}
-\begin{exercicio}{hb-contador}[Complementar]
+\begin{exercicio}{hb-contador}[Complementar]<ex:contador>
 Um contador binário de $k$ bits passa a aceitar \emph{incremento} e \emph{decremento}. Mostre uma sequência de $m$ operações que custa $\Theta(mk)$. Por que a análise amortizada do contador só com incrementos não se aplica?
 \end{exercicio}
-\begin{exercicio}{hb-fila}[Complementar]
+\begin{exercicio}{hb-fila}[Complementar]<sec:amort>
 Implemente uma fila com duas pilhas (uma de entrada e outra de saída) e mostre que cada operação custa $O(1)$ amortizado.
 \end{exercicio}
-\begin{exercicio}{hb-forma}[Complementar]
+\begin{exercicio}{hb-forma}[Complementar]<sec:heapbinomial>
 Quais árvores binomiais compõem um heap binomial com 100 elementos? E depois de mais uma inserção? E depois de mais quatro inserções a partir de 100? Quantos \emph{links} cada uma dessas inserções faz?
 \end{exercicio}
-\begin{exercicio}{hb-fibbin}[Complementar]
+\begin{exercicio}{hb-fibbin}[Complementar]<sec:fib>
 Mostre que, se um heap de Fibonacci sofre apenas inserções, fusões e remoções do máximo (sem alterações de prioridade), toda árvore dele é uma árvore binomial (não ordenada) logo após cada consolidação.
 \end{exercicio}
-\begin{exercicio}{hb-fibcaro}[Complementar]
+\begin{exercicio}{hb-fibcaro}[Complementar]<ex:consolida>
 Dê uma sequência de operações, a partir de um heap de Fibonacci vazio, em que \emph{uma única} remoção do máximo tem custo real $\Theta(n)$. Por que isso não contradiz o custo amortizado $O(\log n)$?
 \end{exercicio}
-\begin{exercicio}{hb-binsim}[Complementar]
+\begin{exercicio}{hb-binsim}[Complementar]<ex:fusaobin>
 Insira $4,9,2,7,5$, nessa ordem, num heap binomial de máximo inicialmente vazio. Mostre as árvores depois de cada inserção e conte os \emph{links}. Compare o número de links de cada inserção com o número de ``vai um'' ao somar 1 em binário.
 \end{exercicio}
-\begin{exercicio}{hb-fibsim}[Complementar]
+\begin{exercicio}{hb-fibsim}[Complementar]<ex:consolida>
 Num heap de Fibonacci de máximo vazio, insira $6,2,9,4,8,1,7$ e depois remova o máximo, consolidando as raízes na ordem em que foram inseridas, como no Exemplo~\ref{ex:consolida}. Quais árvores restam? Quantos links são feitos? Quanto vale o potencial $\Phi=t+2m$ antes e depois da remoção?
 \end{exercicio}

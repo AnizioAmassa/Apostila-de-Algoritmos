@@ -30,7 +30,7 @@ baixá-lo daqui.
 Cada exercício é escrito como
 
 ```latex
-\begin{exercicio}{rotulo}[Origem]
+\begin{exercicio}{rotulo}[Origem]<sec:secao,ex:exemplo>
 Enunciado...
 \end{exercicio}
 ```
@@ -38,6 +38,12 @@ Enunciado...
 e a resposta, no arquivo `capitulos/respostas/NN.tex` do capítulo, como
 `\resp{rotulo} Texto da resposta.` O rótulo liga os dois: o enunciado mostra o
 link “resposta: p. X”, e o número da resposta leva de volta ao enunciado.
+
+O argumento opcional entre `< >` lista, separados por vírgula, os rótulos da
+seção, do exemplo ou da figura que o exercício pratica (prefixos `sec:`, `ex:`,
+`fig:`, `teo:` e `lema:`). O cabeçalho mostra “(ver §5.3 e Exemplo 5.11)”, com
+links. Ele é a única mudança aceita pelo script de integridade nos exercícios
+antigos.
 
 ## Como compilar
 

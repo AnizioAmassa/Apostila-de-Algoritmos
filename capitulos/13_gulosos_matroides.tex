@@ -37,7 +37,7 @@ Para mostrar que a escolha gulosa não estraga nada, imagine alguém que conhece
 \end{algorithmic}
 \end{pseudo}
 
-\begin{exemplo}[Troco de 38 centavos]
+\begin{exemplo}[Troco de 38 centavos]\label{ex:troco38}
 Com as moedas $\{20,10,5,1\}$, o guloso dá $\floor{38/20}=1$ moeda de 20 (sobram 18), $\floor{18/10}=1$ moeda de 10 (sobram 8), $\floor{8/5}=1$ moeda de 5 (sobram 3) e três moedas de 1: seis moedas no total (Figura~\ref{fig:troco}). Cada passo é uma decisão local --- ``use a maior moeda que cabe'' ---, tomada sem olhar o que vem depois.
 \begin{figura}[O troco guloso de 38 com as moedas $\{20,10,5,1\}$: em cada passo, a maior moeda que ainda cabe no valor restante.\label{fig:troco}]
 \begin{tikzpicture}[moeda/.style={circle, draw, thick, fill=Goldenrod!35, minimum size=8mm, font=\small\bfseries}]
@@ -49,7 +49,7 @@ Com as moedas $\{20,10,5,1\}$, o guloso dá $\floor{38/20}=1$ moeda de 20 (sobra
 \end{figura}
 \end{exemplo}
 
-\begin{exemplo}[O troco guloso é ótimo para as moedas $\{20,10,5,1\}$]
+\begin{exemplo}[O troco guloso é ótimo para as moedas $\{20,10,5,1\}$]\label{ex:trocootimo}
 Seja $(a,b,c,d)$ o número de moedas de $20,10,5,1$ numa solução ótima. Então $d\le4$, pois cinco moedas de 1 podem ser trocadas por uma de 5; $c\le1$, pois duas de 5 viram uma de 10; e $b\le1$, pois duas de 10 viram uma de 20. Logo as moedas menores que 20 somam $10b+5c+d\le10+5+4=19<20$, e então $a=\floor{S/20}$, como no guloso. Do mesmo modo, $5c+d\le9<10$ força o número de moedas de 10 a ser o do guloso, e $d\le4<5$ força o de moedas de 5. A solução ótima \emph{é} a gulosa.
 \end{exemplo}
 O guloso, porém, \textbf{não funciona para qualquer sistema de moedas}. Com $\{6,4,1\}$ e $S=8$, ele dá $6+1+1$ (três moedas), mas $4+4$ usa duas. Com $\{25,10,1\}$ e $S=30$, ele usa 6 moedas, contra $10+10+10$. O caso geral se resolve por programação dinâmica, como a mochila ilimitada: $T(s)=1+\min_{v_i\le s}T(s-v_i)$, em $\Theta(nS)$.
@@ -115,7 +115,7 @@ Matroide & Independentes\\
 \end{tabularx}
 \end{center}
 
-\begin{exemplo}[Uma matroide de partição]
+\begin{exemplo}[Uma matroide de partição]\label{ex:particao}
 Um restaurante monta pratos executivos com no máximo 1 entrada, 2 acompanhamentos e 1 sobremesa. O conjunto $E$ de opções é particionado em entradas, acompanhamentos e sobremesas, e um pedido é ``independente'' se respeita os três limites. O pedido \{salada, arroz, feijão, pudim\} é independente; \{arroz, feijão, purê\} não é, pois tem 3 acompanhamentos. Os axiomas valem: o pedido vazio respeita os limites; tirar itens de um pedido válido mantém-no válido; e, se um pedido válido tem menos itens que outro, há alguma categoria em que o maior tem mais itens que o menor, e um desses itens pode ser acrescentado ao menor sem estourar o limite dela.
 \end{exemplo}
 
@@ -147,7 +147,7 @@ Um restaurante monta pratos executivos com no máximo 1 entrada, 2 acompanhament
   \item Uma \textbf{base} é um independente maximal; todas as bases têm o mesmo tamanho. A coleção $\mathcal B$ das bases satisfaz (B1) $\mathcal B\ne\emptyset$ e (B2) (\textbf{troca de bases}): se $B_1,B_2\in\mathcal B$ e $x\in B_1\setminus B_2$, existe $y\in B_2\setminus B_1$ com $(B_1\setminus\{x\})\cup\{y\}\in\mathcal B$. Reciprocamente, toda coleção $\mathcal B$ que satisfaz (B1) e (B2) é a coleção das bases da matroide cujos independentes são os subconjuntos de elementos de $\mathcal B$.
 \end{itemize}
 
-\begin{exemplo}[Posto e troca de bases]
+\begin{exemplo}[Posto e troca de bases]\label{ex:posto}
 Na matroide do Exemplo~\ref{ex:matpequena}, o posto do triângulo $X=\{a,b,c\}$ é $r(X)=2$: qualquer par de arestas do triângulo é independente maximal dentro de $X$, e não há um trio. O posto da matroide toda é 3. Para ver a troca de bases, tome $B_1=\{a,b,d\}$, $B_2=\{b,c,d\}$ e $x=a\in B_1\setminus B_2$: retirando $a$ de $B_1$ sobra $\{b,d\}$, e o elemento $y=c\in B_2\setminus B_1$ completa uma nova base, $\{b,c,d\}$. No grafo, isso é trocar uma aresta de uma árvore geradora por outra que reconecta as duas partes --- a mesma troca que aparece na prova da propriedade do corte do Capítulo~\ref{cap:agm}.
 \end{exemplo}
 
@@ -228,74 +228,74 @@ Guloso: escolha local, sem retrocesso; correto quando vale a propriedade gulosa,
 % ----------------------------------------------------------------
 \section{Exercícios}
 \excurso
-\begin{exercicio}{gm-troco}[Lista]
+\begin{exercicio}{gm-troco}[Lista]<sec:guloso>
 Escreva um algoritmo guloso para o problema do troco: dar $S$ centavos com o menor número de moedas, de valores $v_1,\dots,v_n$. Mostre que ele é ótimo para as moedas $\{10,5,2,1\}$ e que não é ótimo para qualquer sistema monetário.
 \end{exercicio}
-\begin{exercicio}{gm-i3}[Slides]
+\begin{exercicio}{gm-i3}[Slides]<sec:matroides>
 Prove o axioma de aumento (I3) para a matroide linear, para a gráfica, para a transversal e para a de emparelhamento.
 \end{exercicio}
-\begin{exercicio}{gm-g}[Slides]
+\begin{exercicio}{gm-g}[Slides]<teo:gulosomat>
 Mostre que, se $\mathcal I$ satisfaz (I1) e (I2) e o algoritmo guloso devolve um independente maximal de peso máximo para \emph{toda} função de peso, então vale (I3).
 \end{exercicio}
-\begin{exercicio}{gm-pratica}[Slides]
+\begin{exercicio}{gm-pratica}[Slides]<sec:matroides>
 (a) É possível usar matroides no problema de seleção de intervalos com pesos unitários? (b) Faça um algoritmo para verificar se um conjunto $S$ de vetores-coluna de uma matriz é linearmente independente. Qual a complexidade?
 \end{exercicio}
-\begin{exercicio}{gm-pesq}[Pesquisa]
+\begin{exercicio}{gm-pesq}[Pesquisa]<sec:matroides>
 Investigue: os axiomas das matroides e sua interpretação; a relação entre a propriedade de troca e a correção do guloso; o algoritmo de Kruskal como guloso numa matroide; quando a maximização de pesos pelo guloso é ótima; o que muda quando há duas famílias de restrições de independência; como funciona a interseção de duas matroides por caminhos aumentantes; e por que duas matroides levam a problemas polinomiais enquanto três já podem levar a problemas NP-difíceis.
 \end{exercicio}
 
 \excompl
-\begin{exercicio}{gm-ativ}[Complementar]
+\begin{exercicio}{gm-ativ}[Complementar]<sec:guloso>
 Seleção de atividades: 11 atividades têm inícios $s=(1,3,0,5,3,5,6,8,8,2,12)$ e términos $f=(4,5,6,7,9,9,10,11,12,14,16)$. Aplique o guloso ``a que termina primeiro'' e prove que ele é ótimo.
 \end{exercicio}
-\begin{exercicio}{gm-ruins}[Complementar]
+\begin{exercicio}{gm-ruins}[Complementar]<sec:guloso>
 Mostre com contraexemplos que, para a seleção de atividades, os gulosos ``a de menor duração primeiro'' e ``a que começa primeiro'' não são ótimos.
 \end{exercicio}
-\begin{exercicio}{gm-frac}[Complementar]
+\begin{exercicio}{gm-frac}[Complementar]<sec:guloso>
 Na mochila \emph{fracionária}, em que se podem levar frações dos itens, prove que o guloso pela razão valor/peso é ótimo. Aplique a $W=50$ e itens $(p,v)=(10,60),(20,100),(30,120)$ e compare com a mochila 0-1.
 \end{exercicio}
-\begin{exercicio}{gm-unif}[Complementar]
+\begin{exercicio}{gm-unif}[Complementar]<ex:particao>
 Prove que a matroide uniforme $U_{n,k}$ e a matroide de partição satisfazem (I1), (I2) e (I3).
 \end{exercicio}
-\begin{exercicio}{gm-tarefas}[Complementar \estrela]
+\begin{exercicio}{gm-tarefas}[Complementar \estrela]<teo:gulosomat>
 Tarefas unitárias com prazos e multas: cada tarefa leva uma unidade de tempo, tem prazo $d_i$ e multa $w_i$ se terminar depois do prazo. Um conjunto de tarefas é \emph{independente} se pode ser executado todo dentro dos prazos, o que vale se e somente se, para todo $t$, no máximo $t$ tarefas do conjunto têm prazo $\le t$. Esses conjuntos formam uma matroide; use o guloso para minimizar a multa total com $d=(4,2,4,3,1,4,6)$ e $w=(70,60,50,40,30,20,10)$.
 \end{exercicio}
-\begin{exercicio}{gm-huffman}[Complementar \estrela]
+\begin{exercicio}{gm-huffman}[Complementar \estrela]<sec:guloso>
 Os \emph{códigos de Huffman} são construídos por um guloso que junta, repetidamente, as duas árvores de menor frequência. Construa o código para as frequências $a{:}45$, $b{:}13$, $c{:}12$, $d{:}16$, $e{:}9$ e $f{:}5$ e calcule o custo $\sum(\text{frequência})\times(\text{tamanho do código})$.
 \end{exercicio}
-\begin{exercicio}{gm-spt}[Complementar]
+\begin{exercicio}{gm-spt}[Complementar]<sec:guloso>
 Tarefas com durações $t_1,\dots,t_n$ serão executadas uma após a outra numa única máquina. Mostre que executá-las em ordem crescente de duração minimiza a soma dos instantes de término. Aplique a durações $3,1,2$.
 \end{exercicio}
-\begin{exercicio}{gm-naomat}[Complementar]
+\begin{exercicio}{gm-naomat}[Complementar]<sec:matroides>
 Seja $E=\{1,2,3\}$ e $\mathcal I=\{\emptyset,\{1\},\{2\},\{3\},\{1,2\}\}$. Verifique se $(E,\mathcal I)$ é uma matroide. Em caso negativo, mostre uma função de peso para a qual o guloso falha.
 \end{exercicio}
-\begin{exercicio}{gm-paralelos}[Complementar]
+\begin{exercicio}{gm-paralelos}[Complementar]<ex:matpequena>
 Seja $E=\{1,2,3,4\}$ e $\mathcal I$ a família dos conjuntos com no máximo 2 elementos, exceto $\{1,2\}$. Verifique se é uma matroide e dê uma matriz cujas colunas realizam essa matroide.
 \end{exercicio}
-\begin{exercicio}{gm-posto}[Complementar]
+\begin{exercicio}{gm-posto}[Complementar]<ex:posto>
 Mostre que, na matroide gráfica de um grafo com $n$ vértices e $c$ componentes conexas, todas as bases têm $n-c$ arestas. Qual o posto da matroide gráfica de um grafo com 6 vértices formado por um triângulo e um caminho com 3 vértices?
 \end{exercicio}
-\begin{exercicio}{gm-dual}[Complementar]
+\begin{exercicio}{gm-dual}[Complementar]<sec:matroides>
 Mostre que o dual da matroide uniforme $U_{n,k}$ é $U_{n,n-k}$.
 \end{exercicio}
-\begin{exercicio}{gm-unifgul}[Complementar]
+\begin{exercicio}{gm-unifgul}[Complementar]<ex:particao>
 O que faz o algoritmo guloso na matroide uniforme $U_{n,k}$? E numa matroide de partição? Aplique ao problema de escolher, entre itens das categorias $A=\{9,7,4\}$, $B=\{8,3\}$ e $C=\{6,5,2\}$ (os números são os pesos), no máximo 2 itens por categoria com peso total máximo.
 \end{exercicio}
-\begin{exercicio}{gm-moedas}[Complementar]
+\begin{exercicio}{gm-moedas}[Complementar]<ex:trocootimo>
 Mostre que o troco guloso não é ótimo para as moedas $\{1,7,10\}$, dando um valor $S$ em que ele falha. O sistema $\{1,5,10,25\}$ tem esse problema?
 \end{exercicio}
-\begin{exercicio}{gm-pesado}[Complementar]
+\begin{exercicio}{gm-pesado}[Complementar]<sec:matroides>
 Dê um exemplo de seleção de intervalos \emph{com pesos} em que o guloso ``o que termina primeiro'' não encontra o conjunto compatível de peso máximo. Como resolver esse problema?
 \end{exercicio}
-\begin{exercicio}{gm-fracn}[Complementar \estrela]
+\begin{exercicio}{gm-fracn}[Complementar \estrela]<sec:guloso>
 Mostre que a mochila fracionária pode ser resolvida em $O(n)$, sem ordenar os itens, usando seleção em tempo linear.
 \end{exercicio}
-\begin{exercicio}{gm-trocosim}[Complementar]
+\begin{exercicio}{gm-trocosim}[Complementar]<ex:troco38>
 (a) Aplique o troco guloso com as moedas $\{25,10,5,1\}$ a $S=68$ e a $S=99$, dando as moedas usadas. (b) Com as moedas $\{12,5,1\}$, qual é o menor valor $S$ em que o guloso não usa o menor número de moedas? Compare as duas soluções.
 \end{exercicio}
-\begin{exercicio}{gm-maxarv}[Complementar]
+\begin{exercicio}{gm-maxarv}[Complementar]<ex:gulosograf>
 Use o algoritmo guloso para matroides para encontrar uma árvore geradora de peso máximo no grafo com as arestas $PQ\,(3)$, $PR\,(8)$, $QR\,(5)$, $QS\,(7)$, $RS\,(2)$, $RT\,(6)$ e $ST\,(4)$, indicando as arestas aceitas e as rejeitadas, na ordem em que são examinadas.
 \end{exercicio}
-\begin{exercicio}{gm-comite}[Complementar]
+\begin{exercicio}{gm-comite}[Complementar]<ex:particao>
 Um comitê terá no máximo 2 professores, 1 aluno e 1 funcionário. As pontuações dos candidatos são 8, 6 e 5 (professores), 9 e 4 (alunos) e 7 e 3 (funcionários). (a) Que matroide descreve os comitês permitidos? (b) Aplique o guloso em ordem decrescente de pontuação, dizendo quem é aceito e quem é rejeitado. (c) Qual é a pontuação total do comitê?
 \end{exercicio}

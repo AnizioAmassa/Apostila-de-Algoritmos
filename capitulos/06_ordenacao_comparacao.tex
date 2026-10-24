@@ -12,7 +12,7 @@
 
 Ordenar é o problema algorítmico mais estudado: aparece sozinho e como passo de quase tudo, da busca binária à eliminação de repetidos e ao algoritmo de Kruskal. Este capítulo apresenta os algoritmos que ordenam \emph{comparando} pares de elementos e prova que nenhum algoritmo desse tipo pode fazer menos de $\Omega(n\log n)$ comparações no pior caso. Como o mergesort e o quicksort são recursivos, começamos pelas ferramentas para analisar algoritmos recursivos.
 
-\section{O problema da ordenação}
+\section{O problema da ordenação}\label{sec:ordproblema}
 Dada uma sequência $S$, queremos uma permutação $s_1,\dots,s_n$ de seus elementos com $s_i\le s_{i+1}$ para todo $i$. Duas propriedades de um algoritmo de ordenação importam além do tempo:
 \begin{itemize}
   \item ele é \textbf{estável} se elementos de chaves iguais aparecem na saída na mesma ordem relativa da entrada. A estabilidade é essencial para ordenar por várias chaves (primeiro pela secundária, depois pela principal) e para o radix sort do Capítulo~\ref{cap:sortlin};
@@ -261,7 +261,7 @@ O resultado, $(3,1,2,\,5,\,8,9,6)$, tem o pivô no lugar certo; resta ordenar $(
 \end{tikzpicture}
 \end{figura}
 
-\begin{exemplo}[O quicksort não é estável]
+\begin{exemplo}[O quicksort não é estável]\label{ex:quickinst}
 Três alunos com a mesma nota, Ana, Bruno e Carla, nessa ordem. Na primeira partição, o pivô é Carla (o último); ninguém é estritamente menor, e a troca final leva Carla para a primeira posição: (Carla, Bruno, Ana). A partição seguinte, sobre (Bruno, Ana), troca os dois. A saída é (Carla, Ana, Bruno), embora a entrada estivesse na ordem (Ana, Bruno, Carla): elementos iguais mudaram de ordem relativa.
 \end{exemplo}
 
@@ -285,7 +285,7 @@ heapsort & $\Theta(n\log n)$ & $\Theta(n\log n)$ & $\Theta(n\log n)$ & não & si
 \end{center}
 
 % ------------------------------------------------------------------
-\section{Limite inferior para ordenação por comparação}
+\section{Limite inferior para ordenação por comparação}\label{sec:limiteinf}
 \begin{intuicao}
 Ordenar por comparações é como jogar ``adivinhe a permutação'' fazendo só perguntas de sim ou não do tipo ``$a_i\le a_j$?''. Cada resposta, no máximo, divide ao meio o conjunto de permutações ainda possíveis. Começando com $n!$ possibilidades, são necessárias pelo menos $\log_2(n!)$ perguntas para chegar a uma só.
 \end{intuicao}
@@ -319,7 +319,7 @@ Para cada $n$, o algoritmo pode ser descrito por uma \textbf{árvore de decisão
 \]
 \end{proof}
 
-\begin{exemplo}[O limite para $n=3$ e $n=4$]
+\begin{exemplo}[O limite para $n=3$ e $n=4$]\label{ex:limite34}
 Com $n=3$, há $3!=6$ ordens possíveis; como $2^2=4<6$, duas comparações não bastam, e todo algoritmo precisa de pelo menos $\ceil{\log_26}=3$ comparações no pior caso. A árvore da Figura~\ref{fig:arvdecisao} atinge esse limite. Com $n=4$, há $24$ ordens, e $2^4=16<24\le32=2^5$: são necessárias pelo menos 5 comparações. O mergesort sobre 4 elementos faz no máximo $1+1+3=5$: é ótimo para $n=4$.
 \end{exemplo}
 
@@ -334,71 +334,71 @@ Recorrências se resolvem por árvore de recursão, substituição ou Teorema Me
 % ----------------------------------------------------------------
 \section{Exercícios}
 \excurso
-\begin{exercicio}{sc-merge}[Slides]
+\begin{exercicio}{sc-merge}[Slides]<sec:sortcomp>
 Escreva o pseudocódigo do procedimento de intercalação (\emph{Merge}) do mergesort.
 \end{exercicio}
-\begin{exercicio}{sc-iter}[Slides]
+\begin{exercicio}{sc-iter}[Slides]<sec:sortcomp>
 Escreva uma versão iterativa, não recursiva, do mergesort.
 \end{exercicio}
-\begin{exercicio}{sc-semcomp}[Slides]
+\begin{exercicio}{sc-semcomp}[Slides]<sec:limiteinf>
 Desenvolva uma estratégia para ordenar os elementos de um vetor que não seja baseada em comparações. Quais hipóteses sobre os elementos ela exige?
 \end{exercicio}
-\begin{exercicio}{sc-estavel}[Slides]
+\begin{exercicio}{sc-estavel}[Slides]<ex:estavel>
 (a) É possível implementar o mergesort de forma estável? (b) E o quicksort? Justifique.
 \end{exercicio}
 
 \excompl
-\begin{exercicio}{sc-mestre}[Complementar]
+\begin{exercicio}{sc-mestre}[Complementar]<ex:mestre>
 Resolva pelo Teorema Mestre: (a) $T(n)=4T(n/2)+n$; (b) $T(n)=4T(n/2)+n^2$; (c) $T(n)=4T(n/2)+n^3$; (d) $T(n)=2T(n/4)+\sqrt n$; (e) $T(n)=9T(n/3)+n$; (f) $T(n)=T(n/2)+n$.
 \end{exercicio}
-\begin{exercicio}{sc-arvore}[Complementar]
+\begin{exercicio}{sc-arvore}[Complementar]<sec:recorrencias>
 Use a árvore de recursão para resolver $T(n)=T(n/3)+T(2n/3)+n$.
 \end{exercicio}
-\begin{exercicio}{sc-pior8}[Complementar]
+\begin{exercicio}{sc-pior8}[Complementar]<ex:mergesort>
 Quantas comparações o mergesort faz no pior caso para $n=8$? Dê a recorrência para potências de 2 e a sua solução exata.
 \end{exercicio}
-\begin{exercicio}{sc-max}[Complementar]
+\begin{exercicio}{sc-max}[Complementar]<sec:limiteinf>
 Mostre que todo algoritmo que encontra o máximo de $n$ elementos por comparações faz pelo menos $n-1$ comparações. Por que o argumento da árvore de decisão dá um limite pior aqui?
 \end{exercicio}
-\begin{exercicio}{sc-iguais}[Complementar]
+\begin{exercicio}{sc-iguais}[Complementar]<ex:lomuto>
 Qual o custo do quicksort com a partição de Lomuto (teste ``$V[j]<x$'') quando todos os elementos são iguais? Como corrigir?
 \end{exercicio}
-\begin{exercicio}{sc-insercao}[Complementar]
+\begin{exercicio}{sc-insercao}[Complementar]<sec:sortcomp>
 Mostre que o número de deslocamentos feitos pela ordenação por inserção é exatamente o número de inversões do vetor (pares $i<j$ com $V[i]>V[j]$). Conclua que ela é $\Theta(n^2)$ no pior caso e no caso médio.
 \end{exercicio}
-\begin{exercicio}{sc-intercalar}[Complementar \estrela]
+\begin{exercicio}{sc-intercalar}[Complementar \estrela]<ex:mergesort>
 Mostre que intercalar duas listas ordenadas de $n$ elementos cada exige $2n-1$ comparações no pior caso.
 \end{exercicio}
-\begin{exercicio}{sc-mtrace}[Complementar]
+\begin{exercicio}{sc-mtrace}[Complementar]<ex:mergesort>
 Execute o mergesort sobre $[38,27,43,3,9,82,10]$, com $meio=\floor{(ini+fim)/2}$, e mostre o resultado de cada intercalação, na ordem em que acontecem.
 \end{exercicio}
-\begin{exercicio}{sc-lomuto}[Complementar]
+\begin{exercicio}{sc-lomuto}[Complementar]<ex:lomuto>
 Execute a partição de Lomuto sobre $[2,8,7,1,3,5,6,4]$ (pivô 4) e dê o vetor resultante e a posição devolvida.
 \end{exercicio}
-\begin{exercicio}{sc-quickpior}[Complementar]
+\begin{exercicio}{sc-quickpior}[Complementar]<sec:sortcomp>
 Quantas comparações exatamente o quicksort com a partição de Lomuto faz para ordenar um vetor já ordenado de $n$ elementos distintos?
 \end{exercicio}
-\begin{exercicio}{sc-subst}[Complementar]
+\begin{exercicio}{sc-subst}[Complementar]<ex:substituicao>
 Prove por indução que a solução de $T(1)=0$, $T(n)=2T(n/2)+n$ para $n$ potência de 2 é $T(n)=n\log_2n$.
 \end{exercicio}
-\begin{exercicio}{sc-selecao}[Complementar]
+\begin{exercicio}{sc-selecao}[Complementar]<ex:estavel>
 A ordenação por seleção acha o menor elemento de $V[i..n]$ e o troca com $V[i]$, para $i=1,\dots,n-1$. Quantas comparações e quantas trocas ela faz? Ela é estável? E a ordenação por inserção?
 \end{exercicio}
-\begin{exercicio}{sc-cinco}[Complementar]
+\begin{exercicio}{sc-cinco}[Complementar]<ex:limite34>
 Qual o número mínimo de comparações que um algoritmo baseado em comparações precisa fazer, no pior caso, para ordenar 5 elementos, segundo o argumento da árvore de decisão? E para 12 elementos?
 \end{exercicio}
-\begin{exercicio}{sc-kdist}[Complementar \estrela]
+\begin{exercicio}{sc-kdist}[Complementar \estrela]<sec:limiteinf>
 Um vetor de $n$ elementos tem apenas $k$ valores distintos. Mostre que $\Omega(n\log k)$ comparações são necessárias para ordená-lo e dê um algoritmo com esse custo.
 \end{exercicio}
-\begin{exercicio}{sc-nlog2}[Complementar]
+\begin{exercicio}{sc-nlog2}[Complementar]<sec:recorrencias>
 Resolva $T(n)=2T(n/2)+n\log n$ pela árvore de recursão. Por que o Teorema Mestre, na forma apresentada, não se aplica?
 \end{exercicio}
-\begin{exercicio}{sc-lineares}[Complementar]
+\begin{exercicio}{sc-lineares}[Complementar]<sec:recorrencias>
 Resolva: (a) $T(1)=1$, $T(n)=T(n-1)+n$; (b) $T(1)=1$, $T(n)=2T(n-1)+1$ (a recorrência das Torres de Hanói); (c) $T(1)=1$, $T(n)=T(n-1)+\log n$.
 \end{exercicio}
-\begin{exercicio}{sc-quicktrace}[Complementar]
+\begin{exercicio}{sc-quicktrace}[Complementar]<ex:lomuto>
 Execute o quicksort com a partição de Lomuto sobre $[5,8,1,9,3,7,2]$. Para cada chamada de \textsc{Particiona}, dê o trecho particionado, o pivô, o vetor depois da partição e a posição devolvida. Quantas comparações com o pivô são feitas no total?
 \end{exercicio}
-\begin{exercicio}{sc-instrace}[Complementar]
+\begin{exercicio}{sc-instrace}[Complementar]<sec:sortcomp>
 Execute a ordenação por inserção sobre $[6,2,5,1,4]$, mostrando o vetor depois de cada inserção e o número de deslocamentos de cada uma. Confira que o total é o número de inversões do vetor.
 \end{exercicio}

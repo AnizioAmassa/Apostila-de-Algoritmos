@@ -17,7 +17,7 @@ Um carteiro não ordena as cartas comparando endereços dois a dois. Ele olha o 
 \end{intuicao}
 
 % ------------------------------------------------------------------
-\section{Counting sort}
+\section{Counting sort}\label{sec:counting}
 O counting sort ordena inteiros no intervalo $[0,k]$. Ele trabalha em três etapas:
 \begin{enumerate}
   \item \textbf{contar}: $C[i]$ recebe o número de elementos iguais a $i$;
@@ -80,7 +80,7 @@ Ordenar $n=1000$ números de identificação, cada um entre 0 e $k=10^9$, com o 
 \end{exemplo}
 
 % ------------------------------------------------------------------
-\section{Radix sort}
+\section{Radix sort}\label{sec:radix}
 O radix sort ordena inteiros com $d$ dígitos na base $b$ \textbf{dígito a dígito, do menos significativo para o mais significativo}, usando em cada passada um método de ordenação \textbf{estável}. Cada passada é um counting sort com $k=b-1$, que é pequeno mesmo quando os números são enormes. A versão abaixo usa uma fila para cada valor de dígito, o que equivale a um counting sort.
 \begin{pseudo}{Radix sort com filas}
 \begin{algorithmic}
@@ -118,13 +118,13 @@ Observe a segunda passada: 130 e 131 têm o mesmo dígito das dezenas (3), e con
 
 \textbf{Por que a estabilidade é necessária?} Depois da passada pelo dígito $i$, elementos com o mesmo dígito $i$ devem manter entre si a ordem obtida pelos dígitos $1,\dots,i-1$. É isso que garante, por indução, que após a passada $i$ a lista está ordenada pelos $i$ últimos dígitos. As filas preservam a ordem de chegada naturalmente; outra opção é usar o counting sort em cada dígito.
 
-\begin{exemplo}[O que dá errado sem estabilidade]
+\begin{exemplo}[O que dá errado sem estabilidade]\label{ex:semestab}
 Ordene $23,21,13$. A passada pelas unidades dá $21,23,13$ (os dígitos 1, 3, 3). Na passada pelas dezenas, 21 e 23 empatam (dezena 2). Uma passada estável mantém $21$ antes de $23$ e produz $13,21,23$, correto. Uma passada que não fosse estável poderia devolver $13,23,21$: ordenado pelas dezenas, mas com a informação das unidades perdida. É a mesma situação do Exemplo~\ref{ex:estavel}, em que se ordena primeiro pela chave secundária e depois, de forma estável, pela principal: no radix sort, os dígitos menos significativos fazem o papel das chaves secundárias.
 \end{exemplo}
 
 O tempo é $\Theta(d(n+b))$: são $d$ passadas, e cada uma percorre os $n$ elementos e as $b$ filas (ou contadores). Com $b$ e $d$ constantes, $\Theta(n)$. Há uma troca entre $d$ e $b$: uma base maior deixa os números com menos dígitos (menos passadas), mas cada passada paga $\Theta(b)$ pelos contadores. Uma escolha útil é usar a própria base $b=n$: inteiros menores que $n^c$ têm $c$ dígitos nessa base, e o radix sort os ordena em $\Theta(cn)$.
 
-\begin{exemplo}[Escolhendo a base]
+\begin{exemplo}[Escolhendo a base]\label{ex:base}
 Para ordenar $n=10^6$ inteiros menores que $10^6$, podemos escrevê-los em várias bases:
 \begin{center}\small
 \begin{tabular}{@{}lccc@{}}
@@ -143,12 +143,12 @@ Aumentar a base reduz o número de passadas enquanto $b$ é pequeno perto de $n$
 
 \paragraph{Chaves de tamanhos variados.} Se os números têm quantidades diferentes de dígitos, $d_1,\dots,d_n$, completar todos com zeros até o maior tamanho desperdiça trabalho. É possível ordenar em tempo $O(\sum_id_i)$, linear no tamanho da entrada, agrupando os números pelo número de dígitos (um número com menos dígitos é menor) e fazendo cada número participar apenas das passadas correspondentes aos seus próprios dígitos. Por exemplo, em $7,\,42,\,3,\,105,\,18$, os grupos são $\{7,3\}$, $\{42,18\}$ e $\{105\}$; ordenado cada grupo, a concatenação $3,7,18,42,105$ já é a resposta, e o 105 foi o único a passar por três passadas. Para \textbf{strings}, ordena-se da direita para a esquerda completando as menores com um símbolo ``menor que todos'', ou usa-se a versão que começa pelo caractere mais significativo, descrita adiante.
 
-\begin{exemplo}[Strings de tamanhos diferentes]
+\begin{exemplo}[Strings de tamanhos diferentes]\label{ex:strings}
 Ordenemos as palavras \texttt{ba}, \texttt{a} e \texttt{ab}, completando-as até 2 letras com um símbolo $\bot$ menor que todas as letras: \texttt{ba}, \texttt{a}$\bot$, \texttt{ab}. Pela segunda letra ($\bot<\mathtt{a}<\mathtt{b}$): \texttt{a}$\bot$, \texttt{ba}, \texttt{ab}. Pela primeira letra, de forma estável: \texttt{a}$\bot$, \texttt{ab}, \texttt{ba}. Removendo o $\bot$, obtemos a ordem alfabética \texttt{a}, \texttt{ab}, \texttt{ba}: o símbolo $\bot$ garante que um prefixo vem antes das palavras que o estendem.
 \end{exemplo}
 
 % ------------------------------------------------------------------
-\section{Bucket sort}
+\section{Bucket sort}\label{sec:bucket}
 O bucket sort supõe que as chaves são reais \textbf{uniformemente distribuídos} em $[0,1)$. Divide-se o intervalo em $r$ baldes de mesmo tamanho, coloca-se $A[i]$ no balde $\floor{r\,A[i]}$, ordena-se cada balde (por exemplo, por inserção) e concatenam-se os baldes. Como os baldes correspondem a intervalos disjuntos e crescentes, todo elemento de um balde é menor que todo elemento do balde seguinte, e a concatenação fica ordenada.
 
 \begin{exemplo}[Bucket sort com 10 baldes]\label{ex:bucket}
@@ -179,7 +179,7 @@ Jogue $n$ bolinhas, ao acaso, em $n$ baldes. Alguns baldes ficam vazios, a maior
 \end{intuicao}
 
 % ------------------------------------------------------------------
-\section{American Flag sort}
+\section{American Flag sort}\label{sec:flag}
 O American Flag sort é um radix sort que começa pelo dígito \textbf{mais} significativo e trabalha \textbf{in-place}. Ele conta quantos elementos há com cada valor do dígito (um vetor $C$ de tamanho $b$), calcula onde começa o bloco de cada valor e \emph{permuta no próprio vetor} cada elemento para o seu bloco, por meio de trocas; depois, chama a si mesmo recursivamente em cada bloco, com o dígito seguinte. O nome vem da imagem do vetor, depois da primeira passada, dividido em faixas, como uma bandeira listrada.
 
 A permutação é feita bloco a bloco. Para cada valor de dígito $\delta$, mantém-se um ponteiro $prox[\delta]$ para a primeira posição do bloco de $\delta$ que ainda não recebeu o seu elemento definitivo. Enquanto o bloco de $\delta$ não estiver completo, olha-se o elemento $x$ na posição $prox[\delta]$: se o dígito de $x$ é $\delta$, ele já está no bloco certo e o ponteiro avança; se é outro valor $\varepsilon$, troca-se $x$ com o elemento da posição $prox[\varepsilon]$, e $prox[\varepsilon]$ avança. Cada troca põe pelo menos um elemento no seu bloco definitivo, e por isso uma passada faz menos de $n$ trocas.
@@ -265,68 +265,68 @@ Counting sort: $\Theta(n+k)$, estável (último laço de trás para frente), lin
 % ----------------------------------------------------------------
 \section{Exercícios}
 \excurso
-\begin{exercicio}{sl-t2}[Avaliação]
+\begin{exercicio}{sl-t2}[Avaliação]<sec:escolhasort>
 Uma empresa precisa ordenar grandes volumes de dados com características diferentes. Para cada cenário, escolha o algoritmo mais adequado entre counting sort, radix sort, bucket sort, mergesort e quicksort, justificando por tempo, espaço e características dos dados: (A) $10^7$ notas entre 0 e 100; (B) $10^6$ identificadores numéricos de 12 dígitos; (C) $10^5$ números reais uniformemente distribuídos entre 0 e 1; (D) $10^6$ inteiros com valores entre $-10^9$ e $10^9$; (E) $10^5$ registros com chaves arbitrárias e sem restrição de domínio.
 \end{exercicio}
-\begin{exercicio}{sl-var}[Slides]
+\begin{exercicio}{sl-var}[Slides]<sec:radix>
 Modifique o radix sort para ordenar inteiros com quantidades diferentes de dígitos em tempo $O\big(\sum_{i=1}^nd_i\big)$, onde $d_i$ é o número de dígitos do $i$-ésimo inteiro. Faça o mesmo para o American Flag sort.
 \end{exercicio}
-\begin{exercicio}{sl-str}[Slides]
+\begin{exercicio}{sl-str}[Slides]<ex:strings>
 Que modificações são necessárias no radix sort e no American Flag sort para ordenar \emph{strings} em vez de inteiros?
 \end{exercicio}
 
 \excompl
-\begin{exercicio}{sl-count}[Complementar]
+\begin{exercicio}{sl-count}[Complementar]<ex:counting>
 Execute o counting sort em $A=[2,5,3,0,2,3,0,3]$ com $k=5$: mostre o vetor $C$ após a contagem e após as somas acumuladas, e a saída $B$.
 \end{exercicio}
-\begin{exercicio}{sl-radix}[Complementar]
+\begin{exercicio}{sl-radix}[Complementar]<ex:radix>
 Execute o radix sort na base 10 sobre $329,457,657,839,436,720,355$, mostrando a lista após cada passada.
 \end{exercicio}
-\begin{exercicio}{sl-n3}[Complementar]
+\begin{exercicio}{sl-n3}[Complementar]<sec:radix>
 Mostre como ordenar $n$ inteiros do intervalo $[0,n^3-1]$ em tempo $O(n)$.
 \end{exercicio}
-\begin{exercicio}{sl-frente}[Complementar]
+\begin{exercicio}{sl-frente}[Complementar]<ex:counting>
 No último laço do counting sort, o que muda se $j$ for de $1$ até $n$ (em vez de $n$ até $1$)? O resultado continua ordenado? E o radix sort que usa esse counting sort em cada passada?
 \end{exercicio}
-\begin{exercicio}{sl-bucket}[Complementar]
+\begin{exercicio}{sl-bucket}[Complementar]<sec:bucket>
 Qual o pior caso do bucket sort com ordenação por inserção nos baldes? Como garantir $O(n\log n)$ no pior caso sem perder o tempo esperado $\Theta(n)$?
 \end{exercicio}
-\begin{exercicio}{sl-msd}[Complementar]
+\begin{exercicio}{sl-msd}[Complementar]<sec:flag>
 Por que o radix sort que começa pelo dígito menos significativo precisa de passadas estáveis, enquanto o American Flag sort, que começa pelo mais significativo, funciona mesmo não sendo estável?
 \end{exercicio}
-\begin{exercicio}{sl-neg}[Complementar]
+\begin{exercicio}{sl-neg}[Complementar]<sec:counting>
 Como usar o counting sort para ordenar inteiros no intervalo $[-m,m]$? Qual o custo?
 \end{exercicio}
-\begin{exercicio}{sl-n2}[Complementar]
+\begin{exercicio}{sl-n2}[Complementar]<sec:radix>
 Para ordenar $n$ inteiros no intervalo $[0,n^2-1]$, compare o counting sort direto com o radix sort na base $n$.
 \end{exercicio}
-\begin{exercicio}{sl-strtrace}[Complementar]
+\begin{exercicio}{sl-strtrace}[Complementar]<ex:strings>
 Ordene pelo radix sort as palavras COW, DOG, SEA, RUG, ROW, MOB, BOX, TAB, BAR, EAR, TAR, DIG, BIG, TEA, NOW, FOX, mostrando a lista após cada uma das três passadas.
 \end{exercicio}
-\begin{exercicio}{sl-buckettrace}[Complementar]
+\begin{exercicio}{sl-buckettrace}[Complementar]<ex:bucket>
 Execute o bucket sort com 10 baldes sobre $0{,}78;\ 0{,}17;\ 0{,}39;\ 0{,}26;\ 0{,}72;\ 0{,}94;\ 0{,}21;\ 0{,}12;\ 0{,}23;\ 0{,}68$. Mostre o conteúdo de cada balde não vazio.
 \end{exercicio}
-\begin{exercicio}{sl-base}[Complementar]
+\begin{exercicio}{sl-base}[Complementar]<ex:base>
 Para ordenar $10^6$ inteiros de 32 bits com o radix sort, compare as bases $2^4$, $2^8$ e $2^{16}$: quantas passadas cada uma faz e qual o custo aproximado de cada passada? Qual parece a melhor escolha?
 \end{exercicio}
-\begin{exercicio}{sl-prova}[Complementar]
+\begin{exercicio}{sl-prova}[Complementar]<ex:semestab>
 Prove por indução no número de passadas que o radix sort (do dígito menos significativo para o mais significativo, com passadas estáveis) ordena corretamente.
 \end{exercicio}
-\begin{exercicio}{sl-registros}[Complementar]
+\begin{exercicio}{sl-registros}[Complementar]<ex:estavel>
 Uma lista de alunos já está em ordem alfabética e deve ser ordenada pela nota (um inteiro de 0 a 10), mantendo em ordem alfabética os alunos com a mesma nota. Que algoritmo usar e por quê?
 \end{exercicio}
-\begin{exercicio}{sl-datas}[Complementar]
+\begin{exercicio}{sl-datas}[Complementar]<sec:radix>
 Datas no formato (dia, mês, ano) devem ser ordenadas cronologicamente com o radix sort. Em que ordem devem ser feitas as passadas e qual a base de cada uma?
 \end{exercicio}
-\begin{exercicio}{sl-dup}[Complementar]
+\begin{exercicio}{sl-dup}[Complementar]<sec:radix>
 Dados $n$ inteiros no intervalo $[0,n^2]$, decida em tempo $O(n)$ se há elementos repetidos.
 \end{exercicio}
-\begin{exercicio}{sl-intervalo}[Complementar]
+\begin{exercicio}{sl-intervalo}[Complementar]<sec:counting>
 Dados $n$ inteiros no intervalo $[0,k]$, faça um pré-processamento em tempo $O(n+k)$ que permita responder em $O(1)$ a perguntas do tipo ``quantos elementos estão no intervalo $[a,b]$?''.
 \end{exercicio}
-\begin{exercicio}{sl-bucketruim}[Complementar]
+\begin{exercicio}{sl-bucketruim}[Complementar]<sec:bucket>
 Dê uma entrada de $n$ números em $[0,1)$ para a qual o bucket sort com $n$ baldes e inserção nos baldes gasta $\Theta(n^2)$.
 \end{exercicio}
-\begin{exercicio}{sl-flag}[Complementar]
+\begin{exercicio}{sl-flag}[Complementar]<ex:flag>
 Quanta memória auxiliar o American Flag sort usa para ordenar $n$ inteiros de $d$ dígitos na base $b$? Por que se diz que ele é in-place, se usa vetores de contadores?
 \end{exercicio}

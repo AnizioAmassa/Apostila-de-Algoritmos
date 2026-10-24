@@ -16,7 +16,7 @@ Quando as arestas têm pesos, a busca em largura deixa de fornecer distâncias. 
 Imagine que cada aresta é um pavio, que queima em tempo igual ao seu peso, e que acendemos a origem no instante 0. O fogo chega a cada vértice exatamente no instante $\operatorname{dist}(s,v)$, pelo caminho mais rápido, e acende os pavios que saem dele. O algoritmo de Dijkstra simula esse incêndio: ele mantém, para cada vértice, a melhor estimativa de quando o fogo chegará, e processa os vértices na ordem em que o fogo os alcança. Quando um vértice é processado, nenhum caminho ainda não explorado pode chegar antes, porque esses caminhos passam por vértices que o fogo ainda não alcançou.
 \end{intuicao}
 
-\section{O algoritmo}
+\section{O algoritmo}\label{sec:dijalg}
 \textbf{Problema:} dado um digrafo com pesos \textbf{não negativos} e uma raiz $s$, calcular os caminhos mínimos de $s$ a todos os vértices. O algoritmo mantém, para cada vértice $w$, um rótulo $L(w)$, que é o custo do melhor caminho de $s$ a $w$ encontrado até o momento, e um ponteiro $pai(w)$. A cada passo, retira da fila de prioridades o vértice de menor rótulo, fixa esse rótulo como definitivo e tenta melhorar os rótulos dos seus vizinhos.
 \begin{pseudo}{Algoritmo de Dijkstra}
 \begin{algorithmic}
@@ -70,7 +70,7 @@ Os ponteiros $pai$ formam a \textbf{árvore de caminhos mínimos}: $a\to b\to c\
 \end{exemplo}
 Para um grafo não direcionado, basta trocar cada aresta $xy$ de peso $p$ pelas arestas direcionadas $x\to y$ e $y\to x$, ambas de peso $p$. E, se todos os pesos são iguais a 1, o algoritmo se comporta como a busca em largura: a fila de prioridades passa a liberar os vértices em ordem de nível, e $L(w)$ é a distância em número de arestas.
 
-\section{Correção}
+\section{Correção}\label{sec:dijcorrecao}
 \begin{teo}
 Com pesos não negativos, quando um vértice $v$ é removido de $D$, vale $L(v)=\operatorname{dist}(s,v)$.
 \end{teo}
@@ -91,7 +91,7 @@ Sempre vale $L(v)\ge\operatorname{dist}(s,v)$, pois $L(v)$ é o custo de algum c
 
 A hipótese sobre os pesos é essencial: com uma aresta negativa, um vértice já marcado pode ganhar, depois, um caminho mais barato, que o algoritmo nunca mais examina. Para pesos negativos sem ciclos negativos, existem outros algoritmos, como o de Bellman-Ford, em $O(nm)$; para todos os pares, o Floyd-Warshall.
 
-\begin{exemplo}[Uma aresta negativa engana o algoritmo]
+\begin{exemplo}[Uma aresta negativa engana o algoritmo]\label{ex:dijneg}
 No digrafo da Figura~\ref{fig:dijkneg}, com as arestas $s\to a$ (1), $s\to b$ (3), $b\to a$ ($-3$) e $a\to c$ (1), o algoritmo remove $s$ (rótulo 0), depois $a$ (rótulo 1), que é marcado como definitivo, e então $c$ (rótulo 2). Só depois remove $b$ (rótulo 3) e relaxa a aresta $b\to a$; mas $a$ já está marcado e não é revisto. O resultado diz $L(a)=1$ e $L(c)=2$, enquanto o caminho $s\to b\to a$ custa $3-3=0$ e, com ele, $s\to b\to a\to c$ custa 1. O erro num vértice se propaga para os que dependem dele.
 \begin{figura}[Um digrafo com uma aresta negativa em que o algoritmo de Dijkstra erra. Em vermelho, os rótulos calculados; entre parênteses, as distâncias corretas.\label{fig:dijkneg}]
 \begin{tikzpicture}[x=1.6cm,y=1.1cm]
@@ -104,7 +104,7 @@ No digrafo da Figura~\ref{fig:dijkneg}, com as arestas $s\to a$ (1), $s\to b$ (3
 \end{figura}
 \end{exemplo}
 
-\section{Implementações e complexidade}
+\section{Implementações e complexidade}\label{sec:dijimpl}
 \begin{center}\small
 \begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{5.2cm}>{\raggedright\arraybackslash}p{3.6cm}X@{}}
 \toprule
@@ -152,71 +152,71 @@ Fila de prioridades na chave $L$; remove-se o menor $L$ ainda não fixado; relax
 % ----------------------------------------------------------------
 \section{Exercícios}
 \excurso
-\begin{exercicio}{dj-bfs}[Slides]
+\begin{exercicio}{dj-bfs}[Slides]<sec:dijalg>
 Mostre que o algoritmo de Dijkstra se comporta como uma busca em largura se todos os pesos são iguais a 1: a árvore de caminhos mínimos é uma árvore de largura e cada $L(w)$ é a distância em arestas.
 \end{exercicio}
-\begin{exercicio}{dj-nd}[Slides]
+\begin{exercicio}{dj-nd}[Slides]<sec:dijalg>
 Como encontrar caminhos mínimos de uma raiz a todos os vértices num grafo \emph{não direcionado} com pesos positivos?
 \end{exercicio}
-\begin{exercicio}{dj-slide}[Slides]
+\begin{exercicio}{dj-slide}[Slides]<ex:dijkstra>
 Execute o algoritmo de Dijkstra a partir de $a$ no digrafo da §\ref{sec:fwmatriz}, mostrando os rótulos $L$ e os pais a cada vértice removido.
 \end{exercicio}
 
 \excompl
-\begin{exercicio}{dj-sim}[Complementar]
+\begin{exercicio}{dj-sim}[Complementar]<ex:dijkstra>
 Execute o algoritmo de Dijkstra a partir de $s$ no digrafo com as arestas $s\to t$ (10), $s\to y$ (5), $t\to x$ (1), $t\to y$ (2), $x\to z$ (4), $y\to t$ (3), $y\to x$ (9), $y\to z$ (2), $z\to s$ (7) e $z\to x$ (6). Dê a ordem de remoção, as distâncias e a árvore de caminhos mínimos.
 \end{exercicio}
-\begin{exercicio}{dj-neg}[Complementar]
+\begin{exercicio}{dj-neg}[Complementar]<ex:dijneg>
 Dê um digrafo com três vértices e uma aresta negativa, sem ciclo negativo, em que o algoritmo de Dijkstra erra. Somar uma constante a todos os pesos, para torná-los positivos, resolve? Por quê?
 \end{exercicio}
-\begin{exercicio}{dj-conf}[Complementar]
+\begin{exercicio}{dj-conf}[Complementar]<sec:dijcorrecao>
 Cada aresta $uv$ de uma rede funciona com probabilidade $p(u,v)\in(0,1]$, independentemente das outras. Como encontrar o caminho \emph{mais confiável} (de maior probabilidade de funcionar) de $s$ a $t$ com o algoritmo de Dijkstra?
 \end{exercicio}
-\begin{exercicio}{dj-fontes}[Complementar]
+\begin{exercicio}{dj-fontes}[Complementar]<sec:dijalg>
 Há várias fontes $s_1,\dots,s_k$ (por exemplo, quartéis de bombeiros). Como calcular, para cada vértice, a distância até a fonte mais próxima com uma única execução do algoritmo de Dijkstra?
 \end{exercicio}
-\begin{exercicio}{dj-escolha}[Complementar]
+\begin{exercicio}{dj-escolha}[Complementar]<sec:dijimpl>
 Para um grafo com $n=10^5$ vértices e $m=3\cdot10^5$ arestas, e para outro com $n=10^4$ e $m=5\cdot10^7$, qual implementação do algoritmo de Dijkstra você usaria, vetor ou heap binário? Estime o número de operações.
 \end{exercicio}
-\begin{exercicio}{dj-und}[Complementar]
+\begin{exercicio}{dj-und}[Complementar]<ex:dijkstra>
 Execute o algoritmo de Dijkstra a partir do vértice 1 no grafo não direcionado com as arestas $12$ (7), $13$ (9), $16$ (14), $23$ (10), $24$ (15), $34$ (11), $36$ (2), $45$ (6) e $56$ (9). Dê a ordem de remoção, as distâncias e os pais.
 \end{exercicio}
-\begin{exercicio}{dj-zero}[Complementar]
+\begin{exercicio}{dj-zero}[Complementar]<sec:dijcorrecao>
 O algoritmo de Dijkstra continua correto se algumas arestas têm peso zero? Justifique com a prova de correção.
 \end{exercicio}
-\begin{exercicio}{dj-alvo}[Complementar]
+\begin{exercicio}{dj-alvo}[Complementar]<sec:dijcorrecao>
 Se só interessa a distância de $s$ a um único vértice $t$, em que momento o algoritmo pode parar? Por que isso está correto?
 \end{exercicio}
-\begin{exercicio}{dj-vert}[Complementar]
+\begin{exercicio}{dj-vert}[Complementar]<sec:dijalg>
 Cada \emph{vértice} $v$ tem um custo $c(v)\ge0$ de passagem, além dos pesos das arestas. Como transformar o problema para aplicar o algoritmo de Dijkstra?
 \end{exercicio}
-\begin{exercicio}{dj-k}[Complementar]
+\begin{exercicio}{dj-k}[Complementar]<sec:dijalg>
 Queremos o caminho mínimo de $s$ a $t$ que usa no máximo $k$ arestas. Por que o algoritmo de Dijkstra não resolve isso diretamente? Mostre como resolver com um grafo de estados $(v,j)$, em que $j$ é o número de arestas usadas.
 \end{exercicio}
-\begin{exercicio}{dj-gargalo}[Complementar]
+\begin{exercicio}{dj-gargalo}[Complementar]<sec:dijcorrecao>
 A capacidade de um caminho é a menor capacidade das suas arestas. Adapte o algoritmo de Dijkstra para encontrar, a partir de $s$, o caminho de maior capacidade até cada vértice.
 \end{exercicio}
-\begin{exercicio}{dj-conta}[Complementar]
+\begin{exercicio}{dj-conta}[Complementar]<sec:dijalg>
 Com pesos positivos, adapte o algoritmo de Dijkstra para contar quantos caminhos mínimos distintos existem de $s$ até cada vértice.
 \end{exercicio}
-\begin{exercicio}{dj-dag}[Complementar]
+\begin{exercicio}{dj-dag}[Complementar]<sec:topo>
 Num digrafo \emph{acíclico} com pesos quaisquer, inclusive negativos, mostre como calcular os caminhos mínimos a partir de $s$ em $O(n+m)$, sem fila de prioridades.
 \end{exercicio}
-\begin{exercicio}{dj-longo}[Complementar]
+\begin{exercicio}{dj-longo}[Complementar]<sec:dijcorrecao>
 Por que não basta trocar ``menor'' por ``maior'' no algoritmo de Dijkstra para encontrar caminhos simples \emph{mais longos}?
 \end{exercicio}
-\begin{exercicio}{dj-dial}[Complementar \estrela]
+\begin{exercicio}{dj-dial}[Complementar \estrela]<sec:dijimpl>
 Se os pesos são inteiros entre 0 e $C$, mostre como implementar o algoritmo de Dijkstra em $O(m+nC)$, usando um vetor de baldes indexado pelo valor do rótulo.
 \end{exercicio}
-\begin{exercicio}{dj-inv}[Complementar]
+\begin{exercicio}{dj-inv}[Complementar]<sec:dijcorrecao>
 Prove que, durante toda a execução, $L(v)\ge\operatorname{dist}(s,v)$ para todo vértice $v$, e que $L(v)$ nunca aumenta.
 \end{exercicio}
-\begin{exercicio}{dj-fib}[Complementar]
+\begin{exercicio}{dj-fib}[Complementar]<sec:dijimpl>
 Quantas operações de cada tipo (inserção, remoção do mínimo, redução de chave) o algoritmo de Dijkstra faz no pior caso? Use isso para justificar o custo $O(m+n\log n)$ com heap de Fibonacci.
 \end{exercicio}
-\begin{exercicio}{dj-sim3}[Complementar]
+\begin{exercicio}{dj-sim3}[Complementar]<ex:dijkstra>
 Execute o algoritmo de Dijkstra a partir de $s$ no digrafo com as arestas $s\to a$ (4), $s\to b$ (1), $b\to a$ (2), $b\to c$ (5), $a\to c$ (1), $a\to d$ (6), $c\to d$ (2), $c\to t$ (7) e $d\to t$ (1). Dê, para cada vértice removido, os rótulos que mudam, e a árvore de caminhos mínimos.
 \end{exercicio}
-\begin{exercicio}{dj-und2}[Complementar]
+\begin{exercicio}{dj-und2}[Complementar]<ex:dijkstra>
 Execute o algoritmo de Dijkstra a partir de $A$ no grafo não direcionado com as arestas $AB$ (2), $AC$ (5), $BC$ (1), $BD$ (4), $CD$ (1), $CE$ (3) e $DE$ (3). Dê a ordem de remoção, as distâncias e os pais.
 \end{exercicio}
