@@ -14,12 +14,30 @@ Na divisão e conquista, os subproblemas são disjuntos. Em muitos problemas, po
 
 \section{A técnica}
 No método geral de decomposição, subproblemas idênticos podem aparecer muitas vezes ao longo do processo. Se cada aparição for resolvida de novo, o algoritmo pode ser exponencial mesmo que o número de subproblemas \emph{distintos} seja polinomial. A \textbf{programação dinâmica} mantém uma tabela com uma entrada para cada subproblema distinto: na primeira vez em que um subproblema é considerado, ele é resolvido normalmente; nas vezes seguintes, sua solução é simplesmente lida da tabela.
+
+\begin{exemplo}[Fibonacci: o mesmo cálculo, muitas vezes]\label{ex:fib}
+Os números de Fibonacci são $F_0=0$, $F_1=1$ e $F_n=F_{n-1}+F_{n-2}$. A recursão direta para $F_5$ chama $F_4$ e $F_3$; $F_4$ chama $F_3$ de novo; e assim por diante (Figura~\ref{fig:fibarv}). São 15 chamadas para calcular $F_5$, embora só existam 6 subproblemas distintos, $F_0,\dots,F_5$: $F_3$ é calculado 2 vezes, $F_2$ 3 vezes e $F_1$ 5 vezes. O número de chamadas $c(n)$ satisfaz $c(n)=c(n-1)+c(n-2)+1$ e cresce como os próprios números de Fibonacci, isto é, exponencialmente: $c(30)=2\,692\,537$ e $c(40)=331\,160\,281$. Guardando cada $F_k$ na primeira vez em que é calculado, cada um dos $n+1$ subproblemas custa $O(1)$, e o total cai para $O(n)$.
+\begin{figura}[A árvore de chamadas da recursão ingênua para $F_5$. Subárvores repetidas têm a mesma cor: a de $F_3$ (amarelo) aparece duas vezes, e a de $F_2$ (azul), três.\label{fig:fibarv}]
+\forestset{fibf/.style={for tree={circle, draw, minimum size=1.7em, inner sep=0.5pt, font=\scriptsize, s sep=2mm, l sep=2.5mm, edge={thick}}},
+  f3/.style={fill=destaque}, f2/.style={fill=azul}}
+\begin{forest} fibf
+[$F_5$
+  [$F_4$ [$F_3$,f3 [$F_2$,f2 [$F_1$] [$F_0$]] [$F_1$]] [$F_2$,f2 [$F_1$] [$F_0$]]]
+  [$F_3$,f3 [$F_2$,f2 [$F_1$] [$F_0$]] [$F_1$]]]
+\end{forest}
+\end{figura}
+\end{exemplo}
+
 \begin{itemize}
   \item \textbf{Divisão e conquista ou programação dinâmica?} A divisão e conquista funciona bem quando os subproblemas são \textbf{disjuntos}, como no mergesort. Quando eles \textbf{compartilham} subproblemas, é melhor trocar a abordagem de cima para baixo por uma de baixo para cima: resolver dos subproblemas menores para os maiores, de modo que, ao chegar a um subproblema, todos aqueles de que ele depende já estejam resolvidos.
   \item \textbf{Subestrutura ótima}: uma solução ótima é composta de soluções ótimas de subproblemas. A prova típica é o argumento de ``recortar e colar'': se uma parte não fosse ótima, trocá-la por uma melhor daria uma solução global melhor, o que é uma contradição.
   \item \textbf{Sobreposição de subproblemas}: a recursão ingênua revisita os mesmos subproblemas; é isso que faz a tabela valer a pena.
   \item \textbf{Memorização} (de cima para baixo): a recursão original, acrescida de ``se já calculei este subproblema, devolvo o valor guardado''. \textbf{Cálculo de baixo para cima}: laços que preenchem a tabela na ordem certa. As duas têm a mesma complexidade; a segunda evita a pilha de recursão e, às vezes, permite economizar memória.
 \end{itemize}
+
+\begin{exemplo}[Recortar e colar]
+Se o caminho mais curto de Belo Horizonte a Curitiba passa por São Paulo, então o seu trecho de Belo Horizonte a São Paulo é um caminho mais curto entre essas duas cidades. De fato, se houvesse um caminho mais curto de Belo Horizonte a São Paulo, poderíamos ``recortá-lo'' e ``colá-lo'' no lugar do trecho original, obtendo um caminho até Curitiba mais curto que o ótimo, uma contradição. É essa propriedade que permite escrever a distância até Curitiba em termos de distâncias até cidades intermediárias, e ela é a base do algoritmo de Floyd-Warshall (Capítulo~\ref{cap:fw}) e do de Dijkstra (Capítulo~\ref{cap:dijkstra}).
+\end{exemplo}
 
 \begin{pseudo}{Fibonacci: recursão ingênua $\Theta(\varphi^n)$; memorização $O(n)$; de baixo para cima, $O(n)$ com memória $O(1)$}
 \begin{algorithmic}
@@ -37,6 +55,16 @@ No método geral de decomposição, subproblemas idênticos podem aparecer muita
 \end{algorithmic}
 \end{pseudo}
 
+\begin{figura}[À esquerda, o grafo de dependências dos subproblemas de Fibonacci: cada $F_k$ depende de $F_{k-1}$ e de $F_{k-2}$. Há só $n+1$ nós, e qualquer ordem que respeite as setas (por exemplo, $F_0,F_1,\dots,F_6$) serve para preencher a tabela, à direita.\label{fig:fibdag}]
+\begin{tikzpicture}[x=1.05cm,y=1cm, baseline=(f0.base)]
+\foreach \k in {0,...,6} {\node[vtxs] (f\k) at (6-\k,0) {$F_{\k}$};}
+\foreach \k [evaluate=\k as \um using int(\k-1)] in {1,...,6} {\draw[arco] (f\k) -- (f\um);}
+\foreach \k [evaluate=\k as \dois using int(\k-2)] in {2,...,6} {\draw[arco, gray, bend left=45] (f\k) to (f\dois);}
+\end{tikzpicture}
+\qquad
+\raisebox{-0.5ex}{\small $F$:\ \vetorz{0,1,1,2,3,5,8}}
+\end{figura}
+
 \begin{roteiro}[Como projetar um algoritmo de programação dinâmica]
 \begin{enumerate}
   \item \textbf{Defina o subproblema em palavras}, por exemplo ``$C(i,j)=$ tamanho da subsequência comum máxima de $X_i$ e $Y_j$''. Sem essa frase, a recorrência não tem sentido.
@@ -51,13 +79,17 @@ No método geral de decomposição, subproblemas idênticos podem aparecer muita
 
 % ------------------------------------------------------------------
 \section{Subsequência comum máxima}\label{sec:lcs}
-Uma sequência $Z$ é \textbf{subsequência} de $X=x_1\dots x_n$ se os seus símbolos aparecem em $X$ na mesma ordem, \textbf{não necessariamente contíguos}. Por exemplo, $6,10,12$ é subsequência de $3,6,9,10,12,14,6$, mas não de $3,9,10,12,14,6$. Dadas $X$, com $|X|=n$, e $Y$, com $|Y|=m$, o problema da \textbf{subsequência comum máxima} (LCS, do inglês \emph{longest common subsequence}) pede uma subsequência comum a $X$ e a $Y$ de tamanho máximo. A força bruta testaria as $2^n$ subsequências de $X$.
+Uma sequência $Z$ é \textbf{subsequência} de $X=x_1\dots x_n$ se os seus símbolos aparecem em $X$ na mesma ordem, \textbf{não necessariamente contíguos}. Por exemplo, $6,10,12$ é subsequência de $3,6,9,10,12,14,6$, mas não de $3,9,10,12,14,6$. Dadas $X$, com $|X|=n$, e $Y$, com $|Y|=m$, o problema da \textbf{subsequência comum máxima} (LCS, do inglês \emph{longest common subsequence}) pede uma subsequência comum a $X$ e a $Y$ de tamanho máximo. A força bruta testaria as $2^n$ subsequências de $X$. O problema aparece na comparação de arquivos (o comando \texttt{diff} mostra o que não está numa subsequência comum máxima das linhas) e na comparação de sequências de DNA.
 
 \textbf{Decomposição.} Seja $X_i=x_1\dots x_i$ e olhe para os últimos símbolos. Se $x_n=y_m$, esse símbolo termina alguma subsequência comum máxima, e o restante dela é uma subsequência comum máxima de $X_{n-1}$ e $Y_{m-1}$. Se $x_n\ne y_m$, a resposta não usa $x_n$ ou não usa $y_m$. Com $C(i,j)=$ tamanho da subsequência comum máxima de $X_i$ e $Y_j$:
 \[
 C(i,j)=\begin{cases}0 & i=0\text{ ou }j=0\\ 1+C(i-1,j-1) & x_i=y_j\\ \max\{C(i-1,j),\,C(i,j-1)\} & x_i\ne y_j\end{cases}\qquad\text{resposta: }C(n,m).
 \]
 A recursão direta é exponencial, mas há apenas $(n+1)(m+1)$ subproblemas distintos.
+
+\begin{intuicao}
+Compare duas palavras de trás para frente. Se as últimas letras são iguais, case-as: nada se perde, porque qualquer subsequência comum que não as use pode trocar a sua última letra por elas. Se são diferentes, pelo menos uma das duas sobra; como não sabemos qual, experimentamos descartar cada uma e ficamos com o melhor. A tabela evita repetir as mesmas comparações de prefixos.
+\end{intuicao}
 
 \begin{pseudo}{LCS de baixo para cima, com reconstrução: $\Theta(nm)$ de tempo e memória}
 \begin{algorithmic}
@@ -83,22 +115,24 @@ A recursão direta é exponencial, mas há apenas $(n+1)(m+1)$ subproblemas dist
 \end{algorithmic}
 \end{pseudo}
 
-\begin{exemplo}[$X=\mathrm{ABCBDAB}$ e $Y=\mathrm{BDCABA}$]\leavevmode
-\begin{center}\small
-\begin{tabular}{cc|ccccccc}
- & & $j{=}0$ & 1 & 2 & 3 & 4 & 5 & 6\\
- & & & B & D & C & A & B & A\\ \hline
-$i{=}0$ & & 0&0&0&0&0&0&0\\
-1 & A & 0&0&0&0&1&1&1\\
-2 & B & 0&\textbf{1}&1&1&1&2&2\\
-3 & C & 0&1&1&\textbf{2}&2&2&2\\
-4 & B & 0&1&1&2&2&\textbf{3}&3\\
-5 & D & 0&1&2&2&2&3&3\\
-6 & A & 0&1&2&2&3&3&\textbf{4}\\
-7 & B & 0&1&2&2&3&4&4\\
-\end{tabular}
-\end{center}
-$C[7,6]=4$. A reconstrução, subindo nos empates, passa pelas células em negrito: de $(7,6)$ sobe para $(6,6)$, onde casa \textbf{A}; vai para $(5,5)$, sobe para $(4,5)$, onde casa \textbf{B}; vai para $(3,4)$, anda para a esquerda até $(3,3)$, onde casa \textbf{C}; vai para $(2,2)$ e anda até $(2,1)$, onde casa \textbf{B}. Como cada símbolo é colocado no início, $Z=\mathrm{BCBA}$. As subsequências comuns de tamanho 4 são exatamente BCAB, BCBA e BDAB.
+\begin{exemplo}[$X=\mathrm{ABCBDAB}$ e $Y=\mathrm{BDCABA}$]\label{ex:lcs}
+A tabela é preenchida linha a linha, da esquerda para a direita: cada célula depende da vizinha de cima, da da esquerda e da diagonal superior esquerda, que já foram calculadas (Figura~\ref{fig:lcs}). Por exemplo, na linha $i=2$ ($x_2=\mathrm{B}$) e coluna $j=1$ ($y_1=\mathrm{B}$), os símbolos casam, e $C[2,1]=1+C[1,0]=1$; na mesma linha e coluna $j=4$ ($y_4=\mathrm{A}$), não casam, e $C[2,4]=\max\{C[1,4],C[2,3]\}=\max\{1,1\}=1$.
+
+$C[7,6]=4$. A reconstrução, subindo nos empates, passa pelas células destacadas: de $(7,6)$ sobe para $(6,6)$, onde casa \textbf{A}; vai para $(5,5)$, sobe para $(4,5)$, onde casa \textbf{B}; vai para $(3,4)$, anda para a esquerda até $(3,3)$, onde casa \textbf{C}; vai para $(2,2)$ e anda até $(2,1)$, onde casa \textbf{B}. Como cada símbolo é colocado no início, $Z=\mathrm{BCBA}$. As subsequências comuns de tamanho 4 são exatamente BCAB, BCBA e BDAB.
+\begin{figura}[A tabela $C$ da subsequência comum máxima de ABCBDAB e BDCABA. O caminho da reconstrução está em amarelo; nas células verdes, os símbolos casam e entram na resposta, BCBA.\label{fig:lcs}]
+\begin{tikzpicture}[x=7.5mm,y=6.3mm]
+\foreach \ii/\jj in {7/6,5/5,3/4,2/2} {\fill[destaque] (\jj-0.5,-\ii-0.5) rectangle (\jj+0.5,-\ii+0.5);}
+\foreach \ii/\jj in {6/6,4/5,3/3,2/1} {\fill[feito] (\jj-0.5,-\ii-0.5) rectangle (\jj+0.5,-\ii+0.5);}
+\foreach \lin/\vals in {0/{0,0,0,0,0,0,0},1/{0,0,0,0,1,1,1},2/{0,1,1,1,1,2,2},3/{0,1,1,2,2,2,2},4/{0,1,1,2,2,3,3},5/{0,1,2,2,2,3,3},6/{0,1,2,2,3,3,4},7/{0,1,2,2,3,4,4}} {
+  \foreach \xx [count=\k from 0] in \vals {\node[cel, minimum width=7.5mm, minimum height=6.3mm] at (\k,-\lin) {\xx};}}
+\foreach \lt [count=\k] in {B,D,C,A,B,A} {\node[font=\small\bfseries] at (\k,1.1) {\lt}; \node[idx] at (\k,1.9) {$j{=}\k$};}
+\foreach \lt [count=\k] in {A,B,C,B,D,A,B} {\node[font=\small\bfseries] at (-1.1,-\k) {\lt}; \node[idx] at (-2,-\k) {$i{=}\k$};}
+\begin{scope}[-{Stealth[length=1.5mm]}, MidnightBlue, thick, shorten <=2.2mm, shorten >=2.2mm]
+\draw (6,-7) -- (6,-6); \draw (6,-6) -- (5,-5); \draw (5,-5) -- (5,-4); \draw (5,-4) -- (4,-3);
+\draw (4,-3) -- (3,-3); \draw (3,-3) -- (2,-2); \draw (2,-2) -- (1,-2);
+\end{scope}
+\end{tikzpicture}
+\end{figura}
 \end{exemplo}
 Para $X=5,2,1,3,9,10,14$ e $Y=2,3,1,10$, o tamanho é 3, com as soluções $2,3,10$ e $2,1,10$.
 \begin{itemize}
@@ -111,7 +145,32 @@ Para $X=5,2,1,3,9,10,14$ e $Y=2,3,1,10$, o tamanho é 3, com as soluções $2,3,
 Queremos calcular $M=M_1\times M_2\times\dots\times M_n$, onde $M_i$ tem dimensões $r_{i-1}\times r_i$. Multiplicar uma matriz $p\times q$ por uma $q\times s$ custa $p\,q\,s$ multiplicações escalares. O produto de matrizes é \textbf{associativo}: a ordem em que as multiplicações são feitas não muda o resultado, mas pode mudar muito o custo. O problema é encontrar a parentização de custo mínimo.
 
 \begin{exemplo}\label{ex:cadeia}
-Sejam $M_1:20\times50$, $M_2:50\times10$, $M_3:10\times1$ e $M_4:1\times100$, isto é, $r=(20,50,10,1,100)$. A ordem $M_1(M_2(M_3M_4))$ custa $1000+50\,000+100\,000=\mathbf{151\,000}$ multiplicações; a ordem $((M_1M_2)M_3)M_4$ custa $10\,000+200+2000=\mathbf{12\,200}$. Nenhuma das duas é a melhor: a programação dinâmica abaixo encontra $(M_1(M_2M_3))M_4$, que custa $500+1000+2000=\mathbf{3500}$.
+Sejam $M_1:20\times50$, $M_2:50\times10$, $M_3:10\times1$ e $M_4:1\times100$, isto é, $r=(20,50,10,1,100)$. A ordem $M_1(M_2(M_3M_4))$ custa $1000+50\,000+100\,000=\mathbf{151\,000}$ multiplicações; a ordem $((M_1M_2)M_3)M_4$ custa $10\,000+200+2000=\mathbf{12\,200}$. Nenhuma das duas é a melhor: a programação dinâmica abaixo encontra $(M_1(M_2M_3))M_4$, que custa $500+1000+2000=\mathbf{3500}$. As cinco parentizações possíveis custam:
+\begin{center}\small
+\begin{tabular}{@{}lr@{\qquad}lr@{}}
+\toprule
+$((M_1M_2)M_3)M_4$ & $12\,200$ & $M_1((M_2M_3)M_4)$ & $105\,500$\\
+$(M_1(M_2M_3))M_4$ & $\mathbf{3500}$ & $M_1(M_2(M_3M_4))$ & $151\,000$\\
+$(M_1M_2)(M_3M_4)$ & $31\,000$ & & \\
+\bottomrule
+\end{tabular}
+\end{center}
+A Figura~\ref{fig:cadeiaarv} desenha a melhor e a pior como árvores: cada nó interno é uma multiplicação, e o seu custo é o produto das três dimensões envolvidas. A melhor ordem faz cedo o produto com a matriz $10\times1$, que ``estreita'' tudo; a pior multiplica por último matrizes de 100 colunas.
+\begin{figura}[A melhor (à esquerda) e a pior (à direita) parentização de $M_1M_2M_3M_4$, com $r=(20,50,10,1,100)$. Cada nó interno mostra as dimensões do resultado e, em vermelho, o custo daquela multiplicação; o custo total é a soma dos números vermelhos.\label{fig:cadeiaarv}]
+\forestset{cad/.style={for tree={draw, rounded corners=2pt, font=\scriptsize, inner sep=2pt, s sep=4mm, l sep=3mm, edge={thick}, align=center},
+  where n children=0{fill=azul}{}}}
+\begin{forest} cad
+[{$20\times100$\\ \textcolor{BrickRed}{2000}}
+  [{$20\times1$\\ \textcolor{BrickRed}{1000}} [{$M_1$\\ $20\times50$}] [{$50\times1$\\ \textcolor{BrickRed}{500}} [{$M_2$\\ $50\times10$}] [{$M_3$\\ $10\times1$}]]]
+  [{$M_4$\\ $1\times100$}]]
+\end{forest}
+\hspace{8mm}
+\begin{forest} cad
+[{$20\times100$\\ \textcolor{BrickRed}{100\,000}}
+  [{$M_1$\\ $20\times50$}]
+  [{$50\times100$\\ \textcolor{BrickRed}{50\,000}} [{$M_2$\\ $50\times10$}] [{$10\times100$\\ \textcolor{BrickRed}{1000}} [{$M_3$\\ $10\times1$}] [{$M_4$\\ $1\times100$}]]]]
+\end{forest}
+\end{figura}
 \end{exemplo}
 A força bruta é exponencial: o número de parentizações de $n$ matrizes é o número de Catalan $C_{n-1}$ (que vale $1,1,2,5,14,42,132,\dots$), e cresce como $\Omega(4^n/n^{3/2})$.
 
@@ -119,7 +178,22 @@ A força bruta é exponencial: o número de parentizações de $n$ matrizes é o
 \[
 m[i,j]=\begin{cases}0 & i=j\\[2pt] \min\limits_{i\le k<j}\big\{\,m[i,k]+m[k+1,j]+r_{i-1}\,r_k\,r_j\,\big\} & i<j\end{cases}\qquad\text{resposta: } m[1,n].
 \]
-Há $O(n^2)$ subproblemas e cada um testa $O(n)$ valores de $k$: o algoritmo custa \textbf{$\Theta(n^3)$ de tempo e $\Theta(n^2)$ de memória}. Como $m[i,j]$ depende de intervalos \emph{mais curtos}, a tabela é preenchida \textbf{por diagonais}, com $d=j-i=1,2,\dots,n-1$; a diagonal principal é toda zero.
+O termo $r_{i-1}r_kr_j$ é o custo da última multiplicação: o produto $M_i\cdots M_k$ tem dimensões $r_{i-1}\times r_k$, e o produto $M_{k+1}\cdots M_j$, dimensões $r_k\times r_j$. Há $O(n^2)$ subproblemas e cada um testa $O(n)$ valores de $k$: o algoritmo custa \textbf{$\Theta(n^3)$ de tempo e $\Theta(n^2)$ de memória}. Como $m[i,j]$ depende de intervalos \emph{mais curtos}, a tabela é preenchida \textbf{por diagonais}, com $d=j-i=1,2,\dots,n-1$; a diagonal principal é toda zero (Figura~\ref{fig:diagonais}).
+
+\begin{figura}[A ordem de preenchimento da tabela $m$ para $n=4$, por diagonais $d=j-i$. A célula $m[1,4]$ (em vermelho) usa a linha 1 à sua esquerda e a coluna 4 abaixo dela, que pertencem a diagonais anteriores.\label{fig:diagonais}]
+\begin{tikzpicture}[x=9mm,y=7mm]
+\foreach \ii in {1,...,4} {\foreach \jj in {\ii,...,4} {
+  \pgfmathtruncatemacro{\dd}{\jj-\ii}
+  \ifcase\dd \def\cor{gray!15}\or \def\cor{azul}\or \def\cor{feito}\or \def\cor{ruim}\fi
+  \fill[\cor] (\jj-0.5,-\ii-0.5) rectangle (\jj+0.5,-\ii+0.5);
+  \draw (\jj-0.5,-\ii-0.5) rectangle (\jj+0.5,-\ii+0.5);
+  \node[font=\scriptsize] at (\jj,-\ii) {$d{=}\dd$};}}
+\foreach \k in {1,...,4} {\node[idx] at (\k,-0.25) {$j{=}\k$}; \node[idx] at (0.2,-\k) {$i{=}\k$};}
+\draw[very thick, MidnightBlue, rounded corners=2pt] (0.55,-1.45) rectangle (3.45,-0.55);
+\draw[very thick, MidnightBlue, rounded corners=2pt] (3.55,-4.45) rectangle (4.45,-1.55);
+\node[rot, anchor=west, align=left] at (5,-2.5) {$m[1,4]=\min$ de\\ $m[1,1]+m[2,4]+r_0r_1r_4$\\ $m[1,2]+m[3,4]+r_0r_2r_4$\\ $m[1,3]+m[4,4]+r_0r_3r_4$};
+\end{tikzpicture}
+\end{figura}
 
 \begin{pseudo}{Ordem ótima de multiplicação, com a tabela $s$ das escolhas}
 \begin{algorithmic}
@@ -157,7 +231,18 @@ $i=1$ & 0 & 10\,000 (1) & 1500 (1) & \textbf{3500 (3)}\\
 4 & & & & 0
 \end{tabular}
 \end{center}
-Na tabela do Exemplo~\ref{ex:cadeia}, $s[1,4]=3$ indica que a última multiplicação é $(M_1M_2M_3)\cdot M_4$, e $s[1,3]=1$ indica que a primeira parte é $M_1(M_2M_3)$. Logo, a ordem ótima é $((M_1(M_2M_3))M_4)$, com custo 3500. Outros exemplos:
+Na tabela do Exemplo~\ref{ex:cadeia}, $s[1,4]=3$ indica que a última multiplicação é $(M_1M_2M_3)\cdot M_4$, e $s[1,3]=1$ indica que a primeira parte é $M_1(M_2M_3)$. Logo, a ordem ótima é $((M_1(M_2M_3))M_4)$, com custo 3500.
+
+\begin{exemplo}[Calculando uma célula]
+Vejamos como sai $m[1,3]$, da diagonal $d=2$, a partir das células da diagonal $d=1$, já calculadas: $m[1,2]=20\cdot50\cdot10=10\,000$ e $m[2,3]=50\cdot10\cdot1=500$. Há duas escolhas para a última multiplicação:
+\begin{align*}
+k=1&:\quad m[1,1]+m[2,3]+r_0r_1r_3=0+500+20\cdot50\cdot1=1500;\\
+k=2&:\quad m[1,2]+m[3,3]+r_0r_2r_3=10\,000+0+20\cdot10\cdot1=10\,200.
+\end{align*}
+O mínimo é 1500, com $s[1,3]=1$: multiplicar primeiro $M_2M_3$ (que dá uma matriz $50\times1$) e depois $M_1$ por ela.
+\end{exemplo}
+
+Outros exemplos:
 \begin{center}\small
 \begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{4.2cm}X@{}}
 \toprule
@@ -176,6 +261,7 @@ Há $n$ itens; o item $i$ tem peso $p_i$ e valor $v_i$, inteiros; a mochila tem 
 \[
 M(w,i)=\begin{cases}0 & i=0\\ M(w,i-1) & p_i>w\\ \max\{M(w,i-1),\ v_i+M(w-p_i,\,i-1)\} & p_i\le w\end{cases}\qquad\text{resposta: }M(W,n).
 \]
+A decisão sobre o item $i$ é a ``última decisão'' do roteiro: se ele fica de fora, o que resta é o mesmo problema com os itens $1,\dots,i-1$ e a mesma capacidade; se ele entra, é o mesmo problema com os itens $1,\dots,i-1$ e a capacidade que sobra, $w-p_i$.
 \begin{pseudo}{Mochila 0-1: $\Theta(nW)$ (pseudopolinomial)}
 \begin{algorithmic}
 \Function{Mochila}{$p,v,n,W$}
@@ -194,24 +280,30 @@ M(w,i)=\begin{cases}0 & i=0\\ M(w,i-1) & p_i>w\\ \max\{M(w,i-1),\ v_i+M(w-p_i,\,
 \EndFunction
 \end{algorithmic}
 \end{pseudo}
-\begin{exemplo}[$W=4$ e itens $(p,v)=(1,2),(3,7),(2,1)$]\leavevmode
-\begin{center}\small
-\begin{tabular}{c|cccc}
-$w\backslash i$ & 0 & 1 & 2 & 3\\ \hline
-0 & 0 & 0 & 0 & 0\\
-1 & 0 & 2 & 2 & 2\\
-2 & 0 & 2 & 2 & 2\\
-3 & 0 & 2 & 7 & 7\\
-4 & 0 & 2 & \textbf{9} & \textbf{9}
-\end{tabular}
-\end{center}
-A solução ótima leva os itens 1 e 2, com peso 4 e valor \textbf{9}. Repare que $M(4,2)=\max\{M(4,1),\,7+M(1,1)\}=\max\{2,\,9\}=9$: é fácil errar essa célula esquecendo que, depois de colocar o item 2, ainda sobra capacidade 1 para o item 1.
+\begin{exemplo}[$W=4$ e itens $(p,v)=(1,2),(3,7),(2,1)$]\label{ex:mochila}
+A tabela tem uma coluna por item e uma linha por capacidade (Figura~\ref{fig:mochila}). A solução ótima leva os itens 1 e 2, com peso 4 e valor \textbf{9}. Repare que $M(4,2)=\max\{M(4,1),\,7+M(1,1)\}=\max\{2,\,9\}=9$: é fácil errar essa célula esquecendo que, depois de colocar o item 2, ainda sobra capacidade 1 para o item 1. Na reconstrução, $M(4,3)=M(4,2)$, e o item 3 fica de fora; $M(4,2)\ne M(4,1)$, e o item 2 entra, sobrando $w=4-3=1$; $M(1,1)\ne M(1,0)$, e o item 1 entra.
+\begin{figura}[A tabela da mochila do Exemplo~\ref{ex:mochila}. A célula $M(4,2)$ escolhe o maior entre ``deixar o item 2 de fora'' (seta da esquerda, valor 2) e ``levar o item 2'' (seta diagonal, $7+M(1,1)=9$). Em verde, o caminho da reconstrução.\label{fig:mochila}]
+\begin{tikzpicture}[x=10mm,y=6.5mm]
+\foreach \ii/\ww in {3/4,2/4,1/1} {\fill[feito] (\ii-0.5,-\ww-0.5) rectangle (\ii+0.5,-\ww+0.5);}
+\fill[destaque] (2-0.5,-4-0.5) rectangle (2+0.5,-4+0.5);
+\foreach \ww/\vals in {0/{0,0,0,0},1/{0,2,2,2},2/{0,2,2,2},3/{0,2,7,7},4/{0,2,9,9}} {
+  \foreach \xx [count=\k from 0] in \vals {\node[cel, minimum width=10mm, minimum height=6.5mm] at (\k,-\ww) {\xx};}
+  \node[idx] at (-0.9,-\ww) {$w{=}\ww$};}
+\foreach \k/\itm in {0/{--},1/{(1,2)},2/{(3,7)},3/{(2,1)}} {\node[idx] at (\k,1.25) {$i{=}\k$}; \node[font=\tiny] at (\k,0.8) {$\itm$};}
+\draw[seta, BrickRed, bend right=60] (1,-4.5) to node[below, font=\scriptsize] {fora} (2,-4.5);
+\draw[seta, MidnightBlue] (1.25,-1.25) -- node[right, font=\scriptsize] {$+7$} (1.75,-3.75);
+\end{tikzpicture}
+\end{figura}
 \end{exemplo}
 \begin{itemize}
   \item Com $W=50$ e itens $(p,v)=(10,60),(20,100),(30,120)$, o ótimo é $\mathbf{220}$, com os itens 2 e 3. O guloso que escolhe pela razão $v/p$ (que vale $6,5,4$) pega os itens 1 e 2 e obtém só 160: o algoritmo guloso \textbf{não} resolve a mochila 0-1, embora resolva a versão fracionária, em que frações de itens são permitidas (Capítulo~\ref{cap:gulosos}).
   \item \textbf{Por que pseudopolinomial?} O tempo $\Theta(nW)$ depende do \emph{valor} de $W$, mas a entrada guarda $W$ em apenas $\log_2W$ bits. Com $W=10^9$ (30 bits), o algoritmo faz $10^9$ iterações por item: é exponencial no tamanho da entrada. O problema da mochila é NP-difícil, e não se conhece algoritmo polinomial para ele.
   \item \textbf{Memória $O(W)$.} Um único vetor $K[0..W]$ basta: para cada item, percorra $w$ \textbf{decrescendo} de $W$ até $p_i$ e faça $K[w]:=\max\{K[w],K[w-p_i]+v_i\}$. Com $w$ \emph{crescendo}, o mesmo item poderia ser reaproveitado, e o algoritmo passaria a resolver a mochila \emph{ilimitada}.
 \end{itemize}
+
+\begin{exemplo}[Por que $w$ decresce no vetor único]
+Um único item, de peso 2 e valor 3, e capacidade 4; o vetor começa com $K=(0,0,0,0,0)$, para $w=0,\dots,4$. Com $w$ \textbf{decrescendo}: $K[4]:=\max\{0,K[2]+3\}=3$, $K[3]:=3$, $K[2]:=3$; resultado $(0,0,3,3,3)$, correto: o item cabe uma vez e vale 3. Com $w$ \textbf{crescendo}: $K[2]:=3$, $K[3]:=3$ e $K[4]:=\max\{0,K[2]+3\}=6$, porque $K[2]$ \emph{já foi atualizado com este mesmo item}; resultado $(0,0,3,3,6)$, como se o item tivesse sido levado duas vezes. Decrescendo, $K[w-p_i]$ ainda guarda o valor ``sem o item $i$'', que é o $M(w-p_i,i-1)$ da recorrência.
+\end{exemplo}
 
 \begin{cuidado}[Armadilhas da programação dinâmica]
 \begin{itemize}
