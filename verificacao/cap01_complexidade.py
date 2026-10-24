@@ -78,16 +78,20 @@ while True:
 v.igual(linhas, [(1, 16, 8), (9, 16, 12), (9, 11, 10), (11, 11, 11)], "busca binária de 27")
 v.tem("0/1/16/8,1/9/16/12,2/9/11/10,3/11/11/11", "figura da busca binária")
 
-# Máquina 10 vezes mais rápida
-v.tem(f"$\\sqrt{{10}}\\,N\\approx{dec(sqrt(10), 2)}\\,N$", "fator do custo n^2")
-v.tem(f"$\\sqrt[3]{{10}}\\,N\\approx{dec(10 ** (1 / 3), 2)}\\,N$", "fator do custo n^3")
-v.tem(f"$N+{dec(log2(10), 1)}$", "acréscimo do custo 2^n")
-v.tem("passaremos a resolver $3160$", "N=1000 quadrático")
-v.tem("passaremos a resolver $43$", "N=40 exponencial")
-v.igual(floor(40 + log2(10)), 43, "40 + log2 10")
+# Máquina 100 vezes mais rápida (o Exercício cx-tec pede a de 10 vezes)
+v.tem("$\\sqrt{100}\\,N=10\\,N$", "fator do custo n^2")
+v.tem(f"$\\sqrt[3]{{100}}\\,N\\approx{dec(100 ** (1 / 3), 2)}\\,N$", "fator do custo n^3")
+v.tem(f"$({dec(100 ** (1 / 3), 2)}N)^3\\approx100N^3$", "conferência do custo n^3")
+v.tem(f"$N+{dec(log2(100), 1)}$", "acréscimo do custo 2^n")
+v.tem("passaremos a resolver $10\\,000$", "N=1000 quadrático")
+v.igual(floor(40 + log2(100)), 46, "40 + log2 100")
+v.tem("passaremos a resolver só $46$", "N=40 exponencial")
 
-# Exemplo de 2n^2+1
-v.igual(all(2 * n * n + 1 <= 3 * n * n for n in range(1, 10 ** 4)), True, "2n^2+1 <= 3n^2")
+# Exemplo de 4n^3+5n (o Exercício cx-slide usa 2n^2+1)
+f3 = lambda n: 4 * n ** 3 + 5 * n
+v.igual(all(f3(n) <= 9 * n ** 3 for n in range(1, 10 ** 4)), True, "4n^3+5n <= 9n^3")
+v.igual((f3(10 ** 6) > 10 ** 6 * 10 ** 12, f3(10 ** 6) >= 4 * 10 ** 18), (True, True), "4n^3+5n x n^2 e n^3")
+v.tem("basta tomar $c=9$ e $n_0=1$: $4n^3+5n\\le4n^3+5n^3=9n^3$", "constantes do exemplo")
 
 # --- Respostas ---
 v.tem("$\\sqrt{10}\\approx3{,}16$", "cx-tec", "respostas/01.tex")

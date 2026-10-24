@@ -74,13 +74,13 @@ A definição fica clara quando se desenha a sequência como uma \textbf{árvore
 
 \begin{figura}[O mesmo heap visto como árvore e como vetor. Os números pequenos são os índices; os filhos do nó $i$ estão nas posições $2i$ e $2i+1$, como indicam as setas desenhadas junto ao vetor.\label{fig:heaprep}]
 \begin{forest} bst
-[95,label={[font=\tiny]above:1}
-  [60,label={[font=\tiny]left:2} [39,label={[font=\tiny]left:4} [33,label={[font=\tiny]left:8}] [,vazio]] [28,label={[font=\tiny]right:5}]]
-  [78,label={[font=\tiny]right:3} [66,label={[font=\tiny]left:6}] [70,label={[font=\tiny]right:7}]]]
+[90,label={[font=\tiny]above:1}
+  [55,label={[font=\tiny]left:2} [41,label={[font=\tiny]left:4} [37,label={[font=\tiny]left:8}] [,vazio]] [30,label={[font=\tiny]right:5}]]
+  [82,label={[font=\tiny]right:3} [64,label={[font=\tiny]left:6}] [75,label={[font=\tiny]right:7}]]]
 \end{forest}
 \qquad
 \begin{tikzpicture}[baseline=-1.2cm,x=7mm]
-\foreach \x [count=\i] in {95,60,78,39,28,66,70,33} {\node[cel] (c\i) at (\i,0) {\x}; \node[idx] at (\i,0.5) {\i};}
+\foreach \x [count=\i] in {90,55,82,41,30,64,75,37} {\node[cel] (c\i) at (\i,0) {\x}; \node[idx] at (\i,0.5) {\i};}
 \draw[seta, MidnightBlue!70, bend right=50] (c1.south) to (c2.south);
 \draw[seta, MidnightBlue!70, bend right=50] (c1.south) to (c3.south);
 \draw[seta, BrickRed!70, bend right=45] (c2.south) to (c4.south);
@@ -197,46 +197,46 @@ Em todos os casos o \emph{formato} da árvore continua o de uma árvore completa
 \end{pseudo}
 
 \begin{exemplo}[Inserção passo a passo]\label{ex:heapins}
-Inserimos 73 no heap $[95,60,78,39,28,66,70,33]$ da Figura~\ref{fig:heaprep}. Ele entra na posição 9, como filho de 39. Como $73>39$, troca com o pai; na posição 4, $73>60$, e troca de novo; na posição 2, $73<95$, e para. O resultado é $[95,73,78,60,28,66,70,33,39]$. Foram duas trocas, ao longo do caminho de uma folha até a raiz.
-\begin{figura}[Inserção de 73: o novo elemento (em destaque) entra na primeira posição livre e sobe enquanto for maior que o pai. A aresta azul é a comparação seguinte.\label{fig:heapins}]
+Inserimos 68 no heap $[90,55,82,41,30,64,75,37]$ da Figura~\ref{fig:heaprep}. Ele entra na posição 9, como filho de 41. Como $68>41$, troca com o pai; na posição 4, $68>55$, e troca de novo; na posição 2, $68<90$, e para. O resultado é $[90,68,82,55,30,64,75,37,41]$. Foram duas trocas, ao longo do caminho de uma folha até a raiz.
+\begin{figura}[Inserção de 68: o novo elemento (em destaque) entra na primeira posição livre e sobe enquanto for maior que o pai. A aresta azul é a comparação seguinte.\label{fig:heapins}]
 \begin{tabular}{@{}c@{\hspace{6mm}}c@{\hspace{6mm}}c@{}}
 \begin{forest} bstp
-[95 [60 [39 [33] [73,novo,acam]] [28]] [78 [66] [70]]]
+[90 [55 [41 [37] [68,novo,acam]] [30]] [82 [64] [75]]]
 \end{forest} &
 \begin{forest} bstp
-[95 [60 [73,novo,acam [33] [39]] [28]] [78 [66] [70]]]
+[90 [55 [68,novo,acam [37] [41]] [30]] [82 [64] [75]]]
 \end{forest} &
 \begin{forest} bstp
-[95 [73,novo,acam [60 [33] [39]] [28]] [78 [66] [70]]]
+[90 [68,novo,acam [55 [37] [41]] [30]] [82 [64] [75]]]
 \end{forest}\\
-\small (a) entra na posição 9 & \small (b) troca com 39 & \small (c) troca com 60; $73<95$: fim
+\small (a) entra na posição 9 & \small (b) troca com 41 & \small (c) troca com 55; $68<90$: fim
 \end{tabular}
 \end{figura}
 \end{exemplo}
 
 \begin{exemplo}[Remoção passo a passo]\label{ex:heaprem}
-Removemos o máximo de $H=[95,60,78,39,28,66,70,33]$. O último elemento, 33, vai para a raiz, formando $[33,60,78,39,28,66,70]$. Agora 33 desce: os filhos são 60 e 78, e ele troca com o maior, 78; na posição 3, os filhos são 66 e 70, e ele troca com 70; na posição 7, é folha, e para. Resultado: $[78,60,70,39,28,66,33]$.
+Removemos o máximo de $H=[90,55,82,41,30,64,75,37]$. O último elemento, 37, vai para a raiz, formando $[37,55,82,41,30,64,75]$. Agora 37 desce: os filhos são 55 e 82, e ele troca com o maior, 82; na posição 3, os filhos são 64 e 75, e ele troca com 75; na posição 7, é folha, e para. Resultado: $[82,55,75,41,30,64,37]$.
 \begin{figura}[Remoção do máximo: o último elemento ocupa a raiz e desce, sempre trocando com o maior filho.\label{fig:heaprem}]
 \begin{tabular}{@{}c@{\hspace{8mm}}c@{\hspace{8mm}}c@{}}
 \begin{forest} bstp
-[33,novo [60 [39] [28]] [78,acam [66] [70]]]
+[37,novo [55 [41] [30]] [82,acam [64] [75]]]
 \end{forest} &
 \begin{forest} bstp
-[78 [60 [39] [28]] [33,novo [66] [70,acam]]]
+[82 [55 [41] [30]] [37,novo [64] [75,acam]]]
 \end{forest} &
 \begin{forest} bstp
-[78 [60 [39] [28]] [70 [66] [33,novo]]]
+[82 [55 [41] [30]] [75 [64] [37,novo]]]
 \end{forest}\\
-\small (a) 33 vai para a raiz & \small (b) troca com 78 & \small (c) troca com 70: fim
+\small (a) 37 vai para a raiz & \small (b) troca com 82 & \small (c) troca com 75: fim
 \end{tabular}
 \end{figura}
 \end{exemplo}
 
 \begin{exemplo}[Alteração de prioridade]
-No mesmo heap $H=[95,60,78,39,28,66,70,33]$:
+No mesmo heap $H=[90,55,82,41,30,64,75,37]$:
 \begin{itemize}
-  \item \textbf{aumentar} a prioridade do nó 6 de 66 para 98: ele sobe trocando com 78 (posição 3) e com 95 (posição 1), e o heap fica $[98,60,95,39,$\allowbreak$28,78,70,33]$;
-  \item \textbf{diminuir} a raiz de 95 para 37: ela desce trocando com 78 e com 70: $[78,60,70,39,$\allowbreak$28,66,37,33]$.
+  \item \textbf{aumentar} a prioridade do nó 6 de 64 para 95: ele sobe trocando com 82 (posição 3) e com 90 (posição 1), e o heap fica $[95,55,90,41,$\allowbreak$30,82,75,37]$;
+  \item \textbf{diminuir} a raiz de 90 para 33: ela desce trocando com 82 e com 75: $[82,55,75,41,$\allowbreak$30,64,33,37]$.
 \end{itemize}
 \end{exemplo}
 
@@ -258,27 +258,27 @@ Uma ideia melhor é trabalhar de baixo para cima. As folhas, isto é, as posiç�
 A correção segue do invariante ``antes de processar $i$, as subárvores com raízes $i+1,\dots,n$ são heaps''.
 
 \begin{exemplo}[O \emph{arranjar} passo a passo]\label{ex:arranjar}
-Construímos um heap a partir de $[7,2,15,9,1,20,13]$, com $n=7$. As folhas são as posições $4,\dots,7$; processamos $i=3,2,1$ (Figura~\ref{fig:arranjar}).
+Construímos um heap a partir de $[5,13,8,2,11,9,14]$, com $n=7$. As folhas são as posições $4,\dots,7$; processamos $i=3,2,1$ (Figura~\ref{fig:arranjar}).
 \begin{itemize}
-  \item $i=3$ (valor 15): os filhos são 20 e 13; troca com 20. Vetor: $[7,2,20,9,1,15,13]$.
-  \item $i=2$ (valor 2): os filhos são 9 e 1; troca com 9. Vetor: $[7,9,20,2,1,15,13]$.
-  \item $i=1$ (valor 7): os filhos são 9 e 20; troca com 20, e na posição 3 os filhos são 15 e 13; troca com 15. Vetor final: $[20,9,15,2,1,7,13]$.
+  \item $i=3$ (valor 8): os filhos são 9 e 14; troca com 14. Vetor: $[5,13,14,2,11,9,8]$.
+  \item $i=2$ (valor 13): os filhos são 2 e 11, ambos menores; nada muda.
+  \item $i=1$ (valor 5): os filhos são 13 e 14; troca com 14, e na posição 3 os filhos são 9 e 8; troca com 9. Vetor final: $[14,13,9,2,11,5,8]$.
 \end{itemize}
-\begin{figura}[O \emph{arranjar} sobre $[7,2,15,9,1,20,13]$. Em cada passo, o nó processado (em destaque) desce; as subárvores abaixo dele já são heaps.\label{fig:arranjar}]
+\begin{figura}[O \emph{arranjar} sobre $[5,13,8,2,11,9,14]$. Em cada passo, o nó processado (em destaque) desce enquanto for menor que o maior filho; as subárvores abaixo dele já são heaps.\label{fig:arranjar}]
 \begin{tabular}{@{}c@{\hspace{7mm}}c@{\hspace{7mm}}c@{\hspace{7mm}}c@{}}
 \begin{forest} bstp
-[7 [2 [9] [1]] [15,novo [20] [13]]]
+[5 [13 [2] [11]] [8,novo [9] [14]]]
 \end{forest} &
 \begin{forest} bstp
-[7 [2,novo [9] [1]] [20 [15] [13]]]
+[5 [13,novo [2] [11]] [14 [9] [8]]]
 \end{forest} &
 \begin{forest} bstp
-[7,novo [9 [2] [1]] [20 [15] [13]]]
+[5,novo [13 [2] [11]] [14 [9] [8]]]
 \end{forest} &
 \begin{forest} bstp
-[20,feito [9,feito [2,feito] [1,feito]] [15,feito [7,feito] [13,feito]]]
+[14,feito [13,feito [2,feito] [11,feito]] [9,feito [5,feito] [8,feito]]]
 \end{forest}\\
-\small (a) $i=3$ & \small (b) $i=2$ & \small (c) $i=1$ & \small (d) heap pronto
+\small (a) $i=3$ & \small (b) $i=2$: nada muda & \small (c) $i=1$ & \small (d) heap pronto
 \end{tabular}
 \end{figura}
 \end{exemplo}
@@ -322,8 +322,8 @@ A intuição é a da Figura~\ref{fig:alturas}: metade dos nós (as folhas) não 
 
 \begin{exemplo}[Mais duas construções]\leavevmode
 \begin{itemize}
-  \item $[18,25,41,34,$\allowbreak$14,10,52,50,48]$, com $n=9$, processa $i=4,3,2,1$. Em $i=4$, troca $34\leftrightarrow50$; em $i=3$, $41\leftrightarrow52$; em $i=2$, $25\leftrightarrow50$ e depois $25\leftrightarrow48$; em $i=1$, $18\leftrightarrow52$ e depois $18\leftrightarrow41$. Resultado: $[52,50,41,48,$\allowbreak$14,10,18,34,25]$.
-  \item $[20,15,30,40,10,25,5]$ processa $i=3,2,1$: nada muda em $i=3$; em $i=2$, $15\leftrightarrow40$; em $i=1$, $20\leftrightarrow40$. Resultado: $[40,20,30,15,10,25,5]$.
+  \item $[12,30,21,8,$\allowbreak$27,40,16,35,19]$, com $n=9$, processa $i=4,3,2,1$. Em $i=4$, troca $8\leftrightarrow35$; em $i=3$, $21\leftrightarrow40$; em $i=2$, $30\leftrightarrow35$, e o 30 para na posição 4, pois os seus novos filhos, 8 e 19, são menores; em $i=1$, $12\leftrightarrow40$ e depois $12\leftrightarrow21$. Resultado: $[40,35,21,30,$\allowbreak$27,12,16,8,19]$.
+  \item $[6,9,14,3,12,10,2]$ processa $i=3,2,1$: nada muda em $i=3$, pois 14 já é maior que 10 e 2; em $i=2$, $9\leftrightarrow12$; em $i=1$, $6\leftrightarrow14$ e depois $6\leftrightarrow10$. Resultado: $[14,12,10,3,9,6,2]$.
 \end{itemize}
 \end{exemplo}
 
@@ -354,7 +354,7 @@ O \emph{arranjar} processa $i=2$ (troca $2\leftrightarrow7$) e $i=1$ (troca $5\l
 \end{figura}
 \end{exemplo}
 
-O custo é $O(n)+\sum_mO(\log m)=\Theta(n\log n)$ em \emph{todos} os casos, mesmo com a entrada já ordenada. O heapsort é \textbf{in-place} (só faz trocas dentro do vetor) e \textbf{não é estável}, pois a troca da raiz com o último elemento pode inverter a ordem relativa de elementos iguais. Como faz $O(n\log n)$ comparações, é ótimo entre os algoritmos baseados em comparações (Capítulo~\ref{cap:sortcomp}). Por exemplo, ele transforma $[18,25,41,34,14,10,52,50,48]$ em $[10,14,18,25,34,41,48,50,52]$.
+O custo é $O(n)+\sum_mO(\log m)=\Theta(n\log n)$ em \emph{todos} os casos, mesmo com a entrada já ordenada. O heapsort é \textbf{in-place} (só faz trocas dentro do vetor) e \textbf{não é estável}, pois a troca da raiz com o último elemento pode inverter a ordem relativa de elementos iguais. Como faz $O(n\log n)$ comparações, é ótimo entre os algoritmos baseados em comparações (Capítulo~\ref{cap:sortcomp}). Por exemplo, ele transforma $[12,30,21,8,27,40,16,35,19]$ em $[8,12,16,19,21,27,30,35,40]$.
 
 % ------------------------------------------------------------------
 \section{Propriedades de heaps e suas demonstrações}\label{sec:heapprops}
@@ -368,7 +368,7 @@ Se $j$ é ancestral de $i$ num heap, então $s_i\le s_j$. Em particular, todo ca
 \begin{proof}
 O caminho de $i$ até $j$ é $i,\floor{i/2},\floor{i/4},\dots,j$. Aplicando a definição em cada aresta e a transitividade de $\le$, obtemos $s_i\le s_{\floor{i/2}}\le\cdots\le s_j$. A raiz é ancestral de todos os nós. A condição de heap numa subárvore é a mesma condição, restrita a ela.
 \end{proof}
-Por exemplo, no heap da Figura~\ref{fig:heaprep}, o caminho da raiz até a posição 8 é $95\ge60\ge39\ge33$.
+Por exemplo, no heap da Figura~\ref{fig:heaprep}, o caminho da raiz até a posição 8 é $90\ge55\ge41\ge37$.
 
 \begin{prop}[O mínimo está numa folha]
 Num heap de máximo com chaves distintas, o menor elemento está numa folha, isto é, numa posição maior que $\floor{n/2}$.
@@ -376,7 +376,7 @@ Num heap de máximo com chaves distintas, o menor elemento está numa folha, ist
 \begin{proof}
 Se $i$ não é folha, tem o filho $2i$ e $s_{2i}<s_i$, pois as chaves são distintas; logo $s_i$ não é o mínimo. Com repetições, \emph{algum} mínimo está numa folha.
 \end{proof}
-No heap da Figura~\ref{fig:heaprep}, as folhas são as posições $5,\dots,8$, com valores $28,66,70,33$, e o mínimo, $28$, está entre elas. Note que o mínimo pode estar em \emph{qualquer} folha, não necessariamente na última posição.
+No heap da Figura~\ref{fig:heaprep}, as folhas são as posições $5,\dots,8$, com valores $30,64,75,37$, e o mínimo, $30$, está entre elas. Note que o mínimo pode estar em \emph{qualquer} folha, não necessariamente na última posição.
 
 \begin{prop}[Onde está o $k$-ésimo maior]
 Com chaves distintas, o $k$-ésimo maior elemento está num nível $\le k$, isto é, numa posição $\le 2^k-1$. Em particular, o segundo maior é filho da raiz (posição 2 ou 3), e o terceiro maior está entre as posições 2 e 7.
@@ -384,7 +384,7 @@ Com chaves distintas, o $k$-ésimo maior elemento está num nível $\le k$, isto
 \begin{proof}
 Pela Proposição~\ref{prop:ancestral}, todos os ancestrais de $x$ são maiores que $x$. Se $x$ é o $k$-ésimo maior, existem só $k-1$ elementos maiores que ele, e portanto $x$ tem no máximo $k-1$ ancestrais: está no nível $\le k$. As posições dos níveis $1,\dots,k$ são $1,\dots,2^k-1$.
 \end{proof}
-No heap da Figura~\ref{fig:heaprep}, o segundo maior, 78, está na posição 3, e o terceiro maior, 70, na posição 7, no limite permitido.
+No heap da Figura~\ref{fig:heaprep}, o segundo maior, 82, está na posição 3, e o terceiro maior, 75, na posição 7, no limite permitido.
 
 \begin{prop}[Altura]
 Um heap com $n$ elementos tem altura $\floor{\log_2 n}+1$ (em níveis), que é $\Theta(\log n)$. Por isso subir, descer, inserir e remover custam $O(\log n)$.

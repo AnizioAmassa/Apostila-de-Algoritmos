@@ -145,7 +145,7 @@ Seja $f(n)=n^2+10n+20$.
 \end{exemplo}
 
 \begin{exemplo}
-Pela mesma técnica, a função $2n^2+1$ é $O(n^3)$ e $O(n^2)$, mas não é $O(n)$; é $\Omega(n)$ e $\Omega(n^2)$, mas não é $\Omega(n^3)$; portanto é $\Theta(n^2)$. Para provar $2n^2+1=O(n^2)$ pela definição, basta tomar $c=3$ e $n_0=1$: $2n^2+1\le3n^2$ para todo $n\ge1$.
+Pela mesma técnica, a função $4n^3+5n$ é $O(n^4)$ e $O(n^3)$, mas não é $O(n^2)$; é $\Omega(n^2)$ e $\Omega(n^3)$, mas não é $\Omega(n^4)$; portanto é $\Theta(n^3)$. Para provar $4n^3+5n=O(n^3)$ pela definição, basta tomar $c=9$ e $n_0=1$: $4n^3+5n\le4n^3+5n^3=9n^3$ para todo $n\ge1$.
 \end{exemplo}
 
 \subsection*{As versões estritas $o$ e $\omega$}
@@ -317,23 +317,23 @@ As notações assintóticas são afirmações sobre funções, e não sobre ``li
 \section{Algoritmos polinomiais e exponenciais}
 Um algoritmo é \textbf{polinomial} se seu custo de pior caso é $O(n^c)$ para alguma constante $c$; a classe dos problemas que admitem algoritmos polinomiais é chamada de $P$. Custos como $2^n$, $k^n$, $n!$, $2^{n^2}$ e $n^{\log n}$ são \textbf{exponenciais} (ou superpolinomiais).
 
-O consenso é que algoritmos polinomiais são eficientes e exponenciais não, por um motivo que vai além do tempo absoluto da Tabela~\ref{tab:tempos}: algoritmos polinomiais aproveitam o avanço tecnológico. Com uma máquina 10 vezes mais rápida, o maior tamanho de entrada resolvido num tempo fixo é \emph{multiplicado} por uma constante quando o custo é polinomial, mas apenas \emph{acrescido} de uma constante quando é exponencial.
+O consenso é que algoritmos polinomiais são eficientes e exponenciais não, por um motivo que vai além do tempo absoluto da Tabela~\ref{tab:tempos}: algoritmos polinomiais aproveitam o avanço tecnológico. Com uma máquina mais rápida, o maior tamanho de entrada resolvido num tempo fixo é \emph{multiplicado} por uma constante quando o custo é polinomial, mas apenas \emph{acrescido} de uma constante quando é exponencial.
 
-\begin{exemplo}[O que uma máquina 10 vezes mais rápida compra]
-Suponha que hoje, em uma hora, resolvemos entradas de tamanho até $N$. Com a máquina nova, no mesmo tempo, fazemos $10$ vezes mais passos:
+\begin{exemplo}[O que uma máquina 100 vezes mais rápida compra]
+Suponha que hoje, em uma hora, resolvemos entradas de tamanho até $N$. Com a máquina nova, no mesmo tempo, fazemos $100$ vezes mais passos:
 \begin{center}\small
 \begin{tabular}{@{}lll@{}}
 \toprule
 custo & novo tamanho máximo & por quê\\
 \midrule
-$n$ & $10N$ & $n'=10N$ dá $10N$ passos\\
-$n^2$ & $\sqrt{10}\,N\approx3{,}16\,N$ & $(3{,}16N)^2\approx10N^2$\\
-$n^3$ & $\sqrt[3]{10}\,N\approx2{,}15\,N$ & $(2{,}15N)^3\approx10N^3$\\
-$2^n$ & $N+3{,}3$ & $2^{N+3{,}3}\approx10\cdot2^N$\\
+$n$ & $100N$ & $n'=100N$ dá $100N$ passos\\
+$n^2$ & $\sqrt{100}\,N=10\,N$ & $(10N)^2=100N^2$\\
+$n^3$ & $\sqrt[3]{100}\,N\approx4{,}64\,N$ & $(4{,}64N)^3\approx100N^3$\\
+$2^n$ & $N+6{,}6$ & $2^{N+6{,}6}\approx100\cdot2^N$\\
 \bottomrule
 \end{tabular}
 \end{center}
-Se hoje resolvemos $N=1000$ com o algoritmo quadrático, passaremos a resolver $3160$. Se resolvemos $N=40$ com o exponencial, passaremos a resolver $43$.
+Se hoje resolvemos $N=1000$ com o algoritmo quadrático, passaremos a resolver $10\,000$. Se resolvemos $N=40$ com o exponencial, passaremos a resolver só $46$: cem vezes mais velocidade compram seis posições a mais.
 \end{exemplo}
 
 \begin{chave}

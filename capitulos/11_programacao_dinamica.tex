@@ -115,21 +115,21 @@ Compare duas palavras de trás para frente. Se as últimas letras são iguais, c
 \end{algorithmic}
 \end{pseudo}
 
-\begin{exemplo}[$X=\mathrm{ABCBDAB}$ e $Y=\mathrm{BDCABA}$]\label{ex:lcs}
-A tabela é preenchida linha a linha, da esquerda para a direita: cada célula depende da vizinha de cima, da da esquerda e da diagonal superior esquerda, que já foram calculadas (Figura~\ref{fig:lcs}). Por exemplo, na linha $i=2$ ($x_2=\mathrm{B}$) e coluna $j=1$ ($y_1=\mathrm{B}$), os símbolos casam, e $C[2,1]=1+C[1,0]=1$; na mesma linha e coluna $j=4$ ($y_4=\mathrm{A}$), não casam, e $C[2,4]=\max\{C[1,4],C[2,3]\}=\max\{1,1\}=1$.
+\begin{exemplo}[$X=\mathrm{CATGACT}$ e $Y=\mathrm{ACTGTA}$]\label{ex:lcs}
+Pense em dois trechos de DNA. A tabela é preenchida linha a linha, da esquerda para a direita: cada célula depende da vizinha de cima, da da esquerda e da diagonal superior esquerda, que já foram calculadas (Figura~\ref{fig:lcs}). Por exemplo, na linha $i=3$ ($x_3=\mathrm{T}$) e coluna $j=3$ ($y_3=\mathrm{T}$), os símbolos casam, e $C[3,3]=1+C[2,2]=2$; na mesma linha e coluna $j=1$ ($y_1=\mathrm{A}$), não casam, e $C[3,1]=\max\{C[2,1],C[3,0]\}=\max\{1,0\}=1$.
 
-$C[7,6]=4$. A reconstrução, subindo nos empates, passa pelas células destacadas: de $(7,6)$ sobe para $(6,6)$, onde casa \textbf{A}; vai para $(5,5)$, sobe para $(4,5)$, onde casa \textbf{B}; vai para $(3,4)$, anda para a esquerda até $(3,3)$, onde casa \textbf{C}; vai para $(2,2)$ e anda até $(2,1)$, onde casa \textbf{B}. Como cada símbolo é colocado no início, $Z=\mathrm{BCBA}$. As subsequências comuns de tamanho 4 são exatamente BCAB, BCBA e BDAB.
-\begin{figura}[A tabela $C$ da subsequência comum máxima de ABCBDAB e BDCABA. O caminho da reconstrução está em amarelo; nas células verdes, os símbolos casam e entram na resposta, BCBA.\label{fig:lcs}]
+$C[7,6]=4$. A reconstrução, subindo nos empates, passa pelas células destacadas: de $(7,6)$ sobe para $(6,6)$ e para $(5,6)$, onde casa \textbf{A}; vai para $(4,5)$ e anda para a esquerda até $(4,4)$, onde casa \textbf{G}; vai para $(3,3)$, onde casa \textbf{T}; vai para $(2,2)$ e sobe para $(1,2)$, onde casa \textbf{C}. Como cada símbolo é colocado no início, $Z=\mathrm{CTGA}$. As subsequências comuns de tamanho 4 são exatamente ATGA, ATGT, CTGA e CTGT.
+\begin{figura}[A tabela $C$ da subsequência comum máxima de CATGACT e ACTGTA. O caminho da reconstrução está em amarelo; nas células verdes, os símbolos casam e entram na resposta, CTGA.\label{fig:lcs}]
 \begin{tikzpicture}[x=7.5mm,y=6.3mm]
-\foreach \ii/\jj in {7/6,5/5,3/4,2/2} {\fill[destaque] (\jj-0.5,-\ii-0.5) rectangle (\jj+0.5,-\ii+0.5);}
-\foreach \ii/\jj in {6/6,4/5,3/3,2/1} {\fill[feito] (\jj-0.5,-\ii-0.5) rectangle (\jj+0.5,-\ii+0.5);}
-\foreach \lin/\vals in {0/{0,0,0,0,0,0,0},1/{0,0,0,0,1,1,1},2/{0,1,1,1,1,2,2},3/{0,1,1,2,2,2,2},4/{0,1,1,2,2,3,3},5/{0,1,2,2,2,3,3},6/{0,1,2,2,3,3,4},7/{0,1,2,2,3,4,4}} {
+\foreach \ii/\jj in {7/6,6/6,4/5,2/2} {\fill[destaque] (\jj-0.5,-\ii-0.5) rectangle (\jj+0.5,-\ii+0.5);}
+\foreach \ii/\jj in {5/6,4/4,3/3,1/2} {\fill[feito] (\jj-0.5,-\ii-0.5) rectangle (\jj+0.5,-\ii+0.5);}
+\foreach \lin/\vals in {0/{0,0,0,0,0,0,0},1/{0,0,1,1,1,1,1},2/{0,1,1,1,1,1,2},3/{0,1,1,2,2,2,2},4/{0,1,1,2,3,3,3},5/{0,1,1,2,3,3,4},6/{0,1,2,2,3,3,4},7/{0,1,2,3,3,4,4}} {
   \foreach \xx [count=\k from 0] in \vals {\node[cel, minimum width=7.5mm, minimum height=6.3mm] at (\k,-\lin) {\xx};}}
-\foreach \lt [count=\k] in {B,D,C,A,B,A} {\node[font=\small\bfseries] at (\k,1.1) {\lt}; \node[idx] at (\k,1.9) {$j{=}\k$};}
-\foreach \lt [count=\k] in {A,B,C,B,D,A,B} {\node[font=\small\bfseries] at (-1.1,-\k) {\lt}; \node[idx] at (-2,-\k) {$i{=}\k$};}
+\foreach \lt [count=\k] in {A,C,T,G,T,A} {\node[font=\small\bfseries] at (\k,1.1) {\lt}; \node[idx] at (\k,1.9) {$j{=}\k$};}
+\foreach \lt [count=\k] in {C,A,T,G,A,C,T} {\node[font=\small\bfseries] at (-1.1,-\k) {\lt}; \node[idx] at (-2,-\k) {$i{=}\k$};}
 \begin{scope}[-{Stealth[length=1.5mm]}, MidnightBlue, thick, shorten <=2.2mm, shorten >=2.2mm]
-\draw (6,-7) -- (6,-6); \draw (6,-6) -- (5,-5); \draw (5,-5) -- (5,-4); \draw (5,-4) -- (4,-3);
-\draw (4,-3) -- (3,-3); \draw (3,-3) -- (2,-2); \draw (2,-2) -- (1,-2);
+\draw (6,-7) -- (6,-6); \draw (6,-6) -- (6,-5); \draw (6,-5) -- (5,-4); \draw (5,-4) -- (4,-4);
+\draw (4,-4) -- (3,-3); \draw (3,-3) -- (2,-2); \draw (2,-2) -- (2,-1);
 \end{scope}
 \end{tikzpicture}
 \end{figura}
@@ -248,8 +248,8 @@ Outros exemplos:
 \toprule
 Dimensões $r$ & Custo ótimo e ordem\\
 \midrule
-$(10,100,5,50)$ & $\mathbf{7500}$: $((M_1M_2)M_3)$, com $m[1,2]=5000$ e $m[2,3]=25\,000$\\
-$(5,10,3,12,5,50,6)$ & $\mathbf{2010}$: $((M_1M_2)((M_3M_4)(M_5M_6)))$\\
+$(5,20,2,30)$ & $\mathbf{500}$: $((M_1M_2)M_3)$, com $m[1,2]=200$ e $m[2,3]=1200$\\
+$(8,2,9,3,7,4,10)$ & $\mathbf{392}$: $(M_1((((M_2M_3)M_4)M_5)M_6))$\\
 $(30,35,15,5,10,20,25)$ & $15\,125$: $((M_1(M_2M_3))((M_4M_5)M_6))$\\
 \bottomrule
 \end{tabularx}
@@ -280,23 +280,23 @@ A decisão sobre o item $i$ é a ``última decisão'' do roteiro: se ele fica de
 \EndFunction
 \end{algorithmic}
 \end{pseudo}
-\begin{exemplo}[$W=4$ e itens $(p,v)=(1,2),(3,7),(2,1)$]\label{ex:mochila}
-A tabela tem uma coluna por item e uma linha por capacidade (Figura~\ref{fig:mochila}). A solução ótima leva os itens 1 e 2, com peso 4 e valor \textbf{9}. Repare que $M(4,2)=\max\{M(4,1),\,7+M(1,1)\}=\max\{2,\,9\}=9$: é fácil errar essa célula esquecendo que, depois de colocar o item 2, ainda sobra capacidade 1 para o item 1. Na reconstrução, $M(4,3)=M(4,2)$, e o item 3 fica de fora; $M(4,2)\ne M(4,1)$, e o item 2 entra, sobrando $w=4-3=1$; $M(1,1)\ne M(1,0)$, e o item 1 entra.
-\begin{figura}[A tabela da mochila do Exemplo~\ref{ex:mochila}. A célula $M(4,2)$ escolhe o maior entre ``deixar o item 2 de fora'' (seta da esquerda, valor 2) e ``levar o item 2'' (seta diagonal, $7+M(1,1)=9$). Em verde, o caminho da reconstrução.\label{fig:mochila}]
+\begin{exemplo}[$W=5$ e itens $(p,v)=(2,3),(3,5),(1,1)$]\label{ex:mochila}
+A tabela tem uma coluna por item e uma linha por capacidade (Figura~\ref{fig:mochila}). A solução ótima leva os itens 1 e 2, com peso 5 e valor \textbf{8}. Repare que $M(5,2)=\max\{M(5,1),\,5+M(2,1)\}=\max\{3,\,8\}=8$: é fácil errar essa célula esquecendo que, depois de colocar o item 2, ainda sobra capacidade 2 para o item 1. Na reconstrução, $M(5,3)=M(5,2)$, e o item 3 fica de fora; $M(5,2)\ne M(5,1)$, e o item 2 entra, sobrando $w=5-3=2$; $M(2,1)\ne M(2,0)$, e o item 1 entra.
+\begin{figura}[A tabela da mochila do Exemplo~\ref{ex:mochila}. A célula $M(5,2)$ escolhe o maior entre ``deixar o item 2 de fora'' (seta da esquerda, valor 3) e ``levar o item 2'' (seta diagonal, $5+M(2,1)=8$). Em verde, o caminho da reconstrução.\label{fig:mochila}]
 \begin{tikzpicture}[x=10mm,y=6.5mm]
-\foreach \ii/\ww in {3/4,2/4,1/1} {\fill[feito] (\ii-0.5,-\ww-0.5) rectangle (\ii+0.5,-\ww+0.5);}
-\fill[destaque] (2-0.5,-4-0.5) rectangle (2+0.5,-4+0.5);
-\foreach \ww/\vals in {0/{0,0,0,0},1/{0,2,2,2},2/{0,2,2,2},3/{0,2,7,7},4/{0,2,9,9}} {
+\foreach \ii/\ww in {3/5,2/5,1/2} {\fill[feito] (\ii-0.5,-\ww-0.5) rectangle (\ii+0.5,-\ww+0.5);}
+\fill[destaque] (2-0.5,-5-0.5) rectangle (2+0.5,-5+0.5);
+\foreach \ww/\vals in {0/{0,0,0,0},1/{0,0,0,1},2/{0,3,3,3},3/{0,3,5,5},4/{0,3,5,6},5/{0,3,8,8}} {
   \foreach \xx [count=\k from 0] in \vals {\node[cel, minimum width=10mm, minimum height=6.5mm] at (\k,-\ww) {\xx};}
   \node[idx] at (-0.9,-\ww) {$w{=}\ww$};}
-\foreach \k/\itm in {0/{--},1/{(1,2)},2/{(3,7)},3/{(2,1)}} {\node[idx] at (\k,1.25) {$i{=}\k$}; \node[font=\tiny] at (\k,0.8) {$\itm$};}
-\draw[seta, BrickRed, bend right=60] (1,-4.5) to node[below, font=\scriptsize] {fora} (2,-4.5);
-\draw[seta, MidnightBlue] (1.25,-1.25) -- node[right, font=\scriptsize] {$+7$} (1.75,-3.75);
+\foreach \k/\itm in {0/{--},1/{(2,3)},2/{(3,5)},3/{(1,1)}} {\node[idx] at (\k,1.25) {$i{=}\k$}; \node[font=\tiny] at (\k,0.8) {$\itm$};}
+\draw[seta, BrickRed, bend right=60] (1,-5.5) to node[below, font=\scriptsize] {fora} (2,-5.5);
+\draw[seta, MidnightBlue] (1.25,-2.25) -- node[right, font=\scriptsize] {$+5$} (1.75,-4.75);
 \end{tikzpicture}
 \end{figura}
 \end{exemplo}
 \begin{itemize}
-  \item Com $W=50$ e itens $(p,v)=(10,60),(20,100),(30,120)$, o ótimo é $\mathbf{220}$, com os itens 2 e 3. O guloso que escolhe pela razão $v/p$ (que vale $6,5,4$) pega os itens 1 e 2 e obtém só 160: o algoritmo guloso \textbf{não} resolve a mochila 0-1, embora resolva a versão fracionária, em que frações de itens são permitidas (Capítulo~\ref{cap:gulosos}).
+  \item Com $W=6$ e itens $(p,v)=(1,6),(3,15),(4,18)$, o ótimo é $\mathbf{24}$, com os itens 1 e 3. O guloso que escolhe pela razão $v/p$ (que vale $6$; $5$; $4{,}5$) pega os itens 1 e 2, e o item 3 já não cabe: obtém só 21. Assim, o algoritmo guloso \textbf{não} resolve a mochila 0-1, embora resolva a versão fracionária, em que frações de itens são permitidas (Capítulo~\ref{cap:gulosos}).
   \item \textbf{Por que pseudopolinomial?} O tempo $\Theta(nW)$ depende do \emph{valor} de $W$, mas a entrada guarda $W$ em apenas $\log_2W$ bits. Com $W=10^9$ (30 bits), o algoritmo faz $10^9$ iterações por item: é exponencial no tamanho da entrada. O problema da mochila é NP-difícil, e não se conhece algoritmo polinomial para ele.
   \item \textbf{Memória $O(W)$.} Um único vetor $K[0..W]$ basta: para cada item, percorra $w$ \textbf{decrescendo} de $W$ até $p_i$ e faça $K[w]:=\max\{K[w],K[w-p_i]+v_i\}$. Com $w$ \emph{crescendo}, o mesmo item poderia ser reaproveitado, e o algoritmo passaria a resolver a mochila \emph{ilimitada}.
 \end{itemize}

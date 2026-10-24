@@ -70,17 +70,20 @@ def todas_lcs(x, y):
     return sorted("".join(map(str, s)) if isinstance(x, str) else s for s in rec(len(x), len(y)))
 
 
-X, Y = "ABCBDAB", "BDCABA"
+# Exemplo 11.3 (o Exercício pd-rec usa ABCBDAB e BDCABA, conferidos nas respostas)
+X, Y = "CATGACT", "ACTGTA"
 C = lcs_tabela(X, Y)
 z, visitadas, casadas = lcs_reconstroi(X, Y, C)
-v.igual((C[7][6], "".join(z)), (4, "BCBA"), "LCS de ABCBDAB e BDCABA")
-v.igual((C[2][1], C[2][4], C[1][4], C[2][3]), (1, 1, 1, 1), "células citadas")
+v.igual((C[7][6], "".join(z)), (4, "CTGA"), "LCS de CATGACT e ACTGTA")
+v.tem("$C[3,3]=1+C[2,2]=2$", "célula C[3,3]")
+v.igual((C[3][3], C[2][2], C[3][1], C[2][1], C[3][0]), (2, 1, 1, 1, 0), "células citadas")
+v.tem("$C[3,1]=\\max\\{C[2,1],C[3,0]\\}=\\max\\{1,0\\}=1$", "célula C[3,1]")
 for i in range(len(X) + 1):
     v.tem(f"{i}/{{" + ",".join(map(str, C[i])) + "}", f"figura da LCS, linha {i}")
 v.tem(",".join(f"{i}/{j}" for i, j in visitadas), "células amarelas da reconstrução")
 v.tem(",".join(f"{i}/{j}" for i, j in casadas), "células verdes da reconstrução")
-v.igual(todas_lcs(X, Y), ["BCAB", "BCBA", "BDAB"], "todas as LCS de tamanho 4")
-v.tem("são exatamente BCAB, BCBA e BDAB", "todas as LCS no texto")
+v.igual(todas_lcs(X, Y), ["ATGA", "ATGT", "CTGA", "CTGT"], "todas as LCS de tamanho 4")
+v.tem("são exatamente ATGA, ATGT, CTGA e CTGT", "todas as LCS no texto")
 x2, y2 = (5, 2, 1, 3, 9, 10, 14), (2, 3, 1, 10)
 v.igual((lcs_tabela(x2, y2)[-1][-1], todas_lcs(x2, y2)), (3, [(2, 1, 10), (2, 3, 10)]),
         "LCS de 5,2,1,3,9,10,14 e 2,3,1,10")
@@ -139,14 +142,14 @@ for (i, j), txt in {(1, 2): "10\\,000 (1)", (1, 3): "1500 (1)", (1, 4): "\\textb
             f"m[{i},{j}] e s[{i},{j}]")
 v.tem("$0+500+20\\cdot50\\cdot1=1500$", "m[1,3] com k=1")
 v.tem("$10\\,000+0+20\\cdot10\\cdot1=10\\,200$", "m[1,3] com k=2")
-for dims, custo, ordem in (((10, 100, 5, 50), 7500, "((M_1M_2)M_3)"),
-                           ((5, 10, 3, 12, 5, 50, 6), 2010, "((M_1M_2)((M_3M_4)(M_5M_6)))"),
+for dims, custo, ordem in (((5, 20, 2, 30), 500, "((M_1M_2)M_3)"),
+                           ((8, 2, 9, 3, 7, 4, 10), 392, "(M_1((((M_2M_3)M_4)M_5)M_6))"),
                            ((30, 35, 15, 5, 10, 20, 25), 15125, "((M_1(M_2M_3))((M_4M_5)M_6))")):
     m2, s2 = cadeia(dims)
     n = len(dims) - 1
     v.igual((m2[1][n], parentiza(s2, 1, n)), (custo, ordem), f"cadeia {dims}")
     v.tem(ordem, f"ordem ótima de {dims}")
-v.tem("$m[1,2]=5000$ e $m[2,3]=25\\,000$", "células de (10,100,5,50)")
+v.tem("$m[1,2]=200$ e $m[2,3]=1200$", "células de (5,20,2,30)")
 
 
 # ---------- Mochila ----------
@@ -175,15 +178,18 @@ def guloso_razao(itens, W):
     return tot
 
 
-itens = [(1, 2), (3, 7), (2, 1)]
-M, otimo, esc = mochila(itens, 4)
-v.igual((otimo, esc), (9, [1, 2]), "mochila do Exemplo 11.6")
-for w in range(5):
+# Exemplo 11.6 (o Exercício pd-mon usa W=4 e (1,2),(3,7),(2,1), conferido nas respostas)
+itens = [(2, 3), (3, 5), (1, 1)]
+M, otimo, esc = mochila(itens, 5)
+v.igual((otimo, esc), (8, [1, 2]), "mochila do Exemplo 11.6")
+for w in range(6):
     v.tem(f"{w}/{{" + ",".join(str(M[w][i]) for i in range(4)) + "}", f"figura da mochila, w={w}")
-v.tem("$M(4,2)=\\max\\{M(4,1),\\,7+M(1,1)\\}=\\max\\{2,\\,9\\}=9$", "célula M(4,2)")
-itens = [(10, 60), (20, 100), (30, 120)]
-_, otimo, esc = mochila(itens, 50)
-v.igual((otimo, esc, guloso_razao(itens, 50)), (220, [2, 3], 160), "mochila com W=50")
+v.tem("$M(5,2)=\\max\\{M(5,1),\\,5+M(2,1)\\}=\\max\\{3,\\,8\\}=8$", "célula M(5,2)")
+v.igual((M[5][3] == M[5][2], M[5][2] != M[5][1], M[2][1] != M[2][0]), (True, True, True), "reconstrução")
+# Guloso pela razão (o Exercício gm-frac usa W=50 e (10,60),(20,100),(30,120))
+itens = [(1, 6), (3, 15), (4, 18)]
+_, otimo, esc = mochila(itens, 6)
+v.igual((otimo, esc, guloso_razao(itens, 6)), (24, [1, 3], 21), "mochila com W=6")
 # w decrescente x crescente
 K = [0] * 5
 for w in range(4, 1, -1):
@@ -194,6 +200,16 @@ for w in range(2, 5):
 v.igual((K, K2), ([0, 0, 3, 3, 3], [0, 0, 3, 3, 6]), "vetor único decrescente e crescente")
 
 # ---------- Respostas ----------
+C = lcs_tabela("ABCBDAB", "BDCABA")
+z, _, _ = lcs_reconstroi("ABCBDAB", "BDCABA", C)
+v.igual(("".join(z), todas_lcs("ABCBDAB", "BDCABA")), ("BCBA", ["BCAB", "BCBA", "BDAB"]), "pd-rec")
+v.tem("obtém-se \\textbf{BCBA}; as subsequências comuns de tamanho 4 são BCAB, BCBA e BDAB", "pd-rec", R)
+m2, _ = cadeia((10, 100, 5, 50))
+v.igual((m2[1][2], m2[2][3], m2[1][3]), (5000, 25000, 7500), "pd-mon (a), r=(10,100,5,50)")
+v.tem("$m[1,3]=\\min\\{75\\,000,\\,7500\\}=7500$", "pd-mon (a)", R)
+M, otimo, esc = mochila([(1, 2), (3, 7), (2, 1)], 4)
+v.igual(([M[4][i] for i in range(4)], otimo, esc), ([0, 2, 9, 9], 9, [1, 2]), "pd-mon (b)")
+v.tem("$M(4,\\cdot)=0,2,9,9$", "pd-mon (b)", R)
 a = [5, 2, 8, 6, 3, 6, 9, 7]
 L = []
 for i, x in enumerate(a):

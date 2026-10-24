@@ -83,12 +83,14 @@ r, links = fusao(H1, H2)
 v.igual(r, [(7, [(5, [])]), (9, [(8, [(6, [])]), (3, [])])], "fusão de H1 e H2")
 v.igual(sum(tamanho(t) for t in r), 6, "a fusão tem 6 elementos")
 
-# Fusão de formas {B0,B2,B4} + {B0,B1}
+# Fusão de formas {B1,B2,B3} + {B0,B1,B3} (o Exercício hb-m1 usa {B0,B2,B4} + {B0,B1})
 def formas(ordens):
     return [arvore_binomial(k) for k in ordens]
-r, links = fusao(formas([0, 2, 4]), formas([0, 1]))
-v.igual(([len(t[1]) for t in r], links), ([3, 4], 3), "fusão {B0,B2,B4}+{B0,B1}")
-v.tem("$\\{B_3,B_4\\}$, isto é, $24=11000_2=10101_2+11_2$", "resultado da fusão por formas")
+r, links = fusao(formas([1, 2, 3]), formas([0, 1, 3]))
+v.igual((forma(14), forma(11)), ([1, 2, 3], [0, 1, 3]), "14 = 1110_2 e 11 = 1011_2")
+v.igual(([len(t[1]) for t in r], links, 14 + 11), ([0, 3, 4], 3, 25), "fusão {B1,B2,B3}+{B0,B1,B3}")
+v.tem("$\\{B_0,B_3,B_4\\}$, isto é, $25=11001_2=1110_2+1011_2$", "resultado da fusão por formas")
+v.tem("São três links", "número de links da fusão por formas")
 
 # Remoção do máximo (Exemplo 3.4)
 h = [(7, [(5, [])]), (9, [(8, [(6, [])]), (3, [])])]
@@ -140,7 +142,31 @@ final, links = consolida(resto)
 v.igual(final, [(9, [(2, [])]), (8, [(6, [(5, [])]), (3, [])])], "árvores depois da consolidação")
 v.igual(links, 4, "a consolidação faz 4 links")
 v.tem("examinou 6 raízes e fez 4 links, mas terminou com $t=2$", "potencial na consolidação")
-v.tem("$\\Delta\\Phi=3-2\\cdot2=-1$, e o custo amortizado é $3+(-1)=2$", "potencial dos cortes")
+
+
+# Cortes em cascata (Exemplo 3.6): pai[x] e marcas; X=60 (antes 10), Y=30 marcado, Z=40 desmarcado
+pai = {45: 50, 40: 50, 38: 40, 30: 40, 25: 30, 60: 30, 50: None}
+marca = {30}
+raizes = {50}
+t0, m0 = len(raizes), len(marca)
+x, cortes = 60, 0
+while True:
+    y = pai[x]
+    pai[x] = None
+    raizes.add(x)
+    marca.discard(x)
+    cortes += 1
+    if y is None or pai[y] is None:
+        break
+    if y in marca:
+        x = y
+        continue
+    marca.add(y)
+    break
+dt, dm = len(raizes) - t0, len(marca) - m0
+v.igual((cortes, sorted(raizes), sorted(marca)), (2, [30, 50, 60], [40]), "cortes em cascata")
+v.igual((dt + 2 * dm, cortes + dt + 2 * dm), (2, 4), "variação do potencial e custo amortizado")
+v.tem(f"$\\Delta\\Phi=2+2\\cdot0=2$, e o custo amortizado é $2+2=4$", "potencial dos cortes")
 
 # Menores árvores de grau k num heap de Fibonacci: F_{k+2}
 s = [1, 2]

@@ -134,7 +134,7 @@ Essas árvores mínimas são chamadas \textbf{árvores de Fibonacci}, e $N(h)=F_
 \end{figura}
 
 \begin{exemplo}[Quão alta pode ser uma AVL?]
-A recorrência dá $N(1),\dots,N(8)=1,2,4,7,12,20,33,54$. Como uma AVL de altura 7 tem pelo menos 33 nós, uma AVL com 32 nós tem altura no máximo 6; uma árvore completa com 32 nós tem altura 6. A diferença entre a melhor e a pior AVL é pequena, e continua pequena para $n$ grande: com um milhão de nós, a altura de uma AVL é no máximo 28, contra 20 de uma árvore completa e até $10^6$ de uma ABB degenerada.
+A recorrência dá $N(1),\dots,N(5)=1,2,4,7,12$, os tamanhos das árvores da Figura~\ref{fig:avlfib}. Como uma AVL de altura 5 tem pelo menos 12 nós, uma AVL com 10 nós tem altura no máximo 4, e essa altura é possível, pois $N(4)=7\le10$; uma árvore completa com 10 nós também tem altura 4. A diferença entre a melhor e a pior AVL é pequena, e continua pequena para $n$ grande: com um milhão de nós, a altura de uma AVL é no máximo 28, contra 20 de uma árvore completa e até $10^6$ de uma ABB degenerada.
 \end{exemplo}
 
 Assim, a busca numa AVL custa $O(\log n)$. Resta mostrar que a inserção e a remoção, incluindo o rebalanceamento, também custam $O(\log n)$.
@@ -405,37 +405,37 @@ Partimos da árvore abaixo (balanços em vermelho) e inserimos $5$, $15$, $35$ e
 Numa ABB comum, inserções em ordem desfavorável (crescente, decrescente ou em zigue-zague) produziriam altura $\Theta(n)$ e operações de custo $\Theta(n)$. A AVL garante altura no máximo $1{,}44\log_2n$ (Teorema~\ref{teo:avlaltura}), qualquer que seja a ordem de chegada, pagando só $O(1)$ rotações por inserção.
 \end{exemplo}
 
-\begin{exemplo}[Inserindo $40,20,10,30,35$ numa árvore vazia]\label{ex:avl4020}
-Depois de $40$ e $20$, temos $40^{-1}(20)$. Inserir $10$ deixa $\bal(40)=-2$ com o filho $20$ de balanço $-1$: rotação simples à direita em 40, resultando em $20^{0}(10,40)$. Inserir $30$ dá $20^{+1}(10,\ 40^{-1}(30,\cdot))$. Inserir $35$ (à direita de 30) deixa $\bal(30)=+1$ e $\bal(40)=-2$: o primeiro desregulado é \textbf{40}, com filho esquerdo $30$ de balanço $+1$, e a rotação é \textbf{dupla à direita} (à esquerda em 30, à direita em 40). A árvore final é $20^{+1}(10^{0},\ 35^{0}(30^{0},40^{0}))$.
-\begin{figura}[As inserções do Exemplo~\ref{ex:avl4020}: uma rotação simples e uma dupla.\label{fig:avl4020}]
+\begin{exemplo}[Inserindo $20,40,60,30,25$ numa árvore vazia]\label{ex:avl4020}
+Depois de $20$ e $40$, temos $20^{+1}(\cdot,40)$. Inserir $60$ deixa $\bal(20)=+2$ com o filho $40$ de balanço $+1$: rotação simples à esquerda em 20, resultando em $40^{0}(20,60)$. Inserir $30$ dá $40^{-1}(20^{+1}(\cdot,30),\ 60)$. Inserir $25$ (à esquerda de 30) deixa $\bal(30)=-1$ e $\bal(20)=+2$: o primeiro desregulado é \textbf{20}, com filho direito $30$ de balanço $-1$, e a rotação é \textbf{dupla à esquerda} (à direita em 30, à esquerda em 20). A árvore final é $40^{-1}(25^{0}(20^{0},30^{0}),\ 60^{0})$.
+\begin{figura}[As inserções do Exemplo~\ref{ex:avl4020}: uma rotação simples e uma dupla, ambas à esquerda.\label{fig:avl4020}]
 \begin{tabular}{@{}c@{\hspace{9mm}}c@{\hspace{9mm}}c@{\hspace{9mm}}c@{}}
-\begin{forest} bstp [40,desreg,bb=-2 [20,bb=-1 [10,novo] [,vazio]] [,vazio]] \end{forest} &
-\begin{forest} bstp [20,bb=+1 [10] [40,bb=-1 [30,novo] [,vazio]]] \end{forest} &
-\begin{forest} bstp [20 [10] [40,desreg,bb=-2 [30,bb=+1 [,vazio] [35,novo]] [,vazio]]] \end{forest} &
-\begin{forest} bstp [20,bb=+1 [10] [35,bb=0 [30] [40]]] \end{forest}\\[3pt]
-\small (a) 10 desregula 40 & \small (b) após a rotação e o 30 & \small (c) 35 desregula 40 & \small (d) após a dupla
+\begin{forest} bstp [20,desreg,bb=+2 [,vazio] [40,bb=+1 [,vazio] [60,novo]]] \end{forest} &
+\begin{forest} bstp [40,bb=-1 [20,bb=+1 [,vazio] [30,novo]] [60]] \end{forest} &
+\begin{forest} bstp [40 [20,desreg,bb=+2 [,vazio] [30,bb=-1 [25,novo] [,vazio]]] [60]] \end{forest} &
+\begin{forest} bstp [40,bb=-1 [25,bb=0 [20] [30]] [60]] \end{forest}\\[3pt]
+\small (a) 60 desregula 20 & \small (b) após a rotação e o 30 & \small (c) 25 desregula 20 & \small (d) após a dupla
 \end{tabular}
 \end{figura}
 \end{exemplo}
 
-\begin{exemplo}[Inserindo $10,20,30,40,50$ e depois $49$]
-Inserir $30$ deixa $\bal(10)=+2$ com o filho $20$ de balanço $+1$: rotação simples à esquerda em 10, resultando em $20(10,30)$. Inserir $40$ dá $20^{+1}(10,\ 30^{+1}(\cdot,40))$. Inserir $50$: subindo, $\bal(40)=+1$ e $\bal(30)=+2$, de modo que o \textbf{primeiro desregulado é 30}, e não 20; faz-se a rotação simples à esquerda em 30, e a árvore fica $20^{+1}(10^{0},\ 40^{0}(30^{0},50^{0}))$.
+\begin{exemplo}[Inserindo $50,40,30,20,10$ e depois $11$]
+Inserir $30$ deixa $\bal(50)=-2$ com o filho $40$ de balanço $-1$: rotação simples à direita em 50, resultando em $40(30,50)$. Inserir $20$ dá $40^{-1}(30^{-1}(20,\cdot),\ 50)$. Inserir $10$: subindo, $\bal(20)=-1$ e $\bal(30)=-2$, de modo que o \textbf{primeiro desregulado é 30}, e não 40; faz-se a rotação simples à direita em 30, e a árvore fica $40^{-1}(20^{0}(10^{0},30^{0}),\ 50^{0})$.
 \begin{center}
 \begin{forest} bst
-[20,bb=+1 [10,bb=0] [40,bb=0 [30,bb=0] [50,bb=0]]]
+[40,bb=-1 [20,bb=0 [10,bb=0] [30,bb=0]] [50,bb=0]]
 \end{forest}
 \end{center}
-Inserir $49$ (à esquerda de 50) deixa $\bal(50)=-1$, $\bal(40)=+1$ e $\bal(20)=+2$: o desregulado é 20, com filho direito $40$ de balanço $+1$, e a rotação é \textbf{simples à esquerda em 20}, resultando em $40^{0}(20^{0}(10,30),$\allowbreak$\ 50^{-1}(49,\cdot))$.
+Inserir $11$ (à direita de 10) deixa $\bal(10)=+1$, $\bal(20)=-1$ e $\bal(40)=-2$: o desregulado é 40, com filho esquerdo $20$ de balanço $-1$, e a rotação é \textbf{simples à direita em 40}, resultando em $20^{0}(10^{+1}(\cdot,11),$\allowbreak$\ 40^{0}(30,50))$.
 \begin{center}
 \begin{forest} bst
-[40,bb=0 [20,bb=0 [10,bb=0] [30,bb=0]] [50,bb=-1 [49,novo,bb=0] [,vazio]]]
+[20,bb=0 [10,bb=+1 [,vazio] [11,novo,bb=0]] [40,bb=0 [30,bb=0] [50,bb=0]]]
 \end{forest}
 \end{center}
-Compare com a Figura~\ref{fig:abbdeg}: as mesmas chaves crescentes, que numa ABB comum formariam uma lista, aqui formam uma árvore de altura 3.
+Compare com a Figura~\ref{fig:abbdeg}: numa ABB comum, as chaves de 10 a 50 em ordem decrescente formariam uma lista, como em ordem crescente; aqui formam uma árvore de altura 3.
 \end{exemplo}
 
 \begin{cuidado}[Rotacionar no nó certo]
-No exemplo anterior, ao inserir 50, é tentador rotacionar em 20, a raiz. Mas a rotação deve ser feita no desregulado \emph{mais profundo}, 30; depois dela, o nó 20 fica com balanço $+1$ e nem chega a se desregular. Rotacionar em 20 produziria a árvore $30(20(10),40(\cdot,50))$, e a inserção seguinte de 49 levaria, erradamente, a uma rotação dupla.
+No exemplo anterior, ao inserir 10, é tentador rotacionar em 40, a raiz. Mas a rotação deve ser feita no desregulado \emph{mais profundo}, 30; depois dela, o nó 40 fica com balanço $-1$ e nem chega a se desregular. Rotacionar em 40 produziria a árvore $30(20(10,\cdot),40(\cdot,50))$, e a inserção seguinte de 11 levaria, erradamente, a uma rotação dupla.
 \end{cuidado}
 
 % ------------------------------------------------------------------

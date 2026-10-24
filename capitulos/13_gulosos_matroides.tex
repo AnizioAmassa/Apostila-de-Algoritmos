@@ -38,10 +38,10 @@ Para mostrar que a escolha gulosa não estraga nada, imagine alguém que conhece
 \end{pseudo}
 
 \begin{exemplo}[Troco de 38 centavos]
-Com as moedas $\{10,5,2,1\}$, o guloso dá $\floor{38/10}=3$ moedas de 10 (sobram 8), $\floor{8/5}=1$ moeda de 5 (sobram 3), $\floor{3/2}=1$ moeda de 2 (sobra 1) e uma moeda de 1: seis moedas no total (Figura~\ref{fig:troco}). Cada passo é uma decisão local --- ``use a maior moeda que cabe'' ---, tomada sem olhar o que vem depois.
-\begin{figura}[O troco guloso de 38 com as moedas $\{10,5,2,1\}$: em cada passo, a maior moeda que ainda cabe no valor restante.\label{fig:troco}]
+Com as moedas $\{20,10,5,1\}$, o guloso dá $\floor{38/20}=1$ moeda de 20 (sobram 18), $\floor{18/10}=1$ moeda de 10 (sobram 8), $\floor{8/5}=1$ moeda de 5 (sobram 3) e três moedas de 1: seis moedas no total (Figura~\ref{fig:troco}). Cada passo é uma decisão local --- ``use a maior moeda que cabe'' ---, tomada sem olhar o que vem depois.
+\begin{figura}[O troco guloso de 38 com as moedas $\{20,10,5,1\}$: em cada passo, a maior moeda que ainda cabe no valor restante.\label{fig:troco}]
 \begin{tikzpicture}[moeda/.style={circle, draw, thick, fill=Goldenrod!35, minimum size=8mm, font=\small\bfseries}]
-\foreach \pos/\val/\resto in {0/10/28,1.2/10/18,2.4/10/8,3.6/5/3,4.8/2/1,6/1/0} {
+\foreach \pos/\val/\resto in {0/20/18,1.2/10/8,2.4/5/3,3.6/1/2,4.8/1/1,6/1/0} {
   \node[moeda] at (\pos,0) {\val};
   \node[rot] at (\pos,-0.75) {resta \resto};}
 \node[passo, anchor=west] at (6.8,0) {6 moedas};
@@ -49,10 +49,10 @@ Com as moedas $\{10,5,2,1\}$, o guloso dá $\floor{38/10}=3$ moedas de 10 (sobra
 \end{figura}
 \end{exemplo}
 
-\begin{exemplo}[O troco guloso é ótimo para as moedas $\{10,5,2,1\}$]
-Seja $(a,b,c,d)$ o número de moedas de $10,5,2,1$ numa solução ótima. Então $d\le1$, pois duas moedas de 1 podem ser trocadas por uma de 2; $b\le1$, pois duas de 5 viram uma de 10; $c\le2$, pois três de 2 viram $5+1$; e não ocorre $c=2$ junto com $d=1$, pois $2+2+1$ vira uma moeda de 5. Logo as moedas pequenas somam $5b+2c+d\le9<10$, e então $a=\floor{S/10}$, como no guloso. Do mesmo modo, $2c+d\le4<5$ força o número de moedas de 5 a ser o do guloso, e $d\le1$ força o de moedas de 2. A solução ótima \emph{é} a gulosa.
+\begin{exemplo}[O troco guloso é ótimo para as moedas $\{20,10,5,1\}$]
+Seja $(a,b,c,d)$ o número de moedas de $20,10,5,1$ numa solução ótima. Então $d\le4$, pois cinco moedas de 1 podem ser trocadas por uma de 5; $c\le1$, pois duas de 5 viram uma de 10; e $b\le1$, pois duas de 10 viram uma de 20. Logo as moedas menores que 20 somam $10b+5c+d\le10+5+4=19<20$, e então $a=\floor{S/20}$, como no guloso. Do mesmo modo, $5c+d\le9<10$ força o número de moedas de 10 a ser o do guloso, e $d\le4<5$ força o de moedas de 5. A solução ótima \emph{é} a gulosa.
 \end{exemplo}
-O guloso, porém, \textbf{não funciona para qualquer sistema de moedas}. Com $\{4,3,1\}$ e $S=6$, ele dá $4+1+1$ (três moedas), mas $3+3$ usa duas. Com $\{25,10,1\}$ e $S=30$, ele usa 6 moedas, contra $10+10+10$. O caso geral se resolve por programação dinâmica, como a mochila ilimitada: $T(s)=1+\min_{v_i\le s}T(s-v_i)$, em $\Theta(nS)$.
+O guloso, porém, \textbf{não funciona para qualquer sistema de moedas}. Com $\{6,4,1\}$ e $S=8$, ele dá $6+1+1$ (três moedas), mas $4+4$ usa duas. Com $\{25,10,1\}$ e $S=30$, ele usa 6 moedas, contra $10+10+10$. O caso geral se resolve por programação dinâmica, como a mochila ilimitada: $T(s)=1+\min_{v_i\le s}T(s-v_i)$, em $\Theta(nS)$.
 
 % ------------------------------------------------------------------
 \section{Matroides}\label{sec:matroides}

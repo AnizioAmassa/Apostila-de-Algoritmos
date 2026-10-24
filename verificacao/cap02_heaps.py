@@ -96,15 +96,19 @@ def num_heaps(n):
 
 
 # --- Texto do capítulo ---
-H = [95, 60, 78, 39, 28, 66, 70, 33]
+# (O heap da Figura 2.1 e os vetores dos exemplos são diferentes dos usados nos
+# Exercícios hp-l5 e hp-r2, conferidos mais abaixo, para não entregar as respostas.)
+H = [90, 55, 82, 41, 30, 64, 75, 37]
 v.igual(eh_heap(H), True, "o vetor da Figura 2.1 é heap")
-v.tem(r"o caminho da raiz até a posição 8 é $95\ge60\ge39\ge33$", "caminho até a posição 8")
-v.igual([H[i - 1] for i in (1, 2, 4, 8)], [95, 60, 39, 33], "caminho até a posição 8")
-v.igual(H[4:], [28, 66, 70, 33], "valores das folhas 5..8")
-v.tem("com valores $28,66,70,33$, e o mínimo, $28$", "folhas e mínimo")
+v.tem("in {" + ",".join(map(str, H)) + "}", "vetor da Figura 2.1")
+v.igual([H[i - 1] for i in (1, 2, 4, 8)], [90, 55, 41, 37], "caminho até a posição 8")
+v.tem(r"o caminho da raiz até a posição 8 é $90\ge55\ge41\ge37$", "caminho até a posição 8")
+v.igual((H[4:], min(H)), ([30, 64, 75, 37], 30), "valores das folhas 5..8 e mínimo")
+v.tem("com valores $30,64,75,37$, e o mínimo, $30$", "folhas e mínimo")
 ordem = sorted(H, reverse=True)
-v.igual((ordem[1], H.index(ordem[1]) + 1, ordem[2], H.index(ordem[2]) + 1), (78, 3, 70, 7),
+v.igual((ordem[1], H.index(ordem[1]) + 1, ordem[2], H.index(ordem[2]) + 1), (82, 3, 75, 7),
         "segundo e terceiro maiores e suas posições")
+v.tem("o segundo maior, 82, está na posição 3, e o terceiro maior, 75, na posição 7", "posições no texto")
 
 v.igual(eh_heap([9, 7, 8, 3, 5, 6]), True, "[9,7,8,3,5,6] é heap")
 v.igual(eh_heap([9, 5, 8, 6, 4, 7]), False, "[9,5,8,6,4,7] não é heap")
@@ -112,26 +116,38 @@ n = 10
 v.igual((7 // 2, (8, 9), list(range(n // 2 + 1, n + 1)), floor(log2(9)) + 1, floor(log2(10)) + 1),
         (3, (8, 9), [6, 7, 8, 9, 10], 4, 4), "contas com índices, n=10")
 
-r, tr = inserir(H, 73)
-v.tem(lista(r), "inserção de 73 (Exemplo 2.6)")
-v.igual(len(tr), 2, "a inserção de 73 faz duas trocas")
+r, tr = inserir(H, 68)
+v.igual(tr, [(41, 68), (55, 68)], "a inserção de 68 troca com 41 e com 55")
+v.tem("O resultado é " + lista(r), "inserção de 68 (Exemplo 2.6)")
+v.tem("[90 [68,novo,acam [55 [37] [41]] [30]] [82 [64] [75]]]", "figura da inserção, passo (c)")
 r, tr = remover(H)
-v.tem("[33,60,78,39,28,66,70]", "33 vai para a raiz")
-v.tem(lista(r), "remoção do máximo (Exemplo 2.7)")
-r, _ = alterar(H, 6, 98)
-v.tem(lista(r), "aumento de 66 para 98")
-r, _ = alterar(H, 1, 37)
-v.tem(lista(r), "diminuição de 95 para 37")
+v.igual(tr, [(37, 82), (37, 75)], "o 37 desce trocando com 82 e com 75")
+v.tem("formando $[37,55,82,41,30,64,75]$", "37 vai para a raiz")
+v.tem("Resultado: " + lista(r), "remoção do máximo (Exemplo 2.7)")
+v.tem("[82 [55 [41] [30]] [75 [64] [37,novo]]]", "figura da remoção, passo (c)")
+r, tr = alterar(H, 6, 95)
+v.igual(tr, [(82, 95), (90, 95)], "o 95 sobe trocando com 82 e com 90")
+v.tem(lista(r), "aumento de 64 para 95")
+r, tr = alterar(H, 1, 33)
+v.igual(tr, [(33, 82), (33, 75)], "o 33 desce trocando com 82 e com 75")
+v.tem(lista(r), "diminuição de 90 para 33")
 
-final, passos = arranjar([7, 2, 15, 9, 1, 20, 13])
-for i, tr, vetor in passos:
-    v.tem(lista(vetor), f"arranjar de [7,2,15,9,1,20,13], i={i}")
+final, passos = arranjar([5, 13, 8, 2, 11, 9, 14])
+v.igual([(i, tr) for i, tr, _ in passos], [(3, [(8, 14)]), (2, []), (1, [(5, 14), (5, 9)])],
+        "trocas do arranjar de [5,13,8,2,11,9,14]")
+v.tem("Vetor: " + lista(passos[0][2]), "arranjar, i=3")
+v.tem("Vetor final: " + lista(final), "arranjar, vetor final")
+v.tem("[14,feito [13,feito [2,feito] [11,feito]] [9,feito [5,feito] [8,feito]]]", "figura do arranjar")
 v.tem(r"$4\cdot1+2\cdot2+1\cdot3=11$", "trocas máximas do arranjar com 15 nós")
 
-for ent in ([18, 25, 41, 34, 14, 10, 52, 50, 48], [20, 15, 30, 40, 10, 25, 5]):
+for ent, trocas in (([12, 30, 21, 8, 27, 40, 16, 35, 19],
+                    [[(8, 35)], [(21, 40)], [(30, 35)], [(12, 40), (12, 21)]]),
+                   ([6, 9, 14, 3, 12, 10, 2], [[], [(9, 12)], [(6, 14), (6, 10)]])):
     final, passos = arranjar(ent)
+    v.igual([tr for _, tr, _ in passos], trocas, f"trocas da construção de {ent}")
     v.tem("Resultado: " + lista(final), f"construção de {ent}")
-v.tem(lista(sorted([18, 25, 41, 34, 14, 10, 52, 50, 48])), "heapsort do vetor de 9 elementos")
+v.tem("ele transforma $[12,30,21,8,27,40,16,35,19]$ em " + lista(sorted([12, 30, 21, 8, 27, 40, 16, 35, 19])),
+      "heapsort do vetor de 9 elementos")
 
 h, linhas = heapsort([5, 2, 9, 4, 7])
 v.tem("o heap é " + lista(h), "heap inicial do heapsort de [5,2,9,4,7]")
@@ -168,9 +184,10 @@ final, passos = arranjar([18, 25, 41, 34, 14, 10, 52, 50, 48])
 trocas = [tr for _, tr, _ in passos]
 v.igual(trocas, [[(34, 50)], [(41, 52)], [(25, 50), (25, 48)], [(18, 52), (18, 41)]], "hp-l5: trocas")
 v.tem(lista(final), "hp-l5", "respostas/02.tex")
-r, _ = alterar(H, 6, 98)
+H_EX = [95, 60, 78, 39, 28, 66, 70, 33]  # o heap do Exercício hp-r2
+r, _ = alterar(H_EX, 6, 98)
 v.tem(lista(r), "hp-r2 (a)", "respostas/02.tex")
-r, _ = remover(H)
+r, _ = remover(H_EX)
 v.tem(lista(r), "hp-r2 (b)", "respostas/02.tex")
 for ent in ([20, 15, 30, 40, 10, 25, 5], [7, 2, 15, 9, 1, 20, 13]):
     final, _ = arranjar(ent)

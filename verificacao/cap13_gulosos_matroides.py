@@ -56,17 +56,20 @@ def componentes(vertices, arestas):
     return len({f(x) for x in vertices})
 
 
-# Troco
-g = troco_guloso(38, [10, 5, 2, 1])
-v.igual((g, len(g)), ([10, 10, 10, 5, 2, 1], 6), "troco guloso de 38")
+# Troco (o Exercício gm-troco usa {10,5,2,1}, e pd-troco e gm-troco usam {4,3,1} com S=6)
+g = troco_guloso(38, [20, 10, 5, 1])
+v.igual((g, len(g)), ([20, 10, 5, 1, 1, 1], 6), "troco guloso de 38")
 restos, s = [], 38
 for m in g:
     s -= m
     restos.append(s)
 v.tem(",".join(f"{p}/{m}/{r}" for p, m, r in zip(["0", "1.2", "2.4", "3.6", "4.8", "6"], g, restos)),
       "figura do troco de 38")
-v.igual(guloso_otimo_ate([10, 5, 2, 1], 500), True, "guloso ótimo para {10,5,2,1}")
-v.igual((len(troco_guloso(6, [4, 3, 1])), troco_otimo(6, [4, 3, 1])), (3, 2), "{4,3,1} com S=6")
+v.igual(guloso_otimo_ate([20, 10, 5, 1], 500), True, "guloso ótimo para {20,10,5,1}")
+v.tem("somam $10b+5c+d\\le10+5+4=19<20$", "cota das moedas pequenas")
+v.igual((len(troco_guloso(8, [6, 4, 1])), troco_otimo(8, [6, 4, 1])), (3, 2), "{6,4,1} com S=8")
+v.igual(guloso_otimo_ate([10, 5, 2, 1], 500), True, "gm-troco: guloso ótimo para {10,5,2,1}")
+v.igual((len(troco_guloso(6, [4, 3, 1])), troco_otimo(6, [4, 3, 1])), (3, 2), "gm-troco: {4,3,1} com S=6")
 v.igual((len(troco_guloso(30, [25, 10, 1])), troco_otimo(30, [25, 10, 1])), (6, 3), "{25,10,1} com S=30")
 v.tem("Com $\\{25,10,1\\}$ e $S=30$, ele usa 6 moedas", "{25,10,1} no texto")
 

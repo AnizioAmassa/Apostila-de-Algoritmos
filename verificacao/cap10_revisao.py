@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 """Capítulo 10 (escolha de estruturas e algoritmos): estimativas e exemplos."""
+from fractions import Fraction
+from functools import cmp_to_key
 from math import ceil, log2
 
 from comum import Verificador
@@ -40,6 +42,14 @@ while i < len(a) and j < len(b):
         out.append(a[i]); i += 1; j += 1
 out += a[i:] + b[j:]
 v.tem("dão $(" + ",".join(map(str, out)) + ")$", "intercalação sem repetidos")
+
+# Frações com pouca memória: n log2 n com n = 10^5
+v.igual(round(1e5 * log2(1e5) / 1e6, 1), 1.7, "heapsort de 10^5 frações: cerca de 1,7·10^6 comparações")
+v.tem("cerca de $1{,}7\\cdot10^6$, sem memória extra", "estimativa no texto")
+fr = [(3, 7), (-1, 2), (5, 11), (2, 9), (6, 14)]
+compara = lambda a, b: (a[0] * b[1] > b[0] * a[1]) - (a[0] * b[1] < b[0] * a[1])
+v.igual([Fraction(*t) for t in sorted(fr, key=cmp_to_key(compara))], sorted(Fraction(*t) for t in fr),
+        "p/q < r/s se e somente se ps < rq (denominadores positivos)")
 
 # --- Respostas ---
 v.igual(round(1e8 * log2(1e8) / 1e9, 1), 2.7, "rv-idades: n log2 n ≈ 2,7·10^9")

@@ -192,10 +192,11 @@ v.igual((bal(a), bal(a.d), bal(b.d), bal(b)), (0, 1, 2, 0), "balanços das árvo
 N = [None, 1, 2]
 for k in range(3, 31):
     N.append(1 + N[-1] + N[-2])
-v.tem("$N(1),\\dots,N(8)=" + ",".join(map(str, N[1:9])) + "$", "N(1..8)")
+v.tem("$N(1),\\dots,N(5)=" + ",".join(map(str, N[1:6])) + "$", "N(1..5)")
 v.igual(max(k for k in range(1, 31) if N[k] <= 10 ** 6), 28, "altura máxima de uma AVL com 10^6 nós")
 v.igual(floor(log2(10 ** 6)) + 1, 20, "altura de uma árvore completa com 10^6 nós")
-v.igual(max(k for k in range(1, 31) if N[k] <= 32), 6, "AVL com 32 nós")
+v.igual((max(k for k in range(1, 31) if N[k] <= 10), floor(log2(10)) + 1), (4, 4),
+        "AVL com 10 nós e árvore completa com 10 nós (avl-altmax usa 20 e 32)")
 
 # Exemplo 5.4: as três linhas da tabela
 t = de_texto("20(10,30(.,40))")
@@ -233,17 +234,28 @@ v.igual(logs, [[("simples à direita", 30)], [], [("dupla à direita", 50)], []]
 final_t5 = ser(t)
 tem_forma(final_t5, "árvore final do Exemplo 5.7 / avl-t5", "respostas/05.tex")
 
-# Exemplo 5.8: 40, 20, 10, 30, 35
-t, log = arvore([40, 20, 10, 30, 35])
-v.igual(log, [("simples à direita", 40), ("dupla à direita", 40)], "rotações de 40,20,10,30,35")
-tem_forma(ser(t), "árvore final de 40,20,10,30,35")
-# Exemplo 5.9: 10..50 e depois 49
-t, log = arvore([10, 20, 30, 40, 50])
-v.igual(log, [("simples à esquerda", 10), ("simples à esquerda", 30)], "rotações de 10..50")
-tem_forma(ser(t), "árvore depois de 10..50")
-t, log = arvore([49], base=t)
-v.igual(log, [("simples à esquerda", 20)], "inserir 49")
-tem_forma(ser(t), "árvore depois de 49")
+# Exemplo 5.8: 20, 40, 60, 30, 25 (o Exercício avl-r5 usa 40, 20, 10, 30, 35)
+for pref in ([20, 40], [20, 40, 60], [20, 40, 60, 30]):
+    tem_forma(ser(arvore(pref)[0]), f"árvore depois de {pref}")
+t, log = arvore([20, 40, 60, 30, 25])
+v.igual(log, [("simples à esquerda", 20), ("dupla à esquerda", 20)], "rotações de 20,40,60,30,25")
+v.igual(ser(t, True), "40^-1(25^0(20^0,30^0),60^0)", "árvore final com balanços")
+tem_forma(ser(t), "árvore final de 20,40,60,30,25")
+# Exemplo 5.9: 50..10 e depois 11 (o Exercício avl-r5 usa 10..50 e depois 49)
+for pref in ([50, 40, 30], [50, 40, 30, 20]):
+    tem_forma(ser(arvore(pref)[0]), f"árvore depois de {pref}")
+t, log = arvore([50, 40, 30, 20, 10])
+v.igual(log, [("simples à direita", 50), ("simples à direita", 30)], "rotações de 50..10")
+tem_forma(ser(t), "árvore depois de 50..10")
+t, log = arvore([11], base=t)
+v.igual((log, ser(t, True)), ([("simples à direita", 40)], "20^0(10^+1(\\cdot,11^0),40^0(30^0,50^0))"),
+        "inserir 11")
+tem_forma(ser(t), "árvore depois de 11")
+errada = rot_dir(de_texto("40(30(20(10,.),.),50)"))
+tem_forma(ser(errada), "árvore da rotação errada (Armadilhas)")
+log = []
+ins(errada, 11, log)
+v.igual(log, [("dupla à direita", 20)], "rotacionar na raiz levaria a uma rotação dupla")
 
 # Rubro-negra da Figura 5.10: altura negra 2 em todos os caminhos
 rn = {13: ("P", 8, 17), 8: ("V", 1, 11), 17: ("V", 15, 25), 1: ("P", None, 6), 11: ("P", None, None),
@@ -261,6 +273,15 @@ def alturas_negras(k):
 v.igual({x - 1 for x in alturas_negras(13)}, {2}, "bh(13)=2 (sem contar o 13, contando o nulo)")
 
 # --- Respostas ---
+t, log = arvore([40, 20, 10, 30, 35])
+v.igual(log, [("simples à direita", 40), ("dupla à direita", 40)], "avl-r5 (a): rotações")
+tem_forma(ser(t), "avl-r5 (a): árvore final", "respostas/05.tex")
+t, log = arvore([10, 20, 30, 40, 50])
+v.igual(log, [("simples à esquerda", 10), ("simples à esquerda", 30)], "avl-r5 (b): rotações")
+tem_forma(ser(t), "avl-r5 (b): árvore final", "respostas/05.tex")
+t, log = arvore([49], base=t)
+v.igual(log, [("simples à esquerda", 20)], "avl-r5 (c): rotação")
+tem_forma(ser(t), "avl-r5 (c): árvore final", "respostas/05.tex")
 t, log = arvore([1, 2, 3, 4, 5, 6, 7])
 v.igual((ser(t), [k for _, k in log]), ("4(2(1,3),6(5,7))", [1, 3, 2, 5]), "avl-1a7")
 t17 = t

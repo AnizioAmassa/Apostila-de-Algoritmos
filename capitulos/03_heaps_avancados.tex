@@ -125,8 +125,8 @@ Sejam $H_1=\{7,\ 9\to3\}$ e $H_2=\{5,\ 8\to6\}$, cada um com $3=11_2$ elementos:
 \end{figura}
 \end{exemplo}
 
-\begin{exemplo}[{Fusão de $H_1=\{B_0,B_2,B_4\}$ com $H_2=\{B_0,B_1\}$}]
-Olhando apenas para os formatos: os heaps têm $21=10101_2$ e $3=11_2$ elementos. Os links acontecem na seguinte ordem: $B_0+B_0\to B_1$; esse $B_1$ com o $B_1$ de $H_2$ forma uma $B_2$; essa $B_2$ com a $B_2$ de $H_1$ forma uma $B_3$. O resultado é $\{B_3,B_4\}$, isto é, $24=11000_2=10101_2+11_2$.
+\begin{exemplo}[{Fusão de $H_1=\{B_1,B_2,B_3\}$ com $H_2=\{B_0,B_1,B_3\}$}]
+Olhando apenas para os formatos: os heaps têm $14=1110_2$ e $11=1011_2$ elementos. A $B_0$ de $H_2$ fica sozinha na ordem 0. Na ordem 1, as duas $B_1$ formam uma $B_2$ (o ``vai um''); na ordem 2, essa $B_2$ se junta à $B_2$ de $H_1$ e forma uma $B_3$; na ordem 3 há, então, três árvores --- as $B_3$ de $H_1$ e de $H_2$ e a que acabou de se formar ---, e, como na soma $1+1+1=11_2$, uma delas fica e as outras duas formam uma $B_4$. São três links, e o resultado é $\{B_0,B_3,B_4\}$, isto é, $25=11001_2=1110_2+1011_2$.
 \end{exemplo}
 
 As demais operações são as seguintes.
@@ -276,26 +276,24 @@ Restam duas raízes, 8 (grau 2) e 9 (grau 1), e o novo máximo é 9 (Figura~\ref
 \paragraph{Regras das marcas.} Todos os nós começam desmarcados. Um nó é marcado quando \emph{perde o primeiro filho} por um corte, e, ao perder o segundo, ele próprio é cortado. \textbf{Raízes nunca estão marcadas} e podem perder quantos filhos for preciso; quando um nó é subordinado a outro, fica desmarcado.
 
 \begin{exemplo}[Cortes em cascata]\label{ex:cascata}
-O nó interno $X$ tem pai $Y$, marcado, e avô $Z$, também marcado. A prioridade de $X$ aumenta e passa a superar a de $Y$.
+O nó interno $X$ tem pai $Y$, marcado, e avô $Z$, desmarcado, que não é raiz. A prioridade de $X$ aumenta e passa a superar a de $Y$.
 \begin{enumerate}
   \item $X$ é cortado e vai para a lista de raízes, desmarcado.
   \item $Y$ acaba de perder o segundo filho: é cortado, desmarcado e levado à lista de raízes.
-  \item O mesmo acontece com $Z$.
-  \item Seja $W$ o pai de $Z$: se $W$ é raiz, nada mais acontece; se não é raiz e está desmarcado, passa a ser marcado e a cascata termina; se já estava marcado, a cascata continua.
+  \item $Z$, que não é raiz e estava desmarcado, perdeu o seu primeiro filho: passa a ser marcado, e a cascata termina.
 \end{enumerate}
-Ao final, $X$, $Y$ e $Z$ (e possivelmente outros) estão na lista de raízes, desmarcados, e $W$ está marcado, se não for raiz. A Figura~\ref{fig:cascata} mostra o caso em que $W$ é raiz, com chaves concretas: a de $X$ sobe de 10 para 60.
-\begin{figura}[Cortes em cascata. (a) $Z=40$ e $Y=30$ estão marcados (escuros); a chave de $X$ passa de 10 a 60. (b) $X$, $Y$ e $Z$ são cortados, um após o outro, e vão para a lista de raízes desmarcados; $W=50$ é raiz e não é marcado. O novo máximo é 60.\label{fig:cascata}]
+Ao final, $X$ e $Y$ estão na lista de raízes, desmarcados, e $Z$ continua no seu lugar, agora marcado: se ele perder mais um filho no futuro, será cortado também. A Figura~\ref{fig:cascata} mostra o exemplo com chaves concretas: a de $X$ sobe de 10 para 60.
+\begin{figura}[Cortes em cascata. (a) $Y=30$ está marcado (escuro) e $Z=40$, não; a chave de $X$ passa de 10 a 60. (b) $X$ e $Y$ são cortados, um após o outro, e vão para a lista de raízes desmarcados; $Z$ perde um filho e passa a ser marcado. O novo máximo é 60.\label{fig:cascata}]
 \forestset{marc/.style={fill=black!70, text=white}}
 \begin{tabular}{@{}c@{\hspace{14mm}}c@{}}
 \begin{forest} bstp, baseline
-[50,label={[font=\tiny]left:$W$} [45] [40,marc,label={[font=\tiny]left:$Z$} [38] [30,marc,label={[font=\tiny]left:$Y$} [25] [60,novo,label={[font=\tiny]left:$X$}]]]]
+[50 [45] [40,label={[font=\tiny]left:$Z$} [38] [30,marc,label={[font=\tiny]left:$Y$} [25] [60,novo,label={[font=\tiny]left:$X$}]]]]
 \end{forest}
 &
-\begin{forest} bstp, baseline [50 [45]] \end{forest}\
+\begin{forest} bstp, baseline [50 [45] [40,marc,label={[font=\tiny]left:$Z$} [38]]] \end{forest}\
 \begin{forest} bstp, baseline [60,novo] \end{forest}\
-\begin{forest} bstp, baseline [30 [25]] \end{forest}\
-\begin{forest} bstp, baseline [40 [38]] \end{forest}\\[3pt]
-\small (a) antes dos cortes & \small (b) depois: quatro raízes
+\begin{forest} bstp, baseline [30 [25]] \end{forest}\\[3pt]
+\small (a) antes dos cortes & \small (b) depois: três raízes, e $Z$ marcado
 \end{tabular}
 \end{figura}
 \end{exemplo}
@@ -337,7 +335,7 @@ Use o potencial $\Phi(H)=t(H)+2\,m(H)$, onde $t$ é o número de raízes e $m$ o
 \end{itemize}
 
 \begin{exemplo}[O potencial nos exemplos anteriores]
-No Exemplo~\ref{ex:consolida}, depois das 7 inserções há $t=7$ raízes e nenhuma marca: $\Phi=7$. A remoção do máximo examinou 6 raízes e fez 4 links, mas terminou com $t=2$, e $\Phi$ caiu de 7 para 2: a queda de 5 unidades ``pagou'' quase todo o trabalho. No Exemplo~\ref{ex:cascata}, houve $c=3$ cortes; $t$ aumentou de 3 e as duas marcas sumiram ($m$ diminuiu de 2), logo $\Delta\Phi=3-2\cdot2=-1$, e o custo amortizado é $3+(-1)=2$, constante.
+No Exemplo~\ref{ex:consolida}, depois das 7 inserções há $t=7$ raízes e nenhuma marca: $\Phi=7$. A remoção do máximo examinou 6 raízes e fez 4 links, mas terminou com $t=2$, e $\Phi$ caiu de 7 para 2: a queda de 5 unidades ``pagou'' quase todo o trabalho. No Exemplo~\ref{ex:cascata}, houve $c=2$ cortes; $t$ aumentou de 2, e o número de marcas não mudou (a de $Y$ sumiu e a de $Z$ apareceu), logo $\Delta\Phi=2+2\cdot0=2$, e o custo amortizado é $2+2=4$, constante. Cada corte a mais na cascata desmarcaria mais um nó, e o potencial cairia 2 para pagá-lo.
 \end{exemplo}
 
 \begin{teo}
