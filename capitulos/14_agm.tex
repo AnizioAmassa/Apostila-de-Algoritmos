@@ -10,10 +10,10 @@
 \end{itemize}
 \end{objetivos}
 
-Ligar $n$ cidades por uma rede de custo mínimo, usando apenas as ligações possíveis, é encontrar uma \textbf{árvore geradora mínima} (AGM). Os dois algoritmos clássicos são gulosos: o de Kruskal percorre as arestas em ordem crescente de peso e aceita as que não fecham ciclo, usando a estrutura Union-Find do Capítulo~\ref{cap:uf}; o de Prim faz crescer uma única árvore a partir de uma raiz, usando uma fila de prioridades (Capítulos~\ref{cap:heap} e~\ref{cap:heapav}). A correção dos dois decorre de um único lema, a propriedade do corte.
+Ligar $n$ cidades por uma rede de custo mínimo, usando apenas as ligações possíveis, é encontrar uma \textbf{árvore geradora mínima}\index{arvore geradora minima@árvore geradora mínima} (AGM). Os dois algoritmos clássicos são gulosos: o de Kruskal percorre as arestas em ordem crescente de peso e aceita as que não fecham ciclo, usando a estrutura Union-Find do Capítulo~\ref{cap:uf}; o de Prim faz crescer uma única árvore a partir de uma raiz, usando uma fila de prioridades (Capítulos~\ref{cap:heap} e~\ref{cap:heapav}). A correção dos dois decorre de um único lema, a propriedade do corte.
 
-\section{O problema e a propriedade do corte}\label{sec:corte}
-Dado um grafo conexo $G$ com pesos $c$ nas arestas, queremos uma \textbf{árvore geradora} --- um subgrafo conexo e acíclico que contém todos os $n$ vértices e, portanto, tem $n-1$ arestas --- de peso total mínimo. Um \textbf{corte} $(S,V\setminus S)$ é uma partição dos vértices em dois lados, e uma aresta \textbf{atravessa} o corte se tem um extremo em cada lado.
+\section{O problema e a propriedade do corte}\label{sec:corte}\index{propriedade do corte}
+Dado um grafo conexo $G$ com pesos $c$ nas arestas, queremos uma \textbf{árvore geradora}\index{arvore geradora@árvore geradora} --- um subgrafo conexo e acíclico que contém todos os $n$ vértices e, portanto, tem $n-1$ arestas --- de peso total mínimo. Um \textbf{corte}\index{corte} $(S,V\setminus S)$ é uma partição dos vértices em dois lados, e uma aresta \textbf{atravessa} o corte se tem um extremo em cada lado.
 
 \begin{exemplo}[Árvores geradoras de um grafo pequeno]\label{ex:agmpequena}
 O grafo da Figura~\ref{fig:corte} tem 4 vértices e 5 arestas: o quadrado $PQ$ (4), $QR$ (2), $RS$ (5), $SP$ (3) e a diagonal $PR$ (1). Uma árvore geradora escolhe 3 das 5 arestas sem formar ciclo, e há 8 maneiras de fazê-lo, com pesos entre 6 e 12. Por exemplo, $\{PQ,QR,RS\}$ pesa 11 e $\{PQ,QR,SP\}$ pesa 9; a mínima é $\{PR,QR,SP\}$, com peso $1+2+3=6$. Com $n$ vértices o número de árvores geradoras pode chegar a $n^{n-2}$ (no grafo completo), e testar todas é inviável: precisamos de uma regra que diga, aresta a aresta, quais são seguras.
@@ -54,8 +54,8 @@ Seja $T$ uma AGM com $A\subseteq T$. Se $e\in T$, não há o que provar. Senão,
 Um corte divide as cidades em dois grupos, e a rede final precisa de pelo menos uma ligação entre eles. Qualquer que seja a rede ótima, se ela usasse uma ligação cara para atravessar o corte, poderíamos trocá-la pela mais barata que o atravessa, sem desconectar nada. Por isso a aresta mais leve de um corte é sempre ``segura''. Os algoritmos de Kruskal e de Prim são duas maneiras de escolher, a cada passo, um corte conveniente.
 \end{intuicao}
 
-\section{O algoritmo de Kruskal}\label{sec:kruskal}
-No algoritmo de Kruskal, a solução parcial é uma \textbf{floresta}. As arestas são percorridas em ordem crescente de peso, e cada uma é aceita se \textbf{não forma ciclo} com as já aceitas, isto é, se liga duas árvores diferentes da floresta. O teste é feito com conjuntos disjuntos: cada árvore da floresta é um conjunto, e uma aresta $uv$ fecha ciclo se e somente se $u$ e $v$ estão no mesmo conjunto.
+\section{O algoritmo de Kruskal}\label{sec:kruskal}\index{kruskal, algoritmo de@Kruskal, algoritmo de}
+No algoritmo de Kruskal, a solução parcial é uma \textbf{floresta}\index{floresta}. As arestas são percorridas em ordem crescente de peso, e cada uma é aceita se \textbf{não forma ciclo} com as já aceitas, isto é, se liga duas árvores diferentes da floresta. O teste é feito com conjuntos disjuntos: cada árvore da floresta é um conjunto, e uma aresta $uv$ fecha ciclo se e somente se $u$ e $v$ estão no mesmo conjunto.
 \begin{pseudo}{Kruskal com Union-Find}
 \begin{algorithmic}
 \Function{Kruskal}{$G,c$}
@@ -115,7 +115,7 @@ $de$ & 9 & $d$ e $e$ separados & aceita & todos os 9 vértices\\
 Depois de $de$ já há $n-1=8$ arestas, e o algoritmo pode parar; as arestas $ef$, $bh$ e $df$ seriam todas rejeitadas.
 \end{exemplo}
 
-\section{O algoritmo de Prim}\label{sec:prim}
+\section{O algoritmo de Prim}\label{sec:prim}\index{prim, algoritmo de@Prim, algoritmo de}
 No algoritmo de Prim, a solução parcial é uma \textbf{árvore} que cresce a partir de uma raiz: a cada passo, entra a aresta mais leve com um extremo na árvore e o outro fora dela. A correção vem do Lema~\ref{lema:corte}, com $S=V(T)$.
 \begin{pseudo}{Prim em $O(n^2)$ com vetores}
 \begin{algorithmic}

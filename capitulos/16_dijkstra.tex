@@ -1,5 +1,5 @@
 % ================================================================
-\chapter{Caminhos mínimos de uma origem: Dijkstra}\label{cap:dijkstra}\label{sec:dijkstra}
+\chapter{Caminhos mínimos de uma origem: Dijkstra}\label{cap:dijkstra}\label{sec:dijkstra}\index{dijkstra, algoritmo de@Dijkstra, algoritmo de}
 % ================================================================
 \begin{objetivos}
 \begin{itemize}
@@ -35,7 +35,7 @@ Imagine que cada aresta é um pavio, que queima em tempo igual ao seu peso, e qu
 \EndProcedure
 \end{algorithmic}
 \end{pseudo}
-O passo central é o \textbf{relaxamento} de uma aresta $vw$: se chegar a $v$ e seguir a aresta $vw$ é melhor que o melhor caminho conhecido até $w$, esse caminho passa a ser o novo melhor. Por exemplo, se $L(v)=4$, $W(v,w)=3$ e $L(w)=9$, o relaxamento faz $L(w):=7$ e $pai(w):=v$; se fosse $L(w)=6$, nada mudaria.
+O passo central é o \textbf{relaxamento}\index{relaxamento} de uma aresta $vw$: se chegar a $v$ e seguir a aresta $vw$ é melhor que o melhor caminho conhecido até $w$, esse caminho passa a ser o novo melhor. Por exemplo, se $L(v)=4$, $W(v,w)=3$ e $L(w)=9$, o relaxamento faz $L(w):=7$ e $pai(w):=v$; se fosse $L(w)=6$, nada mudaria.
 
 \begin{exemplo}[Raiz $a$ no digrafo da §\ref{sec:fwmatriz}]\label{ex:dijkstra}\leavevmode
 \begin{center}\small
@@ -48,7 +48,7 @@ $d$ (3) & & & & \textbf{3} & 5 & $e\leftarrow d$\\
 $e$ (5) & & & & & \textbf{5} & ---
 \end{tabular}
 \end{center}
-Os ponteiros $pai$ formam a \textbf{árvore de caminhos mínimos}: $a\to b\to c\to d\to e$. Por exemplo, o caminho mínimo de $a$ a $e$ é $a,b,c,d,e$, com custo $L(e)=5$, embora a aresta direta custe 6. A primeira linha da matriz de distâncias calculada pelo Floyd-Warshall (Capítulo~\ref{cap:fw}) confirma os valores $0,1,2,3,5$. A Figura~\ref{fig:dijkstra} mostra o estado do algoritmo em três momentos: o rótulo de $c$ começa em 3, pela aresta direta, e cai para 2 quando $b$ é processado; o de $e$ começa em 6 e só cai para 5 no fim, quando $d$ é processado.
+Os ponteiros $pai$ formam a \textbf{árvore de caminhos mínimos}\index{arvore de caminhos minimos@árvore de caminhos mínimos}: $a\to b\to c\to d\to e$. Por exemplo, o caminho mínimo de $a$ a $e$ é $a,b,c,d,e$, com custo $L(e)=5$, embora a aresta direta custe 6. A primeira linha da matriz de distâncias calculada pelo Floyd-Warshall (Capítulo~\ref{cap:fw}) confirma os valores $0,1,2,3,5$. A Figura~\ref{fig:dijkstra} mostra o estado do algoritmo em três momentos: o rótulo de $c$ começa em 3, pela aresta direta, e cai para 2 quando $b$ é processado; o de $e$ começa em 6 e só cai para 5 no fim, quando $d$ é processado.
 \begin{figura}[O algoritmo de Dijkstra a partir de $a$. Em verde, os vértices já removidos (com rótulo definitivo); em vermelho, os rótulos $L$; em azul, as arestas $pai(w)\to w$ atuais. Em (c), a árvore de caminhos mínimos final.\label{fig:dijkstra}]
 \tikzset{rotL/.style={font=\small\bfseries, text=BrickRed}, pai/.style={MidnightBlue, line width=1.7pt}}
 % \rotulosL{L(a)}{L(b)}{L(c)}{L(d)}{L(e)}

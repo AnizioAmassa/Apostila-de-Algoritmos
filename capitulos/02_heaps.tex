@@ -10,7 +10,7 @@
 \end{itemize}
 \end{objetivos}
 
-Muitas aplicações precisam, repetidamente, do elemento \emph{mais importante} de uma coleção que muda o tempo todo: o próximo processo a ser executado, o paciente mais grave de uma emergência, o próximo evento de uma simulação, o vértice mais próximo no algoritmo de Dijkstra. O tipo abstrato que atende a essas aplicações é a \textbf{lista de prioridades}, e sua implementação clássica é o \textbf{heap binário}: um vetor com uma ordem parcial que permite todas as operações em tempo logarítmico e a construção em tempo linear.
+Muitas aplicações precisam, repetidamente, do elemento \emph{mais importante} de uma coleção que muda o tempo todo: o próximo processo a ser executado, o paciente mais grave de uma emergência, o próximo evento de uma simulação, o vértice mais próximo no algoritmo de Dijkstra. O tipo abstrato que atende a essas aplicações é a \textbf{lista de prioridades}\index{lista de prioridades}, e sua implementação clássica é o \textbf{heap binário}\index{heap!binario@binário}: um vetor com uma ordem parcial que permite todas as operações em tempo logarítmico e a construção em tempo linear.
 
 \section{Listas de prioridades}\label{sec:listaprior}
 Uma lista de prioridades é uma tabela em que cada elemento tem uma \textbf{prioridade}, e que oferece as operações de
@@ -64,13 +64,13 @@ Pense num organograma em que cada chefe é mais importante que seus subordinados
 \end{intuicao}
 
 \begin{defi}[Heap]
-Um \textbf{heap} (de máximo) é uma sequência $s_1,\dots,s_n$ tal que
+Um \textbf{heap}\index{heap} (de máximo) é uma sequência $s_1,\dots,s_n$ tal que
 \[
 s_i\le s_{\floor{i/2}}\qquad\text{para todo }1<i\le n .
 \]
 Num heap \emph{de mínimo}, a desigualdade é invertida: $s_i\ge s_{\floor{i/2}}$.
 \end{defi}
-A definição fica clara quando se desenha a sequência como uma \textbf{árvore binária completa}, numerada por níveis e, em cada nível, da esquerda para a direita: o nó $i$ tem pai $\floor{i/2}$, filho esquerdo $2i$ e filho direito $2i+1$ (quando esses índices são $\le n$). A condição diz que \emph{cada nó tem prioridade maior ou igual à de seus filhos}. Não há ponteiros: a árvore é só uma maneira de olhar para o vetor (Figura~\ref{fig:heaprep}).
+A definição fica clara quando se desenha a sequência como uma \textbf{árvore binária completa}\index{arvore binaria completa@árvore binária completa}, numerada por níveis e, em cada nível, da esquerda para a direita: o nó $i$ tem pai $\floor{i/2}$, filho esquerdo $2i$ e filho direito $2i+1$ (quando esses índices são $\le n$). A condição diz que \emph{cada nó tem prioridade maior ou igual à de seus filhos}. Não há ponteiros: a árvore é só uma maneira de olhar para o vetor (Figura~\ref{fig:heaprep}).
 
 \begin{figura}[O mesmo heap visto como árvore e como vetor. Os números pequenos são os índices; os filhos do nó $i$ estão nas posições $2i$ e $2i+1$, como indicam as setas desenhadas junto ao vetor.\label{fig:heaprep}]
 \begin{forest} bst
@@ -122,8 +122,8 @@ Num heap com $n=10$ elementos: o pai do nó $7$ é $\floor{7/2}=3$; os filhos do
 \section{As operações subir e descer}\label{sec:subirdescer}
 Toda operação sobre um heap altera uma posição e depois restaura a propriedade de heap, que pode ter sido violada em apenas um ponto:
 \begin{itemize}
-  \item se a prioridade de um nó \emph{aumentou}, ele pode ter ficado maior que o pai, e precisa \textbf{subir};
-  \item se \emph{diminuiu}, pode ter ficado menor que um filho, e precisa \textbf{descer}.
+  \item se a prioridade de um nó \emph{aumentou}, ele pode ter ficado maior que o pai, e precisa \textbf{subir}\index{subir (heap)};
+  \item se \emph{diminuiu}, pode ter ficado menor que um filho, e precisa \textbf{descer}\index{descer (heap)}.
 \end{itemize}
 
 \begin{pseudo}{subir$(i)$ -- após \emph{aumentar} a prioridade de $i$}
@@ -238,7 +238,7 @@ No mesmo heap $H=[90,55,82,41,30,64,75,37]$:
 É comum inverter as duas operações ao alterar uma prioridade, escrevendo algo como ``\textbf{se} $H[i]>H[\floor{i/2}]$ \textbf{então} descer$(i)$ \textbf{senão} subir$(i)$''. O correto é o contrário: se o novo valor ficou maior que o pai, a violação é \emph{com o pai}, e o elemento precisa \textbf{subir}; se não ficou, a única violação possível é com os filhos, e ele precisa \textbf{descer}. Em pseudocódigo: \textbf{se} $i>1$ \textbf{e} $H[i]>H[\floor{i/2}]$ \textbf{então} subir$(i)$ \textbf{senão} descer$(i,n)$.
 \end{cuidado}
 
-\section{Construção em tempo linear}\label{sec:arranjar}
+\section{Construção em tempo linear}\label{sec:arranjar}\index{arranjar (construcao de heap)@arranjar (construção de heap)}
 Para transformar um vetor arbitrário num heap, a primeira ideia é inseri-lo elemento a elemento: \textbf{para} $i:=2,\dots,n$ \textbf{faça} subir$(i)$. Isso custa $O(n\log n)$, e de fato $\Theta(n\log n)$ no pior caso, por exemplo quando a entrada é crescente e cada elemento sobe até a raiz.
 
 Uma ideia melhor é trabalhar de baixo para cima. As folhas, isto é, as posições $i>\floor{n/2}$, já são heaps de um único elemento. Percorrendo os demais nós do último para o primeiro, cada um encontra as duas subárvores dos filhos já organizadas como heaps, e basta fazê-lo descer.
@@ -321,7 +321,7 @@ A intuição é a da Figura~\ref{fig:alturas}: metade dos nós (as folhas) não 
 \end{itemize}
 \end{exemplo}
 
-\section{Heapsort}\label{sec:heapsort}
+\section{Heapsort}\label{sec:heapsort}\index{heapsort}
 O heap leva a um algoritmo de ordenação simples: construa o heap e, repetidamente, troque a raiz (o maior elemento restante) com a última posição da parte ainda não ordenada e faça a nova raiz descer. O vetor fica dividido em duas partes: à esquerda, um heap que encolhe; à direita, a parte já ordenada, que cresce.
 \begin{pseudo}{Heapsort}
 \begin{algorithmic}
@@ -348,7 +348,7 @@ O \emph{arranjar} processa $i=2$ (troca $2\leftrightarrow7$) e $i=1$ (troca $5\l
 \end{figura}
 \end{exemplo}
 
-O custo é $O(n)+\sum_mO(\log m)=\Theta(n\log n)$ em \emph{todos} os casos, mesmo com a entrada já ordenada. O heapsort é \textbf{in-place} (só faz trocas dentro do vetor) e \textbf{não é estável}, pois a troca da raiz com o último elemento pode inverter a ordem relativa de elementos iguais. Como faz $O(n\log n)$ comparações, é ótimo entre os algoritmos baseados em comparações (Capítulo~\ref{cap:sortcomp}). Por exemplo, ele transforma $[12,30,21,8,27,40,16,35,19]$ em $[8,12,16,19,21,27,30,35,40]$.
+O custo é $O(n)+\sum_mO(\log m)=\Theta(n\log n)$ em \emph{todos} os casos, mesmo com a entrada já ordenada. O heapsort é \textbf{in-place}\index{in-place} (só faz trocas dentro do vetor) e \textbf{não é estável}, pois a troca da raiz com o último elemento pode inverter a ordem relativa de elementos iguais. Como faz $O(n\log n)$ comparações, é ótimo entre os algoritmos baseados em comparações (Capítulo~\ref{cap:sortcomp}). Por exemplo, ele transforma $[12,30,21,8,27,40,16,35,19]$ em $[8,12,16,19,21,27,30,35,40]$.
 
 % ------------------------------------------------------------------
 \section{Propriedades de heaps e suas demonstrações}\label{sec:heapprops}

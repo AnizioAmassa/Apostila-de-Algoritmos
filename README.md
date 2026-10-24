@@ -22,6 +22,7 @@ baixá-lo daqui.
 | `capitulos/referencias.tex` | referências bibliográficas |
 | `verificacao/` | scripts Python que conferem os exercícios e os números do texto (veja abaixo) |
 | `Makefile` | atalhos para compilar, verificar e limpar |
+| `latexmkrc`, `indice.ist` | configuração do `latexmk` e estilo do `makeindex` para o índice remissivo |
 | `.github/workflows/apostila.yml` | a CI que verifica, compila e atualiza o `apostila.pdf` |
 | `apostila.pdf` | o PDF compilado, mantido no repositório |
 
@@ -52,7 +53,9 @@ make pdf          # equivale a: latexmk -pdf apostila.tex
 ```
 
 O `latexmk` roda o `pdflatex` quantas vezes for preciso (sumário e referências
-cruzadas). A compilação completa leva cerca de 2 minutos.
+cruzadas) e também o `makeindex`, que gera o índice remissivo no fim do livro,
+com o estilo `indice.ist` indicado no `latexmkrc`. A compilação completa leva
+cerca de 2 minutos.
 
 Outros alvos do `Makefile`:
 
@@ -67,6 +70,15 @@ de `apostila.tex` (até antes de `\begin{document}`) seguidas de
 `\begin{document}\mainmatter\setcounter{chapter}{N-1}\input{capitulos/X}\end{document}`.
 O Capítulo 16 usa a macro `\digrafoFW`, definida no Capítulo 12; inclua o 12
 antes dele.
+
+### Índice remissivo
+
+Os termos aparecem no índice por meio de `\index{}`, colocado logo depois da
+ocorrência em negrito que os define, por exemplo
+`\textbf{fator de carga}\index{fator de carga}`. Termos com acento levam uma
+chave de ordenação sem acento antes de `@` (`\index{arvore avl@árvore AVL}`), e
+subentradas usam `!` (`\index{heap!binomial}`). Não coloque `\index` nos
+exercícios nem nas respostas: o script de integridade recusaria a mudança.
 
 ### Pacotes TeX necessários
 

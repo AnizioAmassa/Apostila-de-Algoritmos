@@ -13,7 +13,7 @@
 O mergesort, o quicksort e a seleção pela mediana das medianas já usaram a mesma ideia: quebrar o problema em pedaços menores do mesmo tipo, resolvê-los recursivamente e combinar as respostas. Este capítulo trata essa ideia como um método de projeto, com um roteiro para escrever o pseudocódigo e analisar a recorrência, e a aplica a vários problemas.
 
 \section{O paradigma}\label{sec:dcparadigma}
-Um algoritmo de \textbf{divisão e conquista} tem três passos: (1) \emph{divisão}: quebrar o problema $\Pi$ em subproblemas menores \textbf{do mesmo tipo}, $\Pi_1,\dots,\Pi_k$; (2) \emph{conquista}: resolvê-los recursivamente, resolvendo diretamente os casos pequenos; (3) \emph{combinação}: juntar as soluções dos subproblemas, por um procedimento relativamente simples, numa solução de $\Pi$. Busca-se um \textbf{bom balanceamento}, com partes de tamanhos parecidos, que leva a poucas camadas de recursão. A técnica funciona bem quando os subproblemas são \textbf{disjuntos}; quando eles se repetem muito, a técnica adequada é a programação dinâmica do Capítulo~\ref{cap:pd}.
+Um algoritmo de \textbf{divisão e conquista}\index{divisao e conquista@divisão e conquista} tem três passos: (1) \emph{divisão}: quebrar o problema $\Pi$ em subproblemas menores \textbf{do mesmo tipo}, $\Pi_1,\dots,\Pi_k$; (2) \emph{conquista}: resolvê-los recursivamente, resolvendo diretamente os casos pequenos; (3) \emph{combinação}: juntar as soluções dos subproblemas, por um procedimento relativamente simples, numa solução de $\Pi$. Busca-se um \textbf{bom balanceamento}, com partes de tamanhos parecidos, que leva a poucas camadas de recursão. A técnica funciona bem quando os subproblemas são \textbf{disjuntos}; quando eles se repetem muito, a técnica adequada é a programação dinâmica do Capítulo~\ref{cap:pd}.
 
 \begin{figura}[Os três passos da divisão e conquista. A divisão e a combinação são feitas pelo próprio algoritmo; a conquista é delegada às chamadas recursivas, que repetem o esquema até chegar a casos pequenos, resolvidos diretamente.\label{fig:dcesquema}]
 \begin{tikzpicture}[x=1cm,y=1cm, cx/.style={draw, thick, rounded corners=2pt, minimum width=2.2cm, minimum height=7mm, font=\small, align=center}]
@@ -44,7 +44,7 @@ Um algoritmo de \textbf{divisão e conquista} tem três passos: (1) \emph{divis�
 
 % ------------------------------------------------------------------
 \section{Contagem de inversões}\label{sec:inversoes}
-Dada uma sequência $a_1,\dots,a_n$, um par $i<j$ é uma \textbf{inversão} se $a_i>a_j$. O número de inversões mede quão distante uma ordem está da ordem crescente, e serve como medida de semelhança entre dois rankings: se uma pessoa ordena $n$ itens como $1,\dots,n$ e outra pessoa os ordena de outra forma, as inversões da segunda ordem contam os pares em que as duas discordam. A força bruta testa todos os pares, em $\Theta(n^2)$.
+Dada uma sequência $a_1,\dots,a_n$, um par $i<j$ é uma \textbf{inversão}\index{inversao@inversão} se $a_i>a_j$. O número de inversões mede quão distante uma ordem está da ordem crescente, e serve como medida de semelhança entre dois rankings: se uma pessoa ordena $n$ itens como $1,\dots,n$ e outra pessoa os ordena de outra forma, as inversões da segunda ordem contam os pares em que as duas discordam. A força bruta testa todos os pares, em $\Theta(n^2)$.
 
 \begin{exemplo}[Inversões e rankings]\label{ex:inversoes}
 A sequência $(4,1,3,2)$ tem 4 inversões: os pares $(4,1)$, $(4,3)$, $(4,2)$ e $(3,2)$, em que um número maior aparece antes de um menor (Figura~\ref{fig:inversoes}). Uma sequência crescente não tem nenhuma inversão, e uma decrescente tem todas as possíveis.
@@ -127,7 +127,7 @@ A Figura~\ref{fig:inversoesrec} mostra a contagem para $(6,2,8,4,1,7,3,5)$. No n
 \end{exemplo}
 
 % ------------------------------------------------------------------
-\section{Subvetor contíguo de soma máxima}\label{sec:maxsub}
+\section{Subvetor contíguo de soma máxima}\label{sec:maxsub}\index{subvetor de soma maxima@subvetor de soma máxima}
 Dado um vetor $A[1..n]$ de inteiros, que podem ser negativos, queremos $i\le j$ que maximizem $A[i]+\dots+A[j]$, isto é, o subvetor contíguo \textbf{não vazio} de maior soma. Pense, por exemplo, nos resultados diários de uma empresa, positivos ou negativos, e na busca do período de dias consecutivos de maior resultado acumulado. A força bruta testa os $\binom{n}{2}+n$ intervalos; com somas acumuladas, cada um custa $O(1)$, e o total é $\Theta(n^2)$.
 
 \textbf{Ideia.} O melhor subvetor de $A[ini..fim]$ está (i) inteiro na metade esquerda, (ii) inteiro na direita, ou (iii) \textbf{cruza o meio}, sendo da forma $A[i..meio]\cup A[meio+1..j]$ (Figura~\ref{fig:maxsub}). O caso (iii) se resolve em tempo linear: é o melhor sufixo da esquerda que termina em $meio$ somado ao melhor prefixo da direita que começa em $meio+1$. As duas escolhas são independentes, porque o valor do sufixo não depende de qual prefixo vem depois, e vice-versa.
@@ -194,7 +194,7 @@ O melhor sufixo é $A[3..4]=(3,-2)$, de soma 1, e o melhor prefixo é $A[5..5]=(
 \end{itemize}
 
 % ------------------------------------------------------------------
-\section{Multiplicação de matrizes: o algoritmo de Strassen}\label{sec:strassen}
+\section{Multiplicação de matrizes: o algoritmo de Strassen}\label{sec:strassen}\index{strassen, algoritmo de@Strassen, algoritmo de}
 Multiplicando matrizes $n\times n$ por blocos de tamanho $n/2$, o produto ingênuo faz 8 multiplicações de blocos, e $T(n)=8T(n/2)+\Theta(n^2)=\Theta(n^3)$, sem ganho sobre o método escolar. Strassen mostrou como fazer apenas \textbf{7} multiplicações de blocos, à custa de mais somas e subtrações: $T(n)=7T(n/2)+\Theta(n^2)=\Theta(n^{\log_27})\approx\Theta(n^{2{,}807})$, pelo caso 1 do Teorema Mestre, pois $n^2=O(n^{\log_27-\varepsilon})$.
 
 \begin{figura}[Multiplicação por blocos: cada matriz $n\times n$ é vista como uma matriz $2\times2$ de blocos $\frac n2\times\frac n2$, e o bloco $C_{11}$ é $A_{11}B_{11}+A_{12}B_{21}$, como no produto de matrizes $2\times2$ de números. As fórmulas de Strassen valem para blocos porque só usam somas, subtrações e produtos, sem nunca trocar a ordem dos fatores.\label{fig:blocos}]
@@ -275,7 +275,7 @@ Nos três, a divisão produz subproblemas do mesmo tipo, mas a combinação é t
 \begin{exemplo}[Os três algoritmos em ação]\label{ex:outrosdc}
 \textbf{Busca binária}: procuramos $x=34$ no vetor ordenado $V=(3,8,12,\allowbreak17,21,30,\allowbreak34,41,50)$ (Figura~\ref{fig:buscabindc}). Com $ini=1$ e $fim=9$, o meio é a posição 5, com $V[5]=21<34$, e a busca segue em $[6,9]$; o meio passa a ser 7, com $V[7]=34$: encontrado, com 2 comparações, contra até 9 de uma busca sequencial.
 
-\textbf{Potência rápida} $2^{10}$: \textsc{Pot}$(2,10)$ chama \textsc{Pot}$(2,5)$, que chama \textsc{Pot}$(2,2)$, \textsc{Pot}$(2,1)$ e \textsc{Pot}$(2,0)=1$. Na volta: $2^1=1\cdot1\cdot2$; $2^2=2\cdot2$; $2^5=4\cdot4\cdot2=32$; $2^{10}=32\cdot32=1024$. São 6 multiplicações (duas nos níveis ímpares, uma nos pares), contra 9 do produto $2\cdot2\cdots2$.
+\textbf{Potência rápida}\index{potencia rapida@potência rápida} $2^{10}$: \textsc{Pot}$(2,10)$ chama \textsc{Pot}$(2,5)$, que chama \textsc{Pot}$(2,2)$, \textsc{Pot}$(2,1)$ e \textsc{Pot}$(2,0)=1$. Na volta: $2^1=1\cdot1\cdot2$; $2^2=2\cdot2$; $2^5=4\cdot4\cdot2=32$; $2^{10}=32\cdot32=1024$. São 6 multiplicações (duas nos níveis ímpares, uma nos pares), contra 9 do produto $2\cdot2\cdots2$.
 
 \textbf{Máximo e mínimo} de 6 elementos: o vetor se divide em duas metades de 3, e cada uma em partes de 2 e de 1. Uma parte de 2 custa 1 comparação, e uma de 1 não custa nada; combinar custa 2 (uma para o máximo, outra para o mínimo). Cada metade de 3 custa $1+0+2=3$, e o total é $3+3+2=8$ comparações, contra $2\cdot6-2=10$ do método que procura o máximo e depois o mínimo.
 \begin{figura}[Busca binária por 34. Em cada passo, o intervalo $[ini,fim]$ ainda possível está em branco, o meio em destaque e as posições descartadas em cinza.\label{fig:buscabindc}]
@@ -307,7 +307,7 @@ Nos três, a divisão produz subproblemas do mesmo tipo, mas a combinação é t
 \end{pseudo}
 A correção do último algoritmo vem de uma observação simples: se $x$ é majoritário no vetor todo, ele é majoritário em pelo menos uma das metades, pois do contrário apareceria no máximo $n/2$ vezes. Assim, os candidatos devolvidos pelas metades são os únicos que precisam ser testados.
 
-\begin{exemplo}[Elemento majoritário]\label{ex:majoritario}
+\begin{exemplo}[Elemento majoritário]\label{ex:majoritario}\index{elemento majoritario@elemento majoritário}
 Em $V=(3,1,3,3,\,2,3,1,3)$, o 3 aparece 5 vezes, mais que $8/2$. A Figura~\ref{fig:maj} mostra a recursão. A metade direita, $(2,3,1,3)$, não tem majoritário: o 3 aparece só 2 vezes em 4. Mesmo assim, o 3 é majoritário na metade esquerda, $(3,1,3,3)$, e chega à raiz como candidato; a contagem no vetor todo confirma as 5 ocorrências. Note também que $(3,1)$ não tem majoritário: aparecer \emph{metade} das vezes não basta.
 \begin{figura}[A recursão do elemento majoritário em $(3,1,3,3,2,3,1,3)$. Cada nó mostra o trecho e o majoritário encontrado (ou ``--'', se não há).\label{fig:maj}]
 \forestset{majf/.style={for tree={draw, rounded corners=2pt, font=\small, inner sep=2.5pt, s sep=5mm, l sep=6mm, edge={thick}, align=center}}}
@@ -319,7 +319,7 @@ Em $V=(3,1,3,3,\,2,3,1,3)$, o 3 aparece 5 vezes, mais que $8/2$. A Figura~\ref{f
 \end{figura}
 \end{exemplo}
 
-\paragraph{Mais ideias.} O algoritmo de \emph{Karatsuba} multiplica inteiros de $n$ dígitos com 3 produtos de inteiros de $n/2$ dígitos, em $\Theta(n^{\log_23})\approx\Theta(n^{1{,}585})$. O \emph{par de pontos mais próximos} no plano se resolve em $\Theta(n\log n)$, dividindo os pontos pela mediana das abscissas e combinando com uma varredura da faixa central, em que cada ponto precisa ser comparado com no máximo 7 vizinhos. O \emph{pico de um vetor unimodal} e a \emph{raiz de uma função monótona} se encontram por busca binária, em $O(\log n)$; e o número de ocorrências de $x$ num vetor ordenado sai de duas buscas binárias.
+\paragraph{Mais ideias.} O algoritmo de \emph{Karatsuba}\index{karatsuba, algoritmo de@Karatsuba, algoritmo de} multiplica inteiros de $n$ dígitos com 3 produtos de inteiros de $n/2$ dígitos, em $\Theta(n^{\log_23})\approx\Theta(n^{1{,}585})$. O \emph{par de pontos mais próximos} no plano se resolve em $\Theta(n\log n)$, dividindo os pontos pela mediana das abscissas e combinando com uma varredura da faixa central, em que cada ponto precisa ser comparado com no máximo 7 vizinhos. O \emph{pico de um vetor unimodal} e a \emph{raiz de uma função monótona} se encontram por busca binária, em $O(\log n)$; e o número de ocorrências de $x$ num vetor ordenado sai de duas buscas binárias.
 
 \begin{cuidado}[Erros frequentes em pseudocódigo de divisão e conquista]
 \begin{itemize}

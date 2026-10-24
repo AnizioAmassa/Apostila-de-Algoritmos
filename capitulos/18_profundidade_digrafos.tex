@@ -21,8 +21,8 @@ A busca é a mesma do Capítulo~\ref{cap:dfs}, percorrendo a vizinhança de saí
   \For{\textbf{cada} $w\in N_{out}(v)$}
     \If{$PE(w)=0$} \State $vw$ é de \textbf{árvore};\ $pai(w):=v$;\ \Call{P}{$w$}
     \ElsIf{$PS(w)=0$} \State $vw$ é de \textbf{retorno} \Comment{$w$ ainda está ativo: é ancestral de $v$}
-    \ElsIf{$PE(v)<PE(w)$} \State $vw$ é de \textbf{avanço} \Comment{$w$ é um descendente que já terminou}
-    \Else \State $vw$ é de \textbf{cruzamento} \Comment{$w$ terminou antes de $v$ começar}
+    \ElsIf{$PE(v)<PE(w)$} \State $vw$ é de \textbf{avanço}\index{aresta!de avanco@de avanço} \Comment{$w$ é um descendente que já terminou}
+    \Else \State $vw$ é de \textbf{cruzamento}\index{aresta!de cruzamento} \Comment{$w$ terminou antes de $v$ começar}
     \EndIf
   \EndFor
   \State $t:=t+1$;\ $PS(v):=t$
@@ -78,7 +78,7 @@ O digrafo da Figura~\ref{fig:dfsdig} tem ciclos: cada aresta de retorno fecha um
 \end{exemplo}
 
 \section{Componentes fortemente conexas}\label{sec:cfc}
-Uma \textbf{componente fortemente conexa} (CFC) de um digrafo é um subdigrafo maximal em que, para quaisquer dois vértices $v$ e $w$, existe um caminho direcionado de $v$ para $w$ \emph{e} um de $w$ para $v$. As CFC particionam os \emph{vértices}; algumas arestas não pertencem a nenhuma CFC, e essas são, numa busca, arestas de árvore, de avanço ou de cruzamento. As componentes não dependem da ordem da busca, embora o tipo de cada aresta dependa.
+Uma \textbf{componente fortemente conexa}\index{componente fortemente conexa} (CFC) de um digrafo é um subdigrafo maximal em que, para quaisquer dois vértices $v$ e $w$, existe um caminho direcionado de $v$ para $w$ \emph{e} um de $w$ para $v$. As CFC particionam os \emph{vértices}; algumas arestas não pertencem a nenhuma CFC, e essas são, numa busca, arestas de árvore, de avanço ou de cruzamento. As componentes não dependem da ordem da busca, embora o tipo de cada aresta dependa.
 
 \begin{intuicao}
 Pense numa cidade com ruas de mão única. Uma componente fortemente conexa é um bairro em que se pode ir de qualquer esquina a qualquer outra \emph{e voltar}. Entre bairros diferentes, as ruas só permitem ir num sentido: quem sai de um bairro para outro não consegue mais voltar. Contraindo cada bairro num ponto, sobra um mapa sem ciclos --- o \emph{grafo das componentes}.
@@ -128,7 +128,7 @@ Note que $d$ fica na pilha depois de sair da busca (instante 7), porque $old(d)=
 \end{exemplo}
 
 \section{Ordenação topológica}\label{sec:topo}
-Uma \textbf{ordenação topológica} de um digrafo acíclico é uma ordem $v_1,\dots,v_n$ dos vértices tal que toda aresta $v_iv_j$ tem $i<j$. Ela aparece sempre que há tarefas com dependências: se cada aresta $a\to b$ indica que $b$ só pode ser feita depois de $a$, uma ordenação topológica é uma sequência viável de execução. Desenhando os vértices numa linha, na ordem topológica, todas as arestas apontam para a direita.
+Uma \textbf{ordenação topológica}\index{ordenacao topologica@ordenação topológica} de um digrafo acíclico é uma ordem $v_1,\dots,v_n$ dos vértices tal que toda aresta $v_iv_j$ tem $i<j$. Ela aparece sempre que há tarefas com dependências: se cada aresta $a\to b$ indica que $b$ só pode ser feita depois de $a$, uma ordenação topológica é uma sequência viável de execução. Desenhando os vértices numa linha, na ordem topológica, todas as arestas apontam para a direita.
 
 \textbf{Algoritmo.} Execute uma busca em profundidade; se houver uma aresta de retorno, o digrafo tem ciclo e não há ordenação. Senão, ordene os vértices por \textbf{$PS$ decrescente}. Para obter $O(n+m)$, basta colocar cada vértice na frente de uma lista no momento em que ele recebe o seu $PS$, o que dispensa a ordenação.
 \begin{teo}
@@ -157,7 +157,7 @@ No digrafo acíclico com as arestas $a{\to}c$, $a{\to}d$, $d{\to}c$, $b{\to}c$, 
 
 \paragraph{Uma alternativa sem busca.} Todo digrafo acíclico tem um sumidouro --- o último vértice de um caminho de comprimento máximo --- e uma fonte. Retirar repetidamente uma fonte e colocá-la no fim da ordem (ou um sumidouro, no início) também produz uma ordenação topológica. Com contadores de grau de entrada e uma fila dos vértices cujo contador chegou a zero, isso custa $O(n+m)$; é o \emph{algoritmo de Kahn}.
 
-\begin{exemplo}[O algoritmo de Kahn]\label{ex:kahn}
+\begin{exemplo}[O algoritmo de Kahn]\label{ex:kahn}\index{kahn, algoritmo de@Kahn, algoritmo de}
 No mesmo digrafo, os graus de entrada são zero para $a$, $e$ e $i$, que começam na fila, nessa ordem. Sai $a$: os contadores de $c$ e $d$ diminuem, e $d$ chega a zero e entra na fila. Sai $e$: $b$ chega a zero. Sai $i$: $j$ chega a zero ($h$ ainda depende de $j$). Sai $d$; sai $b$, e $c$ chega a zero; sai $j$, e $h$ chega a zero; saem $c$, $h$ (liberando $f$), $f$ (liberando $g$) e $g$. A ordem é $a,e,i,d,b,j,c,h,f,g$, diferente das obtidas pela busca, e também válida. Se a fila esvaziar antes de todos os vértices saírem, os que sobraram estão em ciclos ou dependem de ciclos: o digrafo não é acíclico.
 \end{exemplo}
 

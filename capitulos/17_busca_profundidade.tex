@@ -1,5 +1,5 @@
 % ================================================================
-\chapter{Busca em profundidade}\label{cap:dfs}\label{sec:dfs}
+\chapter{Busca em profundidade}\label{cap:dfs}\label{sec:dfs}\index{busca em profundidade}
 % ================================================================
 \begin{objetivos}
 \begin{itemize}
@@ -32,7 +32,7 @@ A regra da busca em profundidade é ``\emph{esgotar o filho antes de esgotar o p
       \State $pai(w):=v$;\ empilhe $vw$;\ \Call{P}{$w$}
       \If{$back(w)\ge PE(v)$} \State desempilhe e imprima as arestas até $vw$ \Comment{um bloco} \EndIf
       \State $back(v):=\min\{back(v),\,back(w)\}$
-    \ElsIf{$PS(w)=0$ \textbf{e} $w\ne pai(v)$} \Comment{aresta de \textbf{retorno}}
+    \ElsIf{$PS(w)=0$ \textbf{e} $w\ne pai(v)$} \Comment{aresta de \textbf{retorno}\index{aresta!de retorno}}
       \State empilhe $vw$;\ $back(v):=\min\{back(v),\,PE(w)\}$
     \EndIf
   \EndFor
@@ -65,7 +65,7 @@ No instante 5, quando $d$ entra, a pilha de recursão é $e,c,a,b,d$: exatamente
 \begin{itemize}
   \item Se $G$ é conexo, as arestas de árvore formam uma \textbf{árvore geradora}, a árvore de profundidade. Se não é, o laço externo produz uma floresta, com uma árvore por componente.
   \item Num grafo \textbf{não direcionado}, só existem arestas de \textbf{árvore} e de \textbf{retorno}. Toda aresta de retorno liga um vértice $v$ a um \textbf{ancestral} de $v$ na árvore e fecha um ciclo.
-  \item \textbf{Intervalos de vida}: seja $I(v)=[PE(v),PS(v)]$. Dois intervalos são disjuntos ou um contém o outro (o \emph{teorema dos parênteses}), e $v$ é descendente de $w$ se e somente se $PE(w)<PE(v)$ e $PS(v)<PS(w)$: $v$ ``entra depois e sai antes'' de $w$.
+  \item \textbf{Intervalos de vida}\index{intervalo de vida}: seja $I(v)=[PE(v),PS(v)]$. Dois intervalos são disjuntos ou um contém o outro (o \emph{teorema dos parênteses}\index{teorema dos parenteses@teorema dos parênteses}), e $v$ é descendente de $w$ se e somente se $PE(w)<PE(v)$ e $PS(v)<PS(w)$: $v$ ``entra depois e sai antes'' de $w$.
   \item \textbf{Complexidade}: $O(n+m)$ com listas de adjacência. Cada vértice é visitado uma vez, e cada aresta é examinada duas vezes, uma a partir de cada extremo.
 \end{itemize}
 
@@ -95,7 +95,7 @@ No instante 5, quando $d$ entra, a pilha de recursão é $e,c,a,b,d$: exatamente
 \end{exemplo}
 
 \section{Articulações, pontes e blocos}\label{sec:articulacoes}
-Uma \textbf{articulação} é um vértice cuja remoção aumenta o número de componentes conexas. Um \textbf{bloco} é um subgrafo maximal conexo e sem articulações; um bloco com uma única aresta é uma \textbf{ponte}, e os demais blocos são subgrafos biconexos maximais, em que quaisquer dois vértices são ligados por dois caminhos internamente disjuntos. Os blocos particionam as \emph{arestas} do grafo; já um vértice pode estar em vários blocos, e isso acontece exatamente quando ele é uma articulação. Pensando no grafo como uma rede, articulações são nós críticos e pontes são ligações críticas.
+Uma \textbf{articulação}\index{articulacao@articulação} é um vértice cuja remoção aumenta o número de componentes conexas. Um \textbf{bloco}\index{bloco} é um subgrafo maximal conexo e sem articulações; um bloco com uma única aresta é uma \textbf{ponte}\index{ponte}, e os demais blocos são subgrafos biconexos maximais, em que quaisquer dois vértices são ligados por dois caminhos internamente disjuntos. Os blocos particionam as \emph{arestas} do grafo; já um vértice pode estar em vários blocos, e isso acontece exatamente quando ele é uma articulação. Pensando no grafo como uma rede, articulações são nós críticos e pontes são ligações críticas.
 
 Para encontrá-los, a busca calcula, para cada vértice $v$, o valor $back(v)$: a menor profundidade de entrada que se pode alcançar a partir de $v$ descendo por arestas da árvore e usando, no máximo, uma aresta de retorno.
 \begin{teo}[Articulações]

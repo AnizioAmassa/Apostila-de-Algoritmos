@@ -10,10 +10,10 @@
 \end{itemize}
 \end{objetivos}
 
-Um \textbf{dicionário} guarda pares (chave, valor) e oferece inserção, busca e remoção por chave. As árvores AVL do Capítulo~\ref{cap:avl} implementam dicionários com todas as operações em $O(\log n)$ e ainda mantêm as chaves em ordem. Quando a ordem não importa, é possível fazer melhor: as \textbf{tabelas hash} transformam a chave diretamente num endereço e realizam as operações em tempo $O(1)$ esperado.
+Um \textbf{dicionário}\index{dicionario@dicionário} guarda pares (chave, valor) e oferece inserção, busca e remoção por chave. As árvores AVL do Capítulo~\ref{cap:avl} implementam dicionários com todas as operações em $O(\log n)$ e ainda mantêm as chaves em ordem. Quando a ordem não importa, é possível fazer melhor: as \textbf{tabelas hash}\index{tabela hash} transformam a chave diretamente num endereço e realizam as operações em tempo $O(1)$ esperado.
 
 \section{Endereçamento direto e funções hash}\label{sec:hashfuncoes}
-Se as chaves são inteiros de um universo pequeno $U=\{0,\dots,M-1\}$, basta um vetor de tamanho $M$ indexado pela própria chave: é o \textbf{endereçamento direto}, com todas as operações em $O(1)$. Mas o universo de chaves costuma ser enorme ou infinito (todos os inteiros de 64 bits, todas as strings), e a memória é finita. Uma \textbf{função hash} $h:U\to\{0,\dots,m-1\}$ transforma cada chave num endereço de uma tabela de $m$ posições, com $m$ da ordem do número de chaves efetivamente guardadas.
+Se as chaves são inteiros de um universo pequeno $U=\{0,\dots,M-1\}$, basta um vetor de tamanho $M$ indexado pela própria chave: é o \textbf{endereçamento direto}\index{enderecamento direto@endereçamento direto}, com todas as operações em $O(1)$. Mas o universo de chaves costuma ser enorme ou infinito (todos os inteiros de 64 bits, todas as strings), e a memória é finita. Uma \textbf{função hash}\index{funcao hash@função hash} $h:U\to\{0,\dots,m-1\}$ transforma cada chave num endereço de uma tabela de $m$ posições, com $m$ da ordem do número de chaves efetivamente guardadas.
 
 \begin{exemplo}[Do endereçamento direto à função hash]\label{ex:enddireto}
 Uma turma tem alunos com matrículas de 0 a 9, e estão presentes os de matrícula 2, 5 e 7. Com endereçamento direto, um vetor de 10 posições guarda cada aluno na posição da sua matrícula, e ``o aluno 5 está presente?'' é uma única consulta (Figura~\ref{fig:hashideia}). Se as matrículas fossem números de 9 dígitos, o vetor teria $10^9$ posições para guardar 3 alunos. Uma função hash, como $h(k)=k\bmod 7$, comprime o universo: as matrículas $201\,345\,002$, $731\,000\,006$ e $555\,777\,016$ vão para os endereços 5, 2 e 4 de uma tabela com 7 posições.
@@ -32,11 +32,11 @@ Uma turma tem alunos com matrículas de 0 a 9, e estão presentes os de matrícu
 
 \paragraph{Funções clássicas.}
 \begin{itemize}
-  \item \emph{Divisão}: $h(k)=k\bmod m$, com $m$ primo e longe de potências de 2, para que o resultado dependa de todos os bits da chave.
-  \item \emph{Multiplicação}: $h(k)=\floor{m\,(kA\bmod1)}$, com uma constante $0<A<1$; um valor muito usado é $A\approx(\sqrt5-1)/2$. Aqui o valor de $m$ é pouco crítico, e pode ser uma potência de 2.
+  \item \emph{Divisão}\index{metodo da divisao@método da divisão}: $h(k)=k\bmod m$, com $m$ primo e longe de potências de 2, para que o resultado dependa de todos os bits da chave.
+  \item \emph{Multiplicação}\index{metodo da multiplicacao@método da multiplicação}: $h(k)=\floor{m\,(kA\bmod1)}$, com uma constante $0<A<1$; um valor muito usado é $A\approx(\sqrt5-1)/2$. Aqui o valor de $m$ é pouco crítico, e pode ser uma potência de 2.
   \item \emph{Dobra} e \emph{meio do quadrado}: combinam partes da chave, ou extraem os dígitos centrais de $k^2$.
   \item Para \emph{strings}, a função polinomial $h(s)=\big(\sum_is_i\,b^{i}\big)\bmod m$, calculada pela regra de Horner.
-  \item \emph{Hashing universal}: a função é sorteada, no início, de uma família, como $h_{a,b}(k)=((ak+b)\bmod p)\bmod m$ com $p$ primo. Isso garante bom desempenho esperado para \emph{qualquer} conjunto de chaves, sem depender de a entrada ser ``aleatória''.
+  \item \emph{Hashing universal}\index{hashing universal}: a função é sorteada, no início, de uma família, como $h_{a,b}(k)=((ak+b)\bmod p)\bmod m$ com $p$ primo. Isso garante bom desempenho esperado para \emph{qualquer} conjunto de chaves, sem depender de a entrada ser ``aleatória''.
 \end{itemize}
 
 \begin{exemplo}[Calculando endereços]\label{ex:enderecos}
@@ -47,9 +47,9 @@ Uma turma tem alunos com matrículas de 0 a 9, e estão presentes os de matrícu
 \end{exemplo}
 
 \section{Colisões}\label{sec:colisoes}
-Uma \textbf{colisão} ocorre quando duas chaves diferentes recebem o mesmo endereço: $h(k_1)=h(k_2)$ com $k_1\ne k_2$. Colisões são inevitáveis, pelo princípio da casa dos pombos, pois $|U|>m$. E elas aparecem muito antes de a tabela ficar cheia: é o ``paradoxo do aniversário'', pelo qual, numa turma de apenas 23 pessoas, a chance de duas fazerem aniversário no mesmo dia (365 ``endereços'') já passa de 50\%. Há duas famílias de soluções.
+Uma \textbf{colisão}\index{colisao@colisão} ocorre quando duas chaves diferentes recebem o mesmo endereço: $h(k_1)=h(k_2)$ com $k_1\ne k_2$. Colisões são inevitáveis, pelo princípio da casa dos pombos, pois $|U|>m$. E elas aparecem muito antes de a tabela ficar cheia: é o ``paradoxo do aniversário'', pelo qual, numa turma de apenas 23 pessoas, a chance de duas fazerem aniversário no mesmo dia (365 ``endereços'') já passa de 50\%. Há duas famílias de soluções.
 
-\paragraph{Encadeamento.} No \textbf{encadeamento exterior}, cada posição da tabela aponta para uma lista com as chaves que receberam aquele endereço. Inserir é colocar a chave no início da lista, em $O(1)$; buscar e remover percorrem a lista. No \textbf{encadeamento interior}, as listas são formadas dentro da própria tabela, usando uma área de colisões ou ligando posições livres por ponteiros.
+\paragraph{Encadeamento.} No \textbf{encadeamento exterior}\index{encadeamento!exterior}, cada posição da tabela aponta para uma lista com as chaves que receberam aquele endereço. Inserir é colocar a chave no início da lista, em $O(1)$; buscar e remover percorrem a lista. No \textbf{encadeamento interior}\index{encadeamento!interior}, as listas são formadas dentro da própria tabela, usando uma área de colisões ou ligando posições livres por ponteiros.
 
 \begin{exemplo}[Encadeamento exterior]\label{ex:encadeamento}
 Inserimos $12,44,13,88,23,94,11,39,20,16,5$, nessa ordem, numa tabela de $m=11$ posições com $h(k)=k\bmod11$ (Figura~\ref{fig:encadeamento}). As chaves 44, 88 e 11 vão todas para o endereço 0, e como cada uma entra no início da lista, ela fica $11\to88\to44$. Buscar 44 percorre a lista inteira (3 comparações); buscar 33, que também iria para o endereço 0, faz 3 comparações e conclui que a chave não está lá. Buscar uma chave de endereço 3 não faz nenhuma comparação: a lista está vazia.
@@ -64,11 +64,11 @@ Inserimos $12,44,13,88,23,94,11,39,20,16,5$, nessa ordem, numa tabela de $m=11$ 
 \end{figura}
 \end{exemplo}
 
-\paragraph{Endereçamento aberto.} Todas as chaves ficam na própria tabela. Em caso de colisão, examina-se uma sequência de posições, chamada sequência de \emph{sondagem}, até encontrar uma livre:
+\paragraph{Endereçamento aberto.}\index{enderecamento aberto@endereçamento aberto} Todas as chaves ficam na própria tabela. Em caso de colisão, examina-se uma sequência de posições, chamada sequência de \emph{sondagem}, até encontrar uma livre:
 \begin{itemize}
-  \item \emph{sondagem linear}: $h(k,i)=(h(k)+i)\bmod m$, simples, mas sujeita a \textbf{agrupamento primário}: longas sequências de posições ocupadas, que tendem a crescer;
-  \item \emph{sondagem quadrática}: $h(k,i)=(h(k)+c_1i+c_2i^2)\bmod m$, que reduz o agrupamento;
-  \item \emph{duplo hashing}: $h(k,i)=(h_1(k)+i\,h_2(k))\bmod m$, com $h_2(k)$ primo com $m$, para que a sequência visite todas as posições.
+  \item \emph{sondagem linear}\index{sondagem!linear}: $h(k,i)=(h(k)+i)\bmod m$, simples, mas sujeita a \textbf{agrupamento primário}\index{agrupamento primario@agrupamento primário}: longas sequências de posições ocupadas, que tendem a crescer;
+  \item \emph{sondagem quadrática}\index{sondagem!quadratica@quadrática}: $h(k,i)=(h(k)+c_1i+c_2i^2)\bmod m$, que reduz o agrupamento;
+  \item \emph{duplo hashing}\index{sondagem!duplo hashing}: $h(k,i)=(h_1(k)+i\,h_2(k))\bmod m$, com $h_2(k)$ primo com $m$, para que a sequência visite todas as posições.
 \end{itemize}
 No endereçamento aberto, uma remoção não pode simplesmente esvaziar a posição, pois isso interromperia as sequências de sondagem de outras chaves; a posição é marcada como ``removida''.
 
@@ -91,7 +91,7 @@ Na tabela da Figura~\ref{fig:sondagem}, remova o 44, que está na posição 6. S
 \end{exemplo}
 
 \section{Complexidade}\label{sec:hashcompl}
-Seja $\alpha=n/m$ o \textbf{fator de carga}. Supondo que a função hash espalha as chaves de modo uniforme:
+Seja $\alpha=n/m$ o \textbf{fator de carga}\index{fator de carga}. Supondo que a função hash espalha as chaves de modo uniforme:
 \begin{itemize}
   \item com encadeamento, a busca custa $\Theta(1+\alpha)$ em média;
   \item com endereçamento aberto ($\alpha<1$), uma busca sem sucesso faz no máximo $\frac1{1-\alpha}$ sondagens em média.

@@ -21,6 +21,8 @@
 \usepackage{caption}
 \captionsetup{font=small,labelfont={bf,color=MidnightBlue},labelsep=period,skip=4pt}
 \usepackage[noend]{algpseudocode}
+\usepackage[quiet]{imakeidx}   % antes do hyperref, para os números de página virarem links; quiet: quem roda o makeindex é o latexmk
+\makeindex[intoc, noautomatic, columns=2, title={Índice remissivo}]   % o latexmk roda o makeindex (ver latexmkrc)
 \usepackage{titlesec}
 \usepackage{fancyhdr}
 \usepackage[colorlinks=true,linkcolor=MidnightBlue,urlcolor=MidnightBlue]{hyperref}
@@ -348,5 +350,6 @@ Este livro foi produzido por \textbf{Anizio Silva Correia Júnior}, com o \textb
 
 \backmatter
 \input{capitulos/referencias}
+\printindex
 
 \end{document}

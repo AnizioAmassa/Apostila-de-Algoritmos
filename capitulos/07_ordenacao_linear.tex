@@ -17,7 +17,7 @@ Um carteiro não ordena as cartas comparando endereços dois a dois. Ele olha o 
 \end{intuicao}
 
 % ------------------------------------------------------------------
-\section{Counting sort}\label{sec:counting}
+\section{Counting sort}\label{sec:counting}\index{counting sort}
 O counting sort ordena inteiros no intervalo $[0,k]$. Ele trabalha em três etapas:
 \begin{enumerate}
   \item \textbf{contar}: $C[i]$ recebe o número de elementos iguais a $i$;
@@ -80,7 +80,7 @@ Ordenar $n=1000$ números de identificação, cada um entre 0 e $k=10^9$, com o 
 \end{exemplo}
 
 % ------------------------------------------------------------------
-\section{Radix sort}\label{sec:radix}
+\section{Radix sort}\label{sec:radix}\index{radix sort}
 O radix sort ordena inteiros com $d$ dígitos na base $b$ \textbf{dígito a dígito, do menos significativo para o mais significativo}, usando em cada passada um método de ordenação \textbf{estável}. Cada passada é um counting sort com $k=b-1$, que é pequeno mesmo quando os números são enormes. A versão abaixo usa uma fila para cada valor de dígito, o que equivale a um counting sort.
 \begin{pseudo}{Radix sort com filas}
 \begin{algorithmic}
@@ -148,7 +148,7 @@ Ordenemos as palavras \texttt{ba}, \texttt{a} e \texttt{ab}, completando-as até
 \end{exemplo}
 
 % ------------------------------------------------------------------
-\section{Bucket sort}\label{sec:bucket}
+\section{Bucket sort}\label{sec:bucket}\index{bucket sort}
 O bucket sort supõe que as chaves são reais \textbf{uniformemente distribuídos} em $[0,1)$. Divide-se o intervalo em $r$ baldes de mesmo tamanho, coloca-se $A[i]$ no balde $\floor{r\,A[i]}$, ordena-se cada balde (por exemplo, por inserção) e concatenam-se os baldes. Como os baldes correspondem a intervalos disjuntos e crescentes, todo elemento de um balde é menor que todo elemento do balde seguinte, e a concatenação fica ordenada.
 
 \begin{exemplo}[Bucket sort com 10 baldes]\label{ex:bucket}
@@ -179,7 +179,7 @@ Jogue $n$ bolinhas, ao acaso, em $n$ baldes. Alguns baldes ficam vazios, a maior
 \end{intuicao}
 
 % ------------------------------------------------------------------
-\section{American Flag sort}\label{sec:flag}
+\section{American Flag sort}\label{sec:flag}\index{american flag sort@American Flag sort}
 O American Flag sort é um radix sort que começa pelo dígito \textbf{mais} significativo e trabalha \textbf{in-place}. Ele conta quantos elementos há com cada valor do dígito (um vetor $C$ de tamanho $b$), calcula onde começa o bloco de cada valor e \emph{permuta no próprio vetor} cada elemento para o seu bloco, por meio de trocas; depois, chama a si mesmo recursivamente em cada bloco, com o dígito seguinte. O nome vem da imagem do vetor, depois da primeira passada, dividido em faixas, como uma bandeira listrada.
 
 A permutação é feita bloco a bloco. Para cada valor de dígito $\delta$, mantém-se um ponteiro $prox[\delta]$ para a primeira posição do bloco de $\delta$ que ainda não recebeu o seu elemento definitivo. Enquanto o bloco de $\delta$ não estiver completo, olha-se o elemento $x$ na posição $prox[\delta]$: se o dígito de $x$ é $\delta$, ele já está no bloco certo e o ponteiro avança; se é outro valor $\varepsilon$, troca-se $x$ com o elemento da posição $prox[\varepsilon]$, e $prox[\varepsilon]$ avança. Cada troca põe pelo menos um elemento no seu bloco definitivo, e por isso uma passada faz menos de $n$ trocas.

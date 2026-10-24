@@ -36,14 +36,14 @@ Este capítulo fixa a linguagem que será usada no resto do livro para fazer ess
 
 \section{Medidas de complexidade}\label{sec:medidas}
 \begin{intuicao}
-Medir um algoritmo pelo tempo de relógio é pouco confiável: o mesmo programa roda em tempos diferentes em computadores diferentes. Em vez disso, contamos \textbf{passos elementares} (uma comparação, uma soma, uma atribuição, um acesso a uma posição de vetor), cada um com custo constante, e expressamos o total como uma \emph{função do tamanho da entrada}.
+Medir um algoritmo pelo tempo de relógio é pouco confiável: o mesmo programa roda em tempos diferentes em computadores diferentes. Em vez disso, contamos \textbf{passos elementares}\index{passo elementar} (uma comparação, uma soma, uma atribuição, um acesso a uma posição de vetor), cada um com custo constante, e expressamos o total como uma \emph{função do tamanho da entrada}.
 \end{intuicao}
 
 O problema é que entradas do mesmo tamanho podem dar trabalhos diferentes. Fixe um algoritmo $A$ e um tamanho de entrada $n$. Sejam $E_1,\dots,E_m$ todas as entradas possíveis de tamanho $n$ e $T_i$ o número de passos que $A$ executa sobre $E_i$. Há três maneiras naturais de resumir os números $T_1,\dots,T_m$ num só valor:
 \begin{itemize}
-  \item a complexidade de \textbf{pior caso}, $\max_iT_i$;
-  \item a complexidade de \textbf{caso médio}, $\sum_ip_iT_i$, onde $p_i$ é a probabilidade de a entrada ser $E_i$;
-  \item a complexidade de \textbf{melhor caso}, $\min_iT_i$.
+  \item a complexidade de \textbf{pior caso}\index{pior caso}, $\max_iT_i$;
+  \item a complexidade de \textbf{caso médio}\index{caso medio@caso médio}, $\sum_ip_iT_i$, onde $p_i$ é a probabilidade de a entrada ser $E_i$;
+  \item a complexidade de \textbf{melhor caso}\index{melhor caso}, $\min_iT_i$.
 \end{itemize}
 
 \begin{exemplo}[Os três casos da ordenação por inserção]\label{ex:inscasos}
@@ -74,7 +74,7 @@ O pior caso é a medida padrão: ele dá uma \emph{garantia} que vale para toda 
 
 Uma quarta medida, a complexidade \textbf{amortizada}, divide o custo de uma \emph{sequência} de operações sobre uma estrutura de dados pelo número de operações, no pior caso da sequência. Ela não envolve probabilidade e será estudada no Capítulo~\ref{cap:heapav}.
 
-\subsection*{Tamanho da entrada}
+\subsection*{Tamanho da entrada}\index{tamanho da entrada}
 O tamanho de uma entrada é o comprimento da sua codificação, em bits ou em símbolos. Para uma lista de $n$ números de tamanho limitado, o tamanho é proporcional a $n$. Mas quando a entrada é um número $N$, ela ocupa apenas cerca de $\log_2 N$ bits (ou $\log_{10}N$ dígitos), e um algoritmo cujo custo cresce com o \emph{valor} de $N$ pode ser exponencial no tamanho da entrada.
 
 \begin{exemplo}[A soma com laço é exponencial no número de dígitos]\label{ex:somalaco}
@@ -94,9 +94,9 @@ $30$ & $10^{30}$ & $\approx3\cdot10^{13}$ anos\\
 Cada dígito a mais multiplica o tempo por 10: o custo é $\Theta(10^d)$, exponencial no tamanho $d$ da entrada. A fórmula $N(N+1)/2$, por outro lado, faz uma multiplicação de números com $d$ dígitos, o que custa $O(d^2)$ pelo método escolar: polinomial.
 \end{exemplo}
 
-Um algoritmo é \textbf{pseudopolinomial} quando é polinomial no \emph{valor} dos números da entrada (isto é, quando eles são escritos em unário), mas não necessariamente no seu tamanho em bits. A soma com laço é um exemplo artificial; exemplos importantes são o \emph{counting sort} do Capítulo~\ref{cap:sortlin}, de custo $\Theta(n+k)$ para inteiros em $[0,k]$, e a programação dinâmica para a mochila do Capítulo~\ref{cap:pd}, de custo $\Theta(nW)$.
+Um algoritmo é \textbf{pseudopolinomial}\index{pseudopolinomial} quando é polinomial no \emph{valor} dos números da entrada (isto é, quando eles são escritos em unário), mas não necessariamente no seu tamanho em bits. A soma com laço é um exemplo artificial; exemplos importantes são o \emph{counting sort} do Capítulo~\ref{cap:sortlin}, de custo $\Theta(n+k)$ para inteiros em $[0,k]$, e a programação dinâmica para a mochila do Capítulo~\ref{cap:pd}, de custo $\Theta(nW)$.
 
-\section{Notações assintóticas}\label{sec:notacoes}
+\section{Notações assintóticas}\label{sec:notacoes}\index{notacao assintotica@notação assintótica}
 \begin{intuicao}
 Quando $n$ é grande, só o termo que cresce mais rápido importa. Em $n^2+10n+20$, para $n=1000$ o termo $n^2$ vale $10^6$, enquanto $10n+20$ vale $10\,020$, cerca de $1\%$ do total. E constantes multiplicativas dependem da máquina: um computador duas vezes mais rápido transforma $2n^2$ em $n^2$. Por isso dizemos simplesmente que esse custo ``é da ordem de $n^2$''. As notações assintóticas tornam essa frase precisa.
 \end{intuicao}
@@ -117,7 +117,7 @@ $f=\omega(g)$ & $\forall c>0\ \exists n_0:\ f(n)>c\,g(n)\ \forall n\ge n_0$ & $\
 \end{center}
 Formalmente, $O(g)$ é um \emph{conjunto} de funções, e $f=O(g)$ significa $f\in O(g)$; o sinal de igualdade é um abuso de notação consagrado, que deve ser lido sempre da esquerda para a direita ($n=O(n^2)$ está certo; ``$O(n^2)=n$'' não faz sentido).
 
-\subsection*{As notações $O$, $\Omega$ e $\Theta$ numa figura}
+\subsection*{As notações $O$, $\Omega$ e $\Theta$ numa figura}\index{o (notacao)@$O$, $\Omega$, $\Theta$ (notações)}
 A definição de $O$ tem duas constantes, e cada uma tem um papel: $c$ absorve as constantes multiplicativas, e $n_0$ permite ignorar os valores pequenos de $n$, onde termos de ordem menor ainda pesam. A Figura~\ref{fig:otheta} mostra as duas em ação.
 
 \begin{figura}[A função $f(n)=n^2+10n+20$ fica ``ensanduichada'' entre $1\cdot n^2$ e $2\cdot n^2$ a partir de $n_0=12$. A curva de baixo prova $f=\Omega(n^2)$, a de cima prova $f=O(n^2)$ e as duas juntas provam $f=\Theta(n^2)$.\label{fig:otheta}]
@@ -148,7 +148,7 @@ Seja $f(n)=n^2+10n+20$.
 Pela mesma técnica, a função $4n^3+5n$ é $O(n^4)$ e $O(n^3)$, mas não é $O(n^2)$; é $\Omega(n^2)$ e $\Omega(n^3)$, mas não é $\Omega(n^4)$; portanto é $\Theta(n^3)$. Para provar $4n^3+5n=O(n^3)$ pela definição, basta tomar $c=9$ e $n_0=1$: $4n^3+5n\le4n^3+5n^3=9n^3$ para todo $n\ge1$.
 \end{exemplo}
 
-\subsection*{As versões estritas $o$ e $\omega$}
+\subsection*{As versões estritas $o$ e $\omega$}\index{o pequeno@$o$, $\omega$ (notações)}
 Em $f=O(g)$, a função $f$ pode crescer \emph{tanto quanto} $g$; em $f=o(g)$, ela cresce \emph{estritamente menos}: para \emph{qualquer} constante $c$, por menor que seja, $f$ acaba ficando abaixo de $c\,g$. A diferença está no quantificador: em $O$ basta \emph{existir} um $c$, em $o$ a desigualdade vale \emph{para todo} $c$.
 
 \begin{exemplo}[Usando limites]\label{ex:limites}
@@ -252,7 +252,7 @@ A Figura~\ref{fig:escada} mostra a contagem como uma escada: as execuções ocup
 \end{tikzpicture}
 \end{figura}
 
-Um laço cuja variável é multiplicada ou dividida por uma constante a cada passo dá $\Theta(\log n)$ iterações. É isso que torna a \textbf{busca binária} tão rápida: a cada comparação, o trecho do vetor ordenado onde o elemento procurado pode estar cai pela metade.
+Um laço cuja variável é multiplicada ou dividida por uma constante a cada passo dá $\Theta(\log n)$ iterações. É isso que torna a \textbf{busca binária}\index{busca binaria@busca binária} tão rápida: a cada comparação, o trecho do vetor ordenado onde o elemento procurado pode estar cai pela metade.
 
 \begin{figura}[Busca binária de $x=27$ num vetor ordenado de 16 posições. O trecho candidato (em destaque) cai pela metade a cada comparação com o elemento do meio ($\blacktriangledown$).\label{fig:buscabin}]
 \begin{tikzpicture}[x=6.4mm,y=7.5mm]
@@ -281,8 +281,8 @@ A complexidade de um \emph{algoritmo} é uma função que descreve o seu custo. 
 
 \begin{defi}\leavevmode
 \begin{itemize}
-  \item Uma função $f(n)$ é um \textbf{limite superior} para o problema $\Pi$ se \emph{existe} algum algoritmo que resolve $\Pi$ com no máximo $f(n)$ passos no pior caso. A complexidade de pior caso de qualquer algoritmo para $\Pi$ é um limite superior para $\Pi$.
-  \item Uma função $f(n)$ é um \textbf{limite inferior} para $\Pi$ se \emph{todo} algoritmo que resolve $\Pi$ executa pelo menos $f(n)$ passos no pior caso.
+  \item Uma função $f(n)$ é um \textbf{limite superior}\index{limite superior} para o problema $\Pi$ se \emph{existe} algum algoritmo que resolve $\Pi$ com no máximo $f(n)$ passos no pior caso. A complexidade de pior caso de qualquer algoritmo para $\Pi$ é um limite superior para $\Pi$.
+  \item Uma função $f(n)$ é um \textbf{limite inferior}\index{limite inferior} para $\Pi$ se \emph{todo} algoritmo que resolve $\Pi$ executa pelo menos $f(n)$ passos no pior caso.
   \item Um algoritmo é \textbf{ótimo} se sua complexidade de pior caso coincide com um limite inferior do problema.
 \end{itemize}
 \end{defi}
@@ -314,7 +314,7 @@ Limites superiores se provam exibindo um algoritmo; limites inferiores exigem um
 
 As notações assintóticas são afirmações sobre funções, e não sobre ``limites'' no sentido acima: nada impede dizer que o pior caso de um algoritmo é $\Omega(n^3)$, ou que conhecemos para um problema um limite inferior que é $O(\log n)$.
 
-\section{Algoritmos polinomiais e exponenciais}\label{sec:polinomiais}
+\section{Algoritmos polinomiais e exponenciais}\label{sec:polinomiais}\index{algoritmo!polinomial}\index{algoritmo!exponencial}
 Um algoritmo é \textbf{polinomial} se seu custo de pior caso é $O(n^c)$ para alguma constante $c$; a classe dos problemas que admitem algoritmos polinomiais é chamada de $P$. Custos como $2^n$, $k^n$, $n!$, $2^{n^2}$ e $n^{\log n}$ são \textbf{exponenciais} (ou superpolinomiais).
 
 O consenso é que algoritmos polinomiais são eficientes e exponenciais não, por um motivo que vai além do tempo absoluto da Tabela~\ref{tab:tempos}: algoritmos polinomiais aproveitam o avanço tecnológico. Com uma máquina mais rápida, o maior tamanho de entrada resolvido num tempo fixo é \emph{multiplicado} por uma constante quando o custo é polinomial, mas apenas \emph{acrescido} de uma constante quando é exponencial.

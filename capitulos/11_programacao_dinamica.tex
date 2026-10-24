@@ -13,7 +13,7 @@
 Na divisão e conquista, os subproblemas são disjuntos. Em muitos problemas, porém, a decomposição natural gera subproblemas que \emph{se repetem}, e a recursão ingênua refaz o mesmo trabalho um número exponencial de vezes. A programação dinâmica resolve cada subproblema distinto uma única vez e guarda a resposta numa tabela. Este capítulo apresenta a técnica e três aplicações; uma quarta, o algoritmo de Floyd-Warshall, é o assunto do próximo capítulo.
 
 \section{A técnica}\label{sec:pdtecnica}
-No método geral de decomposição, subproblemas idênticos podem aparecer muitas vezes ao longo do processo. Se cada aparição for resolvida de novo, o algoritmo pode ser exponencial mesmo que o número de subproblemas \emph{distintos} seja polinomial. A \textbf{programação dinâmica} mantém uma tabela com uma entrada para cada subproblema distinto: na primeira vez em que um subproblema é considerado, ele é resolvido normalmente; nas vezes seguintes, sua solução é simplesmente lida da tabela.
+No método geral de decomposição, subproblemas idênticos podem aparecer muitas vezes ao longo do processo. Se cada aparição for resolvida de novo, o algoritmo pode ser exponencial mesmo que o número de subproblemas \emph{distintos} seja polinomial. A \textbf{programação dinâmica}\index{programacao dinamica@programação dinâmica} mantém uma tabela com uma entrada para cada subproblema distinto: na primeira vez em que um subproblema é considerado, ele é resolvido normalmente; nas vezes seguintes, sua solução é simplesmente lida da tabela.
 
 \begin{exemplo}[Fibonacci: o mesmo cálculo, muitas vezes]\label{ex:fib}
 Os números de Fibonacci são $F_0=0$, $F_1=1$ e $F_n=F_{n-1}+F_{n-2}$. A recursão direta para $F_5$ chama $F_4$ e $F_3$; $F_4$ chama $F_3$ de novo; e assim por diante (Figura~\ref{fig:fibarv}). São 15 chamadas para calcular $F_5$, embora só existam 6 subproblemas distintos, $F_0,\dots,F_5$: $F_3$ é calculado 2 vezes, $F_2$ 3 vezes e $F_1$ 5 vezes. O número de chamadas $c(n)$ satisfaz $c(n)=c(n-1)+c(n-2)+1$ e cresce como os próprios números de Fibonacci, isto é, exponencialmente: $c(30)=2\,692\,537$ e $c(40)=331\,160\,281$. Guardando cada $F_k$ na primeira vez em que é calculado, cada um dos $n+1$ subproblemas custa $O(1)$, e o total cai para $O(n)$.
@@ -30,9 +30,9 @@ Os números de Fibonacci são $F_0=0$, $F_1=1$ e $F_n=F_{n-1}+F_{n-2}$. A recurs
 
 \begin{itemize}
   \item \textbf{Divisão e conquista ou programação dinâmica?} A divisão e conquista funciona bem quando os subproblemas são \textbf{disjuntos}, como no mergesort. Quando eles \textbf{compartilham} subproblemas, é melhor trocar a abordagem de cima para baixo por uma de baixo para cima: resolver dos subproblemas menores para os maiores, de modo que, ao chegar a um subproblema, todos aqueles de que ele depende já estejam resolvidos.
-  \item \textbf{Subestrutura ótima}: uma solução ótima é composta de soluções ótimas de subproblemas. A prova típica é o argumento de ``recortar e colar'': se uma parte não fosse ótima, trocá-la por uma melhor daria uma solução global melhor, o que é uma contradição.
-  \item \textbf{Sobreposição de subproblemas}: a recursão ingênua revisita os mesmos subproblemas; é isso que faz a tabela valer a pena.
-  \item \textbf{Memorização} (de cima para baixo): a recursão original, acrescida de ``se já calculei este subproblema, devolvo o valor guardado''. \textbf{Cálculo de baixo para cima}: laços que preenchem a tabela na ordem certa. As duas têm a mesma complexidade; a segunda evita a pilha de recursão e, às vezes, permite economizar memória.
+  \item \textbf{Subestrutura ótima}\index{subestrutura otima@subestrutura ótima}: uma solução ótima é composta de soluções ótimas de subproblemas. A prova típica é o argumento de ``recortar e colar'': se uma parte não fosse ótima, trocá-la por uma melhor daria uma solução global melhor, o que é uma contradição.
+  \item \textbf{Sobreposição de subproblemas}\index{sobreposicao de subproblemas@sobreposição de subproblemas}: a recursão ingênua revisita os mesmos subproblemas; é isso que faz a tabela valer a pena.
+  \item \textbf{Memorização}\index{memorizacao@memorização} (de cima para baixo): a recursão original, acrescida de ``se já calculei este subproblema, devolvo o valor guardado''. \textbf{Cálculo de baixo para cima}: laços que preenchem a tabela na ordem certa. As duas têm a mesma complexidade; a segunda evita a pilha de recursão e, às vezes, permite economizar memória.
 \end{itemize}
 
 \begin{exemplo}[Recortar e colar]
@@ -81,7 +81,7 @@ Se o caminho mais curto de Belo Horizonte a Curitiba passa por São Paulo, entã
 
 % ------------------------------------------------------------------
 \section{Subsequência comum máxima}\label{sec:lcs}
-Uma sequência $Z$ é \textbf{subsequência} de $X=x_1\dots x_n$ se os seus símbolos aparecem em $X$ na mesma ordem, \textbf{não necessariamente contíguos}. Por exemplo, $6,10,12$ é subsequência de $3,6,9,10,12,14,6$, mas não de $3,9,10,12,14,6$. Dadas $X$, com $|X|=n$, e $Y$, com $|Y|=m$, o problema da \textbf{subsequência comum máxima} (LCS, do inglês \emph{longest common subsequence}) pede uma subsequência comum a $X$ e a $Y$ de tamanho máximo. A força bruta testaria as $2^n$ subsequências de $X$. O problema aparece na comparação de arquivos (o comando \texttt{diff} mostra o que não está numa subsequência comum máxima das linhas) e na comparação de sequências de DNA.
+Uma sequência $Z$ é \textbf{subsequência}\index{subsequencia@subsequência} de $X=x_1\dots x_n$ se os seus símbolos aparecem em $X$ na mesma ordem, \textbf{não necessariamente contíguos}. Por exemplo, $6,10,12$ é subsequência de $3,6,9,10,12,14,6$, mas não de $3,9,10,12,14,6$. Dadas $X$, com $|X|=n$, e $Y$, com $|Y|=m$, o problema da \textbf{subsequência comum máxima}\index{subsequencia comum maxima@subsequência comum máxima} (LCS, do inglês \emph{longest common subsequence}) pede uma subsequência comum a $X$ e a $Y$ de tamanho máximo. A força bruta testaria as $2^n$ subsequências de $X$. O problema aparece na comparação de arquivos (o comando \texttt{diff} mostra o que não está numa subsequência comum máxima das linhas) e na comparação de sequências de DNA.
 
 \textbf{Decomposição.} Seja $X_i=x_1\dots x_i$ e olhe para os últimos símbolos. Se $x_n=y_m$, esse símbolo termina alguma subsequência comum máxima, e o restante dela é uma subsequência comum máxima de $X_{n-1}$ e $Y_{m-1}$. Se $x_n\ne y_m$, a resposta não usa $x_n$ ou não usa $y_m$. Com $C(i,j)=$ tamanho da subsequência comum máxima de $X_i$ e $Y_j$:
 \[
@@ -143,7 +143,7 @@ Para $X=5,2,1,3,9,10,14$ e $Y=2,3,1,10$, o tamanho é 3, com as soluções $2,3,
 \end{itemize}
 
 % ------------------------------------------------------------------
-\section{Multiplicação de cadeia de matrizes}\label{sec:cadeia}
+\section{Multiplicação de cadeia de matrizes}\label{sec:cadeia}\index{multiplicacao de cadeia de matrizes@multiplicação de cadeia de matrizes}
 Queremos calcular $M=M_1\times M_2\times\dots\times M_n$, onde $M_i$ tem dimensões $r_{i-1}\times r_i$. Multiplicar uma matriz $p\times q$ por uma $q\times s$ custa $p\,q\,s$ multiplicações escalares. O produto de matrizes é \textbf{associativo}: a ordem em que as multiplicações são feitas não muda o resultado, mas pode mudar muito o custo. O problema é encontrar a parentização de custo mínimo.
 
 \begin{exemplo}\label{ex:cadeia}
@@ -258,7 +258,7 @@ $(30,35,15,5,10,20,25)$ & $15\,125$: $((M_1(M_2M_3))((M_4M_5)M_6))$\\
 \end{center}
 
 % ------------------------------------------------------------------
-\section{Mochila 0-1}\label{sec:mochila}
+\section{Mochila 0-1}\label{sec:mochila}\index{mochila 0-1}
 Há $n$ itens; o item $i$ tem peso $p_i$ e valor $v_i$, inteiros; a mochila tem capacidade $W$. Queremos $S\subseteq\{1,\dots,n\}$ com $\sum_{i\in S}p_i\le W$ que maximize $\sum_{i\in S}v_i$, usando cada item no máximo uma vez. Seja $M(w,i)$ o maior valor obtido com os itens $1,\dots,i$ e capacidade $w$. O item $i$ fica de fora, ou entra, se couber:
 \[
 M(w,i)=\begin{cases}0 & i=0\\ M(w,i-1) & p_i>w\\ \max\{M(w,i-1),\ v_i+M(w-p_i,\,i-1)\} & p_i\le w\end{cases}\qquad\text{resposta: }M(W,n).

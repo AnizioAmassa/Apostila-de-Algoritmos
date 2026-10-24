@@ -1,5 +1,5 @@
 % ================================================================
-\chapter{Busca em largura}\label{cap:bfs}\label{sec:bfs}
+\chapter{Busca em largura}\label{cap:bfs}\label{sec:bfs}\index{busca em largura}
 % ================================================================
 \begin{objetivos}
 \begin{itemize}
@@ -10,7 +10,7 @@
 \end{itemize}
 \end{objetivos}
 
-Uma \textbf{busca} é um procedimento sistemático para visitar todos os vértices e todas as arestas de um grafo, com o objetivo de resolver um problema ou extrair informação da sua estrutura. Na busca em largura, os vértices são visitados em camadas: primeiro a raiz, depois os vizinhos dela, depois os vizinhos dos vizinhos, e assim por diante. Por isso ela calcula distâncias em número de arestas e reconhece grafos bipartidos. A notação de grafos está na §\ref{sec:buscas}.
+Uma \textbf{busca}\index{busca em grafos} é um procedimento sistemático para visitar todos os vértices e todas as arestas de um grafo, com o objetivo de resolver um problema ou extrair informação da sua estrutura. Na busca em largura, os vértices são visitados em camadas: primeiro a raiz, depois os vizinhos dela, depois os vizinhos dos vizinhos, e assim por diante. Por isso ela calcula distâncias em número de arestas e reconhece grafos bipartidos. A notação de grafos está na §\ref{sec:buscas}.
 
 \begin{intuicao}
 Jogue uma pedra num lago: a perturbação se espalha em ondas circulares, e cada ponto é atingido pela primeira onda que chega até ele. A busca em largura faz o mesmo num grafo: a raiz é a pedra, a primeira onda atinge os vizinhos da raiz, a segunda atinge os vizinhos deles que ainda não tinham sido atingidos, e assim por diante. O número da onda que atinge um vértice é a sua distância à raiz.
@@ -27,11 +27,11 @@ A regra da busca em largura é ``\emph{esgotar o pai antes de processar os filho
     \While{$F\ne\emptyset$}
       \State $v:=$ primeiro elemento de $F$;\ retire $v$ de $F$
       \For{\textbf{cada} $w\in N(v)$}
-        \If{$L(w)=0$} \Comment{aresta-\textbf{pai}}
+        \If{$L(w)=0$} \Comment{aresta-\textbf{pai}\index{aresta!pai}}
           \State $pai(w):=v$;\ $nivel(w):=nivel(v)+1$;\ $t:=t+1$;\ $L(w):=t$;\ insira $w$ no fim de $F$
         \ElsIf{$nivel(w)=nivel(v)$ \textbf{e} $w\in F$} \Comment{não classificar duas vezes}
-          \State se $pai(w)=pai(v)$, $vw$ é uma aresta-\textbf{irmão}; senão, uma aresta-\textbf{primo}
-        \ElsIf{$nivel(w)=nivel(v)+1$} \State $vw$ é uma aresta-\textbf{tio}
+          \State se $pai(w)=pai(v)$, $vw$ é uma aresta-\textbf{irmão}\index{aresta!irmao@irmão}; senão, uma aresta-\textbf{primo}\index{aresta!primo}
+        \ElsIf{$nivel(w)=nivel(v)+1$} \State $vw$ é uma aresta-\textbf{tio}\index{aresta!tio}
         \EndIf
       \EndFor
     \EndWhile
@@ -92,7 +92,7 @@ Para toda aresta $vw$ de um grafo e toda floresta de largura, $|nivel(v)-nivel(w
 A demonstração se reduz ao caso das arestas-tio e usa uma observação sobre a fila: em qualquer momento da busca, os vértices na fila pertencem a no máximo dois níveis consecutivos, em ordem não decrescente de nível. Desse teorema decorrem as principais aplicações.
 \begin{itemize}
   \item \textbf{Distâncias.} Numa busca com raiz $x$, $\operatorname{dist}(x,v)=nivel(v)$ para todo $v$, e o caminho de $x$ a $v$ na árvore é um caminho \textbf{mínimo} em número de arestas. Por exemplo, o menor caminho da entrada à saída de um labirinto, dado por uma matriz de casas livres e paredes, é obtido por uma busca em largura no grafo das casas livres.
-  \item \textbf{Bipartição.} Um grafo é bipartido se e somente se a sua floresta de largura não tem arestas-irmão nem arestas-primo, que fecham ciclos ímpares. Uma 2-coloração é dada pela paridade do nível.
+  \item \textbf{Bipartição.}\index{grafo bipartido} Um grafo é bipartido se e somente se a sua floresta de largura não tem arestas-irmão nem arestas-primo, que fecham ciclos ímpares. Uma 2-coloração é dada pela paridade do nível.
   \item \textbf{Complexidade.} $O(n+m)$ com listas de adjacência, pois cada vértice entra na fila uma vez e cada lista é percorrida uma vez; $O(n^2)$ com matriz de adjacência.
 \end{itemize}
 

@@ -13,7 +13,7 @@
 O algoritmo de Floyd-Warshall é mais uma aplicação da programação dinâmica, agora sobre um grafo: queremos o custo do caminho mais barato entre \emph{todos} os pares de vértices. Por ser o primeiro algoritmo em grafos do livro, o capítulo começa fixando a notação e as representações de grafos usadas daqui em diante.
 
 \section{Grafos: notação e representação}\label{sec:buscas}
-Um grafo é um par $G=(V,E)$, em que $V$ é o conjunto de vértices e $E$ o de arestas; escrevemos $n=|V|$ e $m=|E|$. A \textbf{vizinhança} de um vértice $v$, $N(v)$, é o conjunto dos vértices ligados a $v$ por uma aresta, e o seu \textbf{grau} é $|N(v)|$. Num \textbf{digrafo} (grafo direcionado), cada aresta $v\to w$ tem uma direção, e $N_{out}(v)$ é o conjunto dos vértices $w$ com uma aresta $v\to w$. Há duas formas usuais de representar um grafo na memória:
+Um grafo é um par $G=(V,E)$, em que $V$ é o conjunto de vértices e $E$ o de arestas; escrevemos $n=|V|$ e $m=|E|$. A \textbf{vizinhança}\index{vizinhanca@vizinhança} de um vértice $v$, $N(v)$, é o conjunto dos vértices ligados a $v$ por uma aresta, e o seu \textbf{grau} é $|N(v)|$. Num \textbf{digrafo}\index{digrafo} (grafo direcionado), cada aresta $v\to w$ tem uma direção, e $N_{out}(v)$ é o conjunto dos vértices $w$ com uma aresta $v\to w$. Há duas formas usuais de representar um grafo na memória:
 \begin{center}\small
 \begin{tabular}{@{}lccc@{}}
 \toprule
@@ -54,7 +54,7 @@ $\begin{array}{l}
 A matriz é adequada a grafos densos, com $m$ próximo de $n^2$, e a testes frequentes de adjacência; as listas, a grafos esparsos e a algoritmos que percorrem vizinhanças. Uma \textbf{busca}, que visita todos os vértices e arestas do grafo examinando cada vizinhança uma vez, custa $\Theta(n+m)$ com listas e $\Theta(n^2)$ com matriz; as buscas em largura e em profundidade são estudadas nos Capítulos~\ref{cap:bfs} e~\ref{cap:dfs}.
 
 \section{Matriz de pesos}\label{sec:fwmatriz}
-Em problemas de caminhos mínimos, cada aresta tem um peso (um custo, uma distância, um tempo), e o grafo é dado por uma \textbf{matriz de pesos} $W$: $W(x,x)=0$; $W(x,y)$ é o peso da aresta $xy$, se ela existe; e $W(x,y)=\infty$ se não existe. O custo de um caminho é a soma dos pesos das suas arestas, e a \textbf{distância} $\operatorname{dist}(x,y)$ é o menor custo de um caminho de $x$ a $y$. Um grafo não direcionado é tratado como um digrafo em que cada aresta $xy$ de peso $p$ dá origem às arestas $x\to y$ e $y\to x$, ambas de peso $p$.
+Em problemas de caminhos mínimos, cada aresta tem um peso (um custo, uma distância, um tempo), e o grafo é dado por uma \textbf{matriz de pesos}\index{matriz de pesos} $W$: $W(x,x)=0$; $W(x,y)$ é o peso da aresta $xy$, se ela existe; e $W(x,y)=\infty$ se não existe. O custo de um caminho é a soma dos pesos das suas arestas, e a \textbf{distância}\index{distancia@distância} $\operatorname{dist}(x,y)$ é o menor custo de um caminho de $x$ a $y$. Um grafo não direcionado é tratado como um digrafo em que cada aresta $xy$ de peso $p$ dá origem às arestas $x\to y$ e $y\to x$, ambas de peso $p$.
 
 Usaremos como exemplo, neste capítulo e no Capítulo~\ref{cap:dijkstra}, o digrafo de cinco vértices dado pela matriz abaixo e desenhado na Figura~\ref{fig:digrafofw}; os vértices são chamados $1,\dots,5$ aqui e $a,\dots,e$ no capítulo do algoritmo de Dijkstra.
 \begin{center}\small
@@ -95,7 +95,7 @@ $W$ & 1\,($a$) & 2\,($b$) & 3\,($c$) & 4\,($d$) & 5\,($e$)\\ \hline
 \end{tikzpicture}
 \end{figura}
 
-\section{O algoritmo de Floyd-Warshall}\label{sec:fwalg}
+\section{O algoritmo de Floyd-Warshall}\label{sec:fwalg}\index{floyd-warshall, algoritmo de@Floyd-Warshall, algoritmo de}
 \textbf{Problema:} dado um digrafo com vértices $1,\dots,n$ e matriz de pesos $W$, calcular $\operatorname{dist}(i,j)$ para todos os pares ordenados $(i,j)$. A ideia é limitar, passo a passo, quais vértices podem aparecer \emph{no meio} dos caminhos:
 \[
 D^k(i,j)=\text{custo do caminho mínimo de }i\text{ a }j\text{ cujos vértices \emph{intermediários} estão em }\{1,\dots,k\}.

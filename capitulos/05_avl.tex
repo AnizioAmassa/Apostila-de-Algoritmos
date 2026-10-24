@@ -10,12 +10,12 @@
 \end{itemize}
 \end{objetivos}
 
-Heaps são ótimos para encontrar o máximo, mas não sabem procurar uma chave qualquer. Para um \textbf{dicionário ordenado} --- buscar, inserir e remover por chave, listar as chaves em ordem, encontrar sucessor e predecessor --- usamos árvores binárias de busca. Seu custo é proporcional à altura, que pode degenerar até $n$. As árvores AVL impedem a degeneração com uma condição local de balanceamento, restaurada após cada atualização por meio de rotações que custam $O(1)$.
+Heaps são ótimos para encontrar o máximo, mas não sabem procurar uma chave qualquer. Para um \textbf{dicionário ordenado}\index{dicionario ordenado@dicionário ordenado} --- buscar, inserir e remover por chave, listar as chaves em ordem, encontrar sucessor e predecessor --- usamos árvores binárias de busca. Seu custo é proporcional à altura, que pode degenerar até $n$. As árvores AVL impedem a degeneração com uma condição local de balanceamento, restaurada após cada atualização por meio de rotações que custam $O(1)$.
 
 \section{Árvores binárias de busca}\label{sec:abb}
 Uma lista sequencial ordenada permite busca binária em $\Theta(\log n)$, mas inserções e remoções custam $\Omega(n)$, pois exigem deslocar elementos; uma lista encadeada insere rapidamente, mas a busca custa $\Omega(n)$. A árvore binária de busca combina busca eficiente com uma estrutura dinâmica.
 \begin{defi}
-Uma \textbf{árvore binária de busca} (ABB) é uma árvore binária em que, para todo nó $p$, a chave de $p$ é maior ou igual às chaves da subárvore esquerda de $p$ e menor ou igual às da subárvore direita. Equivalentemente, o percurso \emph{em ordem} lista as chaves em ordem crescente.
+Uma \textbf{árvore binária de busca}\index{arvore binaria de busca@árvore binária de busca} (ABB) é uma árvore binária em que, para todo nó $p$, a chave de $p$ é maior ou igual às chaves da subárvore esquerda de $p$ e menor ou igual às da subárvore direita. Equivalentemente, o percurso \emph{em ordem} lista as chaves em ordem crescente.
 \end{defi}
 
 \begin{intuicao}
@@ -84,11 +84,11 @@ A altura de uma ABB com $n$ nós está entre $\floor{\log_2n}+1$ e $n$ (medida e
 \end{tabular}
 \end{figura}
 
-Árvores completas minimizam a altura, mas mantê-las completas depois de cada inserção exige reorganizações globais de custo $\Omega(n)$. A saída é exigir algo mais fraco: que a árvore seja \textbf{balanceada}, isto é, que tenha altura $O(\log n)$ e que o mesmo valha para cada subárvore, e que o balanceamento possa ser restaurado em tempo $O(\log n)$.
+Árvores completas minimizam a altura, mas mantê-las completas depois de cada inserção exige reorganizações globais de custo $\Omega(n)$. A saída é exigir algo mais fraco: que a árvore seja \textbf{balanceada}\index{arvore balanceada@árvore balanceada}, isto é, que tenha altura $O(\log n)$ e que o mesmo valha para cada subárvore, e que o balanceamento possa ser restaurado em tempo $O(\log n)$.
 
 \section{Árvores AVL}\label{sec:avldef}
 \begin{defi}
-Uma árvore binária é \textbf{AVL} se, em todo nó $v$, as alturas das subárvores esquerda e direita diferem de no máximo 1. O \textbf{balanço} de $v$ é
+Uma árvore binária é \textbf{AVL}\index{arvore avl@árvore AVL} se, em todo nó $v$, as alturas das subárvores esquerda e direita diferem de no máximo 1. O \textbf{balanço}\index{balanco (avl)@balanço (AVL)} de $v$ é
 \[
 \bal(v)=h_D(v)-h_E(v),
 \]
@@ -118,7 +118,7 @@ Seja $N(h)$ o número mínimo de nós de uma AVL de altura $h$, medida em nívei
 \[
 N(h)=1+N(h-1)+N(h-2).
 \]
-Essas árvores mínimas são chamadas \textbf{árvores de Fibonacci}, e $N(h)=F_{h+2}-1$. Como $N$ é crescente, $N(h)>2N(h-2)$, de onde $N(h)\ge2^{\floor{h/2}}$, ou seja, $h\le2\log_2N(h)+1$. Como qualquer AVL de altura $h$ com $n$ nós tem $n\ge N(h)$, segue que $h=O(\log n)$; o cálculo exato com a fórmula de $F_k$ dá a constante $1{,}44$.
+Essas árvores mínimas são chamadas \textbf{árvores de Fibonacci}\index{arvore de fibonacci@árvore de Fibonacci}, e $N(h)=F_{h+2}-1$. Como $N$ é crescente, $N(h)>2N(h-2)$, de onde $N(h)\ge2^{\floor{h/2}}$, ou seja, $h\le2\log_2N(h)+1$. Como qualquer AVL de altura $h$ com $n$ nós tem $n\ge N(h)$, segue que $h=O(\log n)$; o cálculo exato com a fórmula de $F_k$ dá a constante $1{,}44$.
 \end{proof}
 
 \begin{figura}[As árvores de Fibonacci: as AVL com o menor número de nós para cada altura. Cada uma é uma raiz com as duas anteriores penduradas.\label{fig:avlfib}]
@@ -150,7 +150,7 @@ $\bal(p)$ antes & depois & altura de $T(p)$ & ação\\
 \midrule
 $+1$ & $0$ & não mudou & \textbf{para}: os ancestrais não mudam\\
 $0$ & $-1$ & aumentou 1 & continua com o pai de $p$ (se $p$ é a raiz, para)\\
-$-1$ & $-2$ & --- & $p$ está desregulado: \textbf{rotação}, e depois \textbf{para}\\
+$-1$ & $-2$ & --- & $p$ está desregulado: \textbf{rotação}\index{rotacao@rotação}, e depois \textbf{para}\\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -188,8 +188,8 @@ Seja $p$ o nó desregulado mais profundo. Há quatro casos, determinados pelo si
 \toprule
 Caso & $\bal(p)$ & filho do lado pesado & sinais & rotação\\
 \midrule
-esquerda-esquerda & $-2$ & $u$ (esq.), $\bal(u)=-1$ & iguais & \textbf{simples à direita} em $p$\\
-esquerda-direita & $-2$ & $u$ (esq.), $\bal(u)=+1$ & opostos & \textbf{dupla à direita}: esquerda em $u$, direita em $p$\\
+esquerda-esquerda & $-2$ & $u$ (esq.), $\bal(u)=-1$ & iguais & \textbf{simples à direita}\index{rotacao@rotação!simples} em $p$\\
+esquerda-direita & $-2$ & $u$ (esq.), $\bal(u)=+1$ & opostos & \textbf{dupla à direita}\index{rotacao@rotação!dupla}: esquerda em $u$, direita em $p$\\
 direita-direita & $+2$ & $z$ (dir.), $\bal(z)=+1$ & iguais & \textbf{simples à esquerda} em $p$\\
 direita-esquerda & $+2$ & $z$ (dir.), $\bal(z)=-1$ & opostos & \textbf{dupla à esquerda}: direita em $z$, esquerda em $p$\\
 \bottomrule
@@ -456,7 +456,7 @@ Uma agenda de compromissos precisa listar os eventos entre duas datas e remover 
 \section{Árvores rubro-negras}\label{sec:rn}
 As árvores rubro-negras são outra forma clássica de manter uma ABB balanceada, e são a escolha mais comum em bibliotecas de linguagens de programação.
 \begin{defi}
-Uma \textbf{árvore rubro-negra} é uma ABB em que cada nó é \emph{vermelho} ou \emph{preto} (um bit extra por nó) e: (1) a raiz é preta; (2) as folhas nulas ($\nil$) são pretas; (3) um nó vermelho tem os dois filhos pretos, isto é, não há dois vermelhos seguidos; (4) todo caminho de um nó até as folhas nulas abaixo dele tem o mesmo número de nós pretos, chamado \emph{altura negra} do nó, $bh$.
+Uma \textbf{árvore rubro-negra}\index{arvore rubro-negra@árvore rubro-negra} é uma ABB em que cada nó é \emph{vermelho} ou \emph{preto} (um bit extra por nó) e: (1) a raiz é preta; (2) as folhas nulas ($\nil$) são pretas; (3) um nó vermelho tem os dois filhos pretos, isto é, não há dois vermelhos seguidos; (4) todo caminho de um nó até as folhas nulas abaixo dele tem o mesmo número de nós pretos, chamado \emph{altura negra} do nó, $bh$.
 \end{defi}
 
 \begin{exemplo}[Conferindo as propriedades]\label{ex:rn}

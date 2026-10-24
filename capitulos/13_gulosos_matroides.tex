@@ -12,12 +12,12 @@
 
 Um algoritmo guloso constrói a solução escolhendo, a cada passo, o que parece melhor naquele momento, sem nunca voltar atrás. É rápido e simples, mas nem sempre está correto. A teoria das matroides explica exatamente quando o guloso acerta: as matroides são as estruturas em que ele é ótimo para quaisquer pesos. O exemplo mais importante, a matroide gráfica, leva diretamente ao algoritmo de Kruskal do próximo capítulo.
 
-\section{O método guloso}\label{sec:guloso}
+\section{O método guloso}\label{sec:guloso}\index{algoritmo guloso}
 No esquema geral, queremos um subconjunto $S'\subseteq S$ que satisfaça uma propriedade $P$ e seja máximo (ou mínimo) segundo algum critério. O algoritmo guloso começa com $S'_0=\emptyset$ e, a cada passo, acrescenta o elemento $s$ que mantém a propriedade $P$ e é o \textbf{melhor segundo o critério naquele momento}, sem jamais desfazer uma escolha. Ele para quando nenhum elemento pode mais ser acrescentado.
 \begin{itemize}
-  \item \textbf{Quando o guloso é ótimo?} Quando vale a \textbf{propriedade gulosa}: existe uma solução ótima que contém o elemento escolhido, e, fixado esse elemento, o que resta é um subproblema bem definido do mesmo tipo (subestrutura ótima).
+  \item \textbf{Quando o guloso é ótimo?} Quando vale a \textbf{propriedade gulosa}\index{propriedade gulosa}: existe uma solução ótima que contém o elemento escolhido, e, fixado esse elemento, o que resta é um subproblema bem definido do mesmo tipo (subestrutura ótima).
   \item \textbf{Como provar?} Pelo \emph{argumento de troca}: tome uma solução ótima $O$ que concorde com a solução gulosa o máximo possível; no primeiro ponto em que elas discordam, troque um elemento de $O$ pelo escolhido pelo guloso, sem piorar a solução. Isso contradiz a escolha de $O$, ou mostra que a solução gulosa também é ótima.
-  \item \textbf{O que os problemas resolvidos por gulosos têm em comum?} Em grande parte deles, a família dos conjuntos viáveis é uma \textbf{matroide} (§\ref{sec:matroides}).
+  \item \textbf{O que os problemas resolvidos por gulosos têm em comum?} Em grande parte deles, a família dos conjuntos viáveis é uma \textbf{matroide}\index{matroide} (§\ref{sec:matroides}).
   \item \textbf{Programação dinâmica ou guloso?} A programação dinâmica examina todas as escolhas possíveis de cada subproblema, guardando os resultados numa tabela; o guloso faz uma única escolha e nunca volta atrás. O guloso é mais rápido, mas só funciona quando vale a propriedade gulosa.
 \end{itemize}
 
@@ -25,7 +25,7 @@ No esquema geral, queremos um subconjunto $S'\subseteq S$ que satisfaça uma pro
 Para mostrar que a escolha gulosa não estraga nada, imagine alguém que conhece uma solução ótima e discorda do guloso no primeiro passo. Se for possível ``trocar'' um elemento da solução ótima pelo elemento guloso, sem perder qualidade e sem violar as restrições, então existe uma solução ótima que começa como o guloso. Repetindo o argumento passo a passo (ou por indução), a solução gulosa inteira é ótima. Quando a troca falha --- quando o elemento guloso ``ocupa espaço'' que a solução ótima usaria melhor ---, o guloso costuma estar errado, e é aí que se procura um contraexemplo.
 \end{intuicao}
 
-\begin{pseudo}{Troco guloso}
+\begin{pseudo}{Troco guloso}\index{troco, problema do}
 \begin{algorithmic}
 \Function{TrocoGuloso}{$S,\ v_1>v_2>\dots>v_n$} \Comment{moedas em ordem decrescente}
   \State $total:=0$
@@ -58,17 +58,17 @@ O guloso, porém, \textbf{não funciona para qualquer sistema de moedas}. Com $\
 \section{Matroides}\label{sec:matroides}
 As matroides foram introduzidas por Whitney em 1935, com o objetivo de capturar as propriedades comuns à independência linear de vetores e à ausência de ciclos em grafos.
 \begin{defi}[Matroide]
-Uma \textbf{matroide} é um par $M=(E,\mathcal I)$, em que $E$ é um conjunto finito e $\mathcal I\subseteq2^E$ é uma família de subconjuntos, chamados \textbf{independentes}, tal que:
+Uma \textbf{matroide} é um par $M=(E,\mathcal I)$, em que $E$ é um conjunto finito e $\mathcal I\subseteq2^E$ é uma família de subconjuntos, chamados \textbf{independentes}\index{matroide!independente}, tal que:
 (I1) $\emptyset\in\mathcal I$;\quad
 (I2) se $I\in\mathcal I$ e $I'\subseteq I$, então $I'\in\mathcal I$ (a família é fechada para subconjuntos);\quad
-(I3) se $I_1,I_2\in\mathcal I$ e $|I_1|<|I_2|$, existe $e\in I_2\setminus I_1$ com $I_1\cup\{e\}\in\mathcal I$ (\textbf{axioma de aumento}).
+(I3) se $I_1,I_2\in\mathcal I$ e $|I_1|<|I_2|$, existe $e\in I_2\setminus I_1$ com $I_1\cup\{e\}\in\mathcal I$ (\textbf{axioma de aumento}\index{axioma de aumento}).
 \end{defi}
 Em palavras: o vazio é independente; tirar elementos de um independente não o torna dependente; e um independente pequeno sempre pode ``pegar emprestado'' um elemento de qualquer independente maior.
 
 \begin{exemplo}[Uma matroide pequena, de dois jeitos]\label{ex:matpequena}
-Considere o grafo da Figura~\ref{fig:matpequena}: um triângulo com as arestas $a=12$, $b=23$ e $c=13$, e uma aresta pendente $d=34$. Na \textbf{matroide gráfica}, os independentes são os conjuntos de arestas sem ciclo. O único ciclo é $\{a,b,c\}$, então são independentes todos os $2^4=16$ subconjuntos, exceto $\{a,b,c\}$ e $\{a,b,c,d\}$: 14 independentes. Os independentes maximais, as \emph{bases}, são $\{a,b,d\}$, $\{a,c,d\}$ e $\{b,c,d\}$ --- exatamente as árvores geradoras do grafo, todas com 3 arestas.
+Considere o grafo da Figura~\ref{fig:matpequena}: um triângulo com as arestas $a=12$, $b=23$ e $c=13$, e uma aresta pendente $d=34$. Na \textbf{matroide gráfica}\index{matroide!grafica@gráfica}, os independentes são os conjuntos de arestas sem ciclo. O único ciclo é $\{a,b,c\}$, então são independentes todos os $2^4=16$ subconjuntos, exceto $\{a,b,c\}$ e $\{a,b,c,d\}$: 14 independentes. Os independentes maximais, as \emph{bases}, são $\{a,b,d\}$, $\{a,c,d\}$ e $\{b,c,d\}$ --- exatamente as árvores geradoras do grafo, todas com 3 arestas.
 
-Agora tome os vetores de $\R^3$ $a=(1,0,0)$, $b=(0,1,0)$, $c=(1,1,0)$ e $d=(0,0,1)$. Na \textbf{matroide linear}, os independentes são os conjuntos linearmente independentes. Como $c=a+b$, o conjunto $\{a,b,c\}$ é dependente, e qualquer conjunto que o contenha também; todos os outros são independentes. É \emph{a mesma} família de independentes: duas situações muito diferentes, ciclos num grafo e dependência linear, têm a mesma estrutura combinatória. É isso que a definição de matroide captura.
+Agora tome os vetores de $\R^3$ $a=(1,0,0)$, $b=(0,1,0)$, $c=(1,1,0)$ e $d=(0,0,1)$. Na \textbf{matroide linear}\index{matroide!linear}, os independentes são os conjuntos linearmente independentes. Como $c=a+b$, o conjunto $\{a,b,c\}$ é dependente, e qualquer conjunto que o contenha também; todos os outros são independentes. É \emph{a mesma} família de independentes: duas situações muito diferentes, ciclos num grafo e dependência linear, têm a mesma estrutura combinatória. É isso que a definição de matroide captura.
 \begin{figura}[À esquerda, o grafo do Exemplo~\ref{ex:matpequena}; as arestas são os elementos da matroide. À direita, as suas três bases, que são as árvores geradoras.\label{fig:matpequena}]
 \begin{tikzpicture}[x=1.35cm,y=1.35cm, baseline={(0,0.5)}]
 \node[vtxs] (u1) at (0,1) {1}; \node[vtxs] (u2) at (1.2,1) {2}; \node[vtxs] (u3) at (0.6,0) {3}; \node[vtxs] (u4) at (1.8,0) {4};
@@ -106,11 +106,11 @@ Matroide & Independentes\\
 \midrule
 \textbf{Linear} & conjuntos de colunas (vetores) de uma matriz que são linearmente independentes.\\
 \textbf{Gráfica} (de um grafo $G$) & conjuntos de arestas \textbf{acíclicos} (florestas); se $G$ é conexo, as bases são as árvores geradoras.\\
-\textbf{Uniforme} $U_{n,k}$ & todos os subconjuntos $I\subseteq E$ com $|I|\le k$ (\emph{livre}, se $k=n$).\\
-\textbf{De partição} & $E=E_1\cup\dots\cup E_t$ (uma partição) e os $I$ com $|I\cap E_i|\le k_i$ para todo $i$.\\
-\textbf{Transversal} & num grafo bipartido com lados $X$ e $Y$: os $I\subseteq X$ \emph{emparelháveis}, isto é, cobertos por algum emparelhamento.\\
+\textbf{Uniforme}\index{matroide!uniforme} $U_{n,k}$ & todos os subconjuntos $I\subseteq E$ com $|I|\le k$ (\emph{livre}, se $k=n$).\\
+\textbf{De partição}\index{matroide!de particao@de partição} & $E=E_1\cup\dots\cup E_t$ (uma partição) e os $I$ com $|I\cap E_i|\le k_i$ para todo $i$.\\
+\textbf{Transversal}\index{matroide!transversal} & num grafo bipartido com lados $X$ e $Y$: os $I\subseteq X$ \emph{emparelháveis}, isto é, cobertos por algum emparelhamento.\\
 \textbf{De emparelhamento} & num grafo qualquer: os conjuntos de vértices cobertos por algum emparelhamento.\\
-\textbf{Dual} $M^*$ & as bases são os complementos $E\setminus B$ das bases $B$ de $M$; o dual da gráfica é a \emph{cográfica}.\\
+\textbf{Dual}\index{matroide!dual} $M^*$ & as bases são os complementos $E\setminus B$ das bases $B$ de $M$; o dual da gráfica é a \emph{cográfica}.\\
 \bottomrule
 \end{tabularx}
 \end{center}
@@ -142,9 +142,9 @@ Um restaurante monta pratos executivos com no máximo 1 entrada, 2 acompanhament
 
 \subsection{Formas equivalentes do axioma de aumento e bases}
 \begin{itemize}
-  \item \textbf{(I3$'$)} Para todo $X\subseteq E$, todos os independentes \emph{maximais} contidos em $X$ têm o mesmo tamanho, chamado \textbf{posto} de $X$, $r(X)$. Prova: se $I_1$ e $I_2$ fossem maximais em $X$ com $|I_1|<|I_2|$, (I3) aumentaria $I_1$ dentro de $X$. Reciprocamente, dados $|I_1|<|I_2|$, estenda $I_1$ a um independente maximal $B_1$ dentro de $X=I_1\cup I_2$; como $|B_1|\ge|I_2|>|I_1|$, existe $e\in B_1\setminus I_1\subseteq I_2\setminus I_1$, e $I_1\cup\{e\}\subseteq B_1$ é independente por (I2).
+  \item \textbf{(I3$'$)} Para todo $X\subseteq E$, todos os independentes \emph{maximais} contidos em $X$ têm o mesmo tamanho, chamado \textbf{posto}\index{posto (matroide)} de $X$, $r(X)$. Prova: se $I_1$ e $I_2$ fossem maximais em $X$ com $|I_1|<|I_2|$, (I3) aumentaria $I_1$ dentro de $X$. Reciprocamente, dados $|I_1|<|I_2|$, estenda $I_1$ a um independente maximal $B_1$ dentro de $X=I_1\cup I_2$; como $|B_1|\ge|I_2|>|I_1|$, existe $e\in B_1\setminus I_1\subseteq I_2\setminus I_1$, e $I_1\cup\{e\}\subseteq B_1$ é independente por (I2).
   \item \textbf{(I3$''$)} Todos os independentes maximais de $\mathcal I$ têm o mesmo tamanho $r$, e, se $|I|=r$ e $|I'|=r-1$, existe $x\in I\setminus I'$ com $I'\cup\{x\}\in\mathcal I$.
-  \item Uma \textbf{base} é um independente maximal; todas as bases têm o mesmo tamanho. A coleção $\mathcal B$ das bases satisfaz (B1) $\mathcal B\ne\emptyset$ e (B2) (\textbf{troca de bases}): se $B_1,B_2\in\mathcal B$ e $x\in B_1\setminus B_2$, existe $y\in B_2\setminus B_1$ com $(B_1\setminus\{x\})\cup\{y\}\in\mathcal B$. Reciprocamente, toda coleção $\mathcal B$ que satisfaz (B1) e (B2) é a coleção das bases da matroide cujos independentes são os subconjuntos de elementos de $\mathcal B$.
+  \item Uma \textbf{base}\index{base (matroide)} é um independente maximal; todas as bases têm o mesmo tamanho. A coleção $\mathcal B$ das bases satisfaz (B1) $\mathcal B\ne\emptyset$ e (B2) (\textbf{troca de bases}\index{troca de bases}): se $B_1,B_2\in\mathcal B$ e $x\in B_1\setminus B_2$, existe $y\in B_2\setminus B_1$ com $(B_1\setminus\{x\})\cup\{y\}\in\mathcal B$. Reciprocamente, toda coleção $\mathcal B$ que satisfaz (B1) e (B2) é a coleção das bases da matroide cujos independentes são os subconjuntos de elementos de $\mathcal B$.
 \end{itemize}
 
 \begin{exemplo}[Posto e troca de bases]\label{ex:posto}
@@ -152,7 +152,7 @@ Na matroide do Exemplo~\ref{ex:matpequena}, o posto do triângulo $X=\{a,b,c\}$ 
 \end{exemplo}
 
 \subsection{O algoritmo guloso para matroides}
-\textbf{Problema da base de peso máximo:} dada uma matroide $M$ e uma função de peso $c:E\to\R$, encontrar uma base $B$ com $c(B)=\sum_{e\in B}c(e)$ máximo. Em geral, os independentes são dados de forma \emph{implícita}, por um \textbf{oráculo} que responde ``$X$ é independente?'', pois listá-los todos poderia exigir tempo exponencial em $|E|$. Na matroide gráfica, por exemplo, o oráculo é ``as arestas de $X$ formam ciclo?'', respondido com Union-Find; na linear, é um escalonamento de Gauss.
+\textbf{Problema da base de peso máximo:} dada uma matroide $M$ e uma função de peso $c:E\to\R$, encontrar uma base $B$ com $c(B)=\sum_{e\in B}c(e)$ máximo. Em geral, os independentes são dados de forma \emph{implícita}, por um \textbf{oráculo}\index{oraculo@oráculo} que responde ``$X$ é independente?'', pois listá-los todos poderia exigir tempo exponencial em $|E|$. Na matroide gráfica, por exemplo, o oráculo é ``as arestas de $X$ formam ciclo?'', respondido com Union-Find; na linear, é um escalonamento de Gauss.
 \begin{pseudo}{Algoritmo guloso para matroides: $O(n\log n+n\,h)$, sendo $h$ o custo do oráculo}
 \begin{algorithmic}
 \Function{Guloso}{$M,c$}
@@ -214,7 +214,7 @@ Seja $B$ a saída, que é uma base, pois nada mais pode ser acrescentado a ela, 
 \end{figura}
 
 \begin{complemento}[Para saber mais: interseção de matroides]
-Dadas duas matroides $M_1=(E,\mathcal I_1)$ e $M_2=(E,\mathcal I_2)$, o problema da \textbf{interseção de matroides} pede um conjunto $I\in\mathcal I_1\cap\mathcal I_2$ de tamanho (ou peso) máximo. Vários problemas são desse tipo: o \emph{emparelhamento máximo em grafos bipartidos} é a interseção de duas matroides de partição (no máximo uma aresta por vértice de cada lado); a \emph{floresta colorida} --- o maior conjunto de arestas que é uma floresta e tem no máximo uma aresta de cada cor --- é a interseção da matroide gráfica com uma de partição pelas cores.
+Dadas duas matroides $M_1=(E,\mathcal I_1)$ e $M_2=(E,\mathcal I_2)$, o problema da \textbf{interseção de matroides}\index{matroide!intersecao de@interseção de} pede um conjunto $I\in\mathcal I_1\cap\mathcal I_2$ de tamanho (ou peso) máximo. Vários problemas são desse tipo: o \emph{emparelhamento máximo em grafos bipartidos} é a interseção de duas matroides de partição (no máximo uma aresta por vértice de cada lado); a \emph{floresta colorida} --- o maior conjunto de arestas que é uma floresta e tem no máximo uma aresta de cada cor --- é a interseção da matroide gráfica com uma de partição pelas cores.
 
 A interseção de duas matroides, em geral, não é uma matroide, e o guloso pode falhar, como no caminho $a\!-\!b\!-\!c\!-\!d$ acima, que é bipartido. Mesmo assim, o problema é \textbf{polinomial}, por um algoritmo de \emph{caminhos aumentantes}. Dado um conjunto comum $I$, constrói-se um \emph{grafo de troca}: para $y\in I$ e $x\notin I$, há um arco $y\to x$ se $I-y+x\in\mathcal I_1$ e um arco $x\to y$ se $I-y+x\in\mathcal I_2$; as fontes são os $x$ com $I+x\in\mathcal I_1$ e os destinos, os $x$ com $I+x\in\mathcal I_2$. Um caminho \emph{mais curto} de uma fonte a um destino dá, por diferença simétrica com $I$, um conjunto comum com um elemento a mais; se não há caminho, $I$ é máximo. São no máximo $r$ aumentos, cada um com $O(nr)$ consultas ao oráculo. Vale ainda um teorema de dualidade: $\max|I|=\min_{U\subseteq E}\{r_1(U)+r_2(E\setminus U)\}$.
 

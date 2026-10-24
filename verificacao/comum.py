@@ -3,7 +3,7 @@
 Cada script recalcula, em Python, os números de um capítulo (exemplos e
 respostas de simulação) e confere que o valor escrito no .tex é o calculado.
 A comparação é feita sobre o texto "normalizado": sem espaços, sem $, sem
-\\allowbreak, sem chaves e com {,} trocado por vírgula, para que diferenças só
+\\allowbreak e \\index, sem chaves e com {,} trocado por vírgula, para que diferenças só
 de tipografia não atrapalhem. Exemplo: o trecho $[52,50,41,48,$\\allowbreak$14]$
 do .tex vira [52,50,41,48,14].
 
@@ -25,10 +25,12 @@ _SUBS = [(r"\,", ""), (r"\;", ""), (r"\!", ""), (r"\ ", ""), ("~", ""), ("{,}", 
 _COMANDOS = re.compile(r"\\(allowbreak|quad|qquad|textbf|mathbf|emph|left|right|"
                        r"displaystyle|small|scriptsize)(?![A-Za-z])")
 _RETICENCIAS = re.compile(r"\\[lc]?dots(?![A-Za-z])")
+_INDICE = re.compile(r"\\index\{(?:[^{}]|\{[^{}]*\})*\}")   # entradas do índice remissivo
 
 
 def normaliza(texto):
     texto = re.sub(r"(?<!\\)%.*", "", texto)          # comentários
+    texto = _INDICE.sub("", texto)
     for a, b in _SUBS:
         texto = texto.replace(a, b)
     texto = _COMANDOS.sub("", texto)
