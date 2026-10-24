@@ -21,6 +21,10 @@ No esquema geral, queremos um subconjunto $S'\subseteq S$ que satisfaça uma pro
   \item \textbf{Programação dinâmica ou guloso?} A programação dinâmica examina todas as escolhas possíveis de cada subproblema, guardando os resultados numa tabela; o guloso faz uma única escolha e nunca volta atrás. O guloso é mais rápido, mas só funciona quando vale a propriedade gulosa.
 \end{itemize}
 
+\begin{intuicao}[O argumento de troca]
+Para mostrar que a escolha gulosa não estraga nada, imagine alguém que conhece uma solução ótima e discorda do guloso no primeiro passo. Se for possível ``trocar'' um elemento da solução ótima pelo elemento guloso, sem perder qualidade e sem violar as restrições, então existe uma solução ótima que começa como o guloso. Repetindo o argumento passo a passo (ou por indução), a solução gulosa inteira é ótima. Quando a troca falha --- quando o elemento guloso ``ocupa espaço'' que a solução ótima usaria melhor ---, o guloso costuma estar errado, e é aí que se procura um contraexemplo.
+\end{intuicao}
+
 \begin{pseudo}{Troco guloso}
 \begin{algorithmic}
 \Function{TrocoGuloso}{$S,\ v_1>v_2>\dots>v_n$} \Comment{moedas em ordem decrescente}
@@ -32,6 +36,19 @@ No esquema geral, queremos um subconjunto $S'\subseteq S$ que satisfaça uma pro
 \EndFunction
 \end{algorithmic}
 \end{pseudo}
+
+\begin{exemplo}[Troco de 38 centavos]
+Com as moedas $\{10,5,2,1\}$, o guloso dá $\floor{38/10}=3$ moedas de 10 (sobram 8), $\floor{8/5}=1$ moeda de 5 (sobram 3), $\floor{3/2}=1$ moeda de 2 (sobra 1) e uma moeda de 1: seis moedas no total (Figura~\ref{fig:troco}). Cada passo é uma decisão local --- ``use a maior moeda que cabe'' ---, tomada sem olhar o que vem depois.
+\begin{figura}[O troco guloso de 38 com as moedas $\{10,5,2,1\}$: em cada passo, a maior moeda que ainda cabe no valor restante.\label{fig:troco}]
+\begin{tikzpicture}[moeda/.style={circle, draw, thick, fill=Goldenrod!35, minimum size=8mm, font=\small\bfseries}]
+\foreach \pos/\val/\resto in {0/10/28,1.2/10/18,2.4/10/8,3.6/5/3,4.8/2/1,6/1/0} {
+  \node[moeda] at (\pos,0) {\val};
+  \node[rot] at (\pos,-0.75) {resta \resto};}
+\node[passo, anchor=west] at (6.8,0) {6 moedas};
+\end{tikzpicture}
+\end{figura}
+\end{exemplo}
+
 \begin{exemplo}[O troco guloso é ótimo para as moedas $\{10,5,2,1\}$]
 Seja $(a,b,c,d)$ o número de moedas de $10,5,2,1$ numa solução ótima. Então $d\le1$, pois duas moedas de 1 podem ser trocadas por uma de 2; $b\le1$, pois duas de 5 viram uma de 10; $c\le2$, pois três de 2 viram $5+1$; e não ocorre $c=2$ junto com $d=1$, pois $2+2+1$ vira uma moeda de 5. Logo as moedas pequenas somam $5b+2c+d\le9<10$, e então $a=\floor{S/10}$, como no guloso. Do mesmo modo, $2c+d\le4<5$ força o número de moedas de 5 a ser o do guloso, e $d\le1$ força o de moedas de 2. A solução ótima \emph{é} a gulosa.
 \end{exemplo}
@@ -46,6 +63,42 @@ Uma \textbf{matroide} é um par $M=(E,\mathcal I)$, em que $E$ é um conjunto fi
 (I2) se $I\in\mathcal I$ e $I'\subseteq I$, então $I'\in\mathcal I$ (a família é fechada para subconjuntos);\quad
 (I3) se $I_1,I_2\in\mathcal I$ e $|I_1|<|I_2|$, existe $e\in I_2\setminus I_1$ com $I_1\cup\{e\}\in\mathcal I$ (\textbf{axioma de aumento}).
 \end{defi}
+Em palavras: o vazio é independente; tirar elementos de um independente não o torna dependente; e um independente pequeno sempre pode ``pegar emprestado'' um elemento de qualquer independente maior.
+
+\begin{exemplo}[Uma matroide pequena, de dois jeitos]\label{ex:matpequena}
+Considere o grafo da Figura~\ref{fig:matpequena}: um triângulo com as arestas $a=12$, $b=23$ e $c=13$, e uma aresta pendente $d=34$. Na \textbf{matroide gráfica}, os independentes são os conjuntos de arestas sem ciclo. O único ciclo é $\{a,b,c\}$, então são independentes todos os $2^4=16$ subconjuntos, exceto $\{a,b,c\}$ e $\{a,b,c,d\}$: 14 independentes. Os independentes maximais, as \emph{bases}, são $\{a,b,d\}$, $\{a,c,d\}$ e $\{b,c,d\}$ --- exatamente as árvores geradoras do grafo, todas com 3 arestas.
+
+Agora tome os vetores de $\R^3$ $a=(1,0,0)$, $b=(0,1,0)$, $c=(1,1,0)$ e $d=(0,0,1)$. Na \textbf{matroide linear}, os independentes são os conjuntos linearmente independentes. Como $c=a+b$, o conjunto $\{a,b,c\}$ é dependente, e qualquer conjunto que o contenha também; todos os outros são independentes. É \emph{a mesma} família de independentes: duas situações muito diferentes, ciclos num grafo e dependência linear, têm a mesma estrutura combinatória. É isso que a definição de matroide captura.
+\begin{figura}[À esquerda, o grafo do Exemplo~\ref{ex:matpequena}; as arestas são os elementos da matroide. À direita, as suas três bases, que são as árvores geradoras.\label{fig:matpequena}]
+\begin{tikzpicture}[x=1.1cm,y=1.1cm, baseline={(0,0.5)}]
+\node[vtxs] (u1) at (0,1) {1}; \node[vtxs] (u2) at (1.2,1) {2}; \node[vtxs] (u3) at (0.6,0) {3}; \node[vtxs] (u4) at (1.8,0) {4};
+\draw[aresta] (u1) -- node[above, font=\scriptsize] {$a$} (u2);
+\draw[aresta] (u2) -- node[right, font=\scriptsize] {$b$} (u3);
+\draw[aresta] (u1) -- node[left, font=\scriptsize] {$c$} (u3);
+\draw[aresta] (u3) -- node[below, font=\scriptsize] {$d$} (u4);
+\end{tikzpicture}
+\hspace{1.2cm}
+\begin{tikzpicture}[x=0.8cm,y=0.8cm, baseline={(0,0.5)}]
+\node[vtxs] (u1) at (0,1) {1}; \node[vtxs] (u2) at (1.2,1) {2}; \node[vtxs] (u3) at (0.6,0) {3}; \node[vtxs] (u4) at (1.8,0) {4};
+\draw[gray!30, thick] (u1)--(u2) (u2)--(u3) (u1)--(u3);
+\draw[aresta, MidnightBlue] (u1)--(u2) (u2)--(u3) (u3)--(u4);
+\node[font=\scriptsize] at (0.9,-0.6) {$\{a,b,d\}$};
+\end{tikzpicture}\hspace{4mm}
+\begin{tikzpicture}[x=0.8cm,y=0.8cm, baseline={(0,0.5)}]
+\node[vtxs] (u1) at (0,1) {1}; \node[vtxs] (u2) at (1.2,1) {2}; \node[vtxs] (u3) at (0.6,0) {3}; \node[vtxs] (u4) at (1.8,0) {4};
+\draw[gray!30, thick] (u1)--(u2) (u2)--(u3) (u1)--(u3);
+\draw[aresta, MidnightBlue] (u1)--(u2) (u1)--(u3) (u3)--(u4);
+\node[font=\scriptsize] at (0.9,-0.6) {$\{a,c,d\}$};
+\end{tikzpicture}\hspace{4mm}
+\begin{tikzpicture}[x=0.8cm,y=0.8cm, baseline={(0,0.5)}]
+\node[vtxs] (u1) at (0,1) {1}; \node[vtxs] (u2) at (1.2,1) {2}; \node[vtxs] (u3) at (0.6,0) {3}; \node[vtxs] (u4) at (1.8,0) {4};
+\draw[gray!30, thick] (u1)--(u2) (u2)--(u3) (u1)--(u3);
+\draw[aresta, MidnightBlue] (u2)--(u3) (u1)--(u3) (u3)--(u4);
+\node[font=\scriptsize] at (0.9,-0.6) {$\{b,c,d\}$};
+\end{tikzpicture}
+\end{figura}
+\end{exemplo}
+
 \begin{center}\small
 \begin{tabularx}{\linewidth}{@{}lX@{}}
 \toprule
@@ -61,8 +114,31 @@ Matroide & Independentes\\
 \bottomrule
 \end{tabularx}
 \end{center}
-\textbf{O axioma (I3) para a matroide gráfica.} Uma floresta com $k$ arestas num grafo de $n$ vértices tem $n-k$ componentes. Como $|I_1|<|I_2|$, a floresta $I_2$ tem menos componentes que $I_1$, e por isso alguma aresta $e\in I_2$ liga duas componentes diferentes de $I_1$: se todas as arestas de $I_2$ ficassem dentro de componentes de $I_1$, cada componente de $I_2$ estaria contida numa de $I_1$, e $I_2$ teria pelo menos tantas componentes quanto $I_1$. Acrescentar essa aresta $e$ a $I_1$ não cria ciclo.
+
+\begin{exemplo}[Uma matroide de partição]
+Um restaurante monta pratos executivos com no máximo 1 entrada, 2 acompanhamentos e 1 sobremesa. O conjunto $E$ de opções é particionado em entradas, acompanhamentos e sobremesas, e um pedido é ``independente'' se respeita os três limites. O pedido \{salada, arroz, feijão, pudim\} é independente; \{arroz, feijão, purê\} não é, pois tem 3 acompanhamentos. Os axiomas valem: o pedido vazio respeita os limites; tirar itens de um pedido válido mantém-no válido; e, se um pedido válido tem menos itens que outro, há alguma categoria em que o maior tem mais itens que o menor, e um desses itens pode ser acrescentado ao menor sem estourar o limite dela.
+\end{exemplo}
+
+\textbf{O axioma (I3) para a matroide gráfica.} Uma floresta com $k$ arestas num grafo de $n$ vértices tem $n-k$ componentes. Como $|I_1|<|I_2|$, a floresta $I_2$ tem menos componentes que $I_1$, e por isso alguma aresta $e\in I_2$ liga duas componentes diferentes de $I_1$: se todas as arestas de $I_2$ ficassem dentro de componentes de $I_1$, cada componente de $I_2$ estaria contida numa de $I_1$, e $I_2$ teria pelo menos tantas componentes quanto $I_1$. Acrescentar essa aresta $e$ a $I_1$ não cria ciclo (Figura~\ref{fig:aumento}).
 \textbf{O axioma (I3) para a matroide linear.} O espaço gerado por $I_1$ tem dimensão $|I_1|<|I_2|$, então algum vetor de $I_2$ está fora dele, e acrescentá-lo a $I_1$ mantém a independência.
+
+\begin{figura}[O axioma de aumento na matroide gráfica. A floresta $I_1=\{12,34\}$ (azul) tem 3 componentes; a floresta $I_2=\{13,35,24\}$ (vermelho tracejado), com uma aresta a mais, tem só 2. A aresta $35$ de $I_2$ liga duas componentes de $I_1$ e pode ser acrescentada a ela sem formar ciclo (à direita).\label{fig:aumento}]
+\begin{tikzpicture}[x=1.1cm,y=1.1cm]
+\begin{scope}
+\node[vtxs] (p1) at (0,1) {1}; \node[vtxs] (p2) at (1.2,1) {2}; \node[vtxs] (p3) at (0,0) {3}; \node[vtxs] (p4) at (1.2,0) {4}; \node[vtxs] (p5) at (2.4,0.5) {5};
+\draw[aresta, MidnightBlue] (p1)--(p2) (p3)--(p4);
+\draw[thick, BrickRed, dashed] (p1)--(p3) (p2)--(p4);
+\draw[thick, BrickRed, dashed] (p3) to[bend right=35] (p5);
+\node[rot] at (1.2,-0.8) {$I_1$ (azul) e $I_2$ (vermelho)};
+\end{scope}
+\begin{scope}[xshift=5cm]
+\node[vtxs] (q1) at (0,1) {1}; \node[vtxs] (q2) at (1.2,1) {2}; \node[vtxs] (q3) at (0,0) {3}; \node[vtxs] (q4) at (1.2,0) {4}; \node[vtxs] (q5) at (2.4,0.5) {5};
+\draw[aresta, MidnightBlue] (q1)--(q2) (q3)--(q4);
+\draw[aresta, BrickRed] (q3) to[bend right=35] (q5);
+\node[rot] at (1.2,-0.8) {$I_1\cup\{35\}$: ainda sem ciclo};
+\end{scope}
+\end{tikzpicture}
+\end{figura}
 
 \subsection{Formas equivalentes do axioma de aumento e bases}
 \begin{itemize}
@@ -71,8 +147,12 @@ Matroide & Independentes\\
   \item Uma \textbf{base} é um independente maximal; todas as bases têm o mesmo tamanho. A coleção $\mathcal B$ das bases satisfaz (B1) $\mathcal B\ne\emptyset$ e (B2) (\textbf{troca de bases}): se $B_1,B_2\in\mathcal B$ e $x\in B_1\setminus B_2$, existe $y\in B_2\setminus B_1$ com $(B_1\setminus\{x\})\cup\{y\}\in\mathcal B$. Reciprocamente, toda coleção $\mathcal B$ que satisfaz (B1) e (B2) é a coleção das bases da matroide cujos independentes são os subconjuntos de elementos de $\mathcal B$.
 \end{itemize}
 
+\begin{exemplo}[Posto e troca de bases]
+Na matroide do Exemplo~\ref{ex:matpequena}, o posto do triângulo $X=\{a,b,c\}$ é $r(X)=2$: qualquer par de arestas do triângulo é independente maximal dentro de $X$, e não há um trio. O posto da matroide toda é 3. Para ver a troca de bases, tome $B_1=\{a,b,d\}$, $B_2=\{b,c,d\}$ e $x=a\in B_1\setminus B_2$: retirando $a$ de $B_1$ sobra $\{b,d\}$, e o elemento $y=c\in B_2\setminus B_1$ completa uma nova base, $\{b,c,d\}$. No grafo, isso é trocar uma aresta de uma árvore geradora por outra que reconecta as duas partes --- a mesma troca que aparece na prova da propriedade do corte do Capítulo~\ref{cap:agm}.
+\end{exemplo}
+
 \subsection{O algoritmo guloso para matroides}
-\textbf{Problema da base de peso máximo:} dada uma matroide $M$ e uma função de peso $c:E\to\R$, encontrar uma base $B$ com $c(B)=\sum_{e\in B}c(e)$ máximo. Em geral, os independentes são dados de forma \emph{implícita}, por um \textbf{oráculo} que responde ``$X$ é independente?'', pois listá-los todos poderia exigir tempo exponencial em $|E|$.
+\textbf{Problema da base de peso máximo:} dada uma matroide $M$ e uma função de peso $c:E\to\R$, encontrar uma base $B$ com $c(B)=\sum_{e\in B}c(e)$ máximo. Em geral, os independentes são dados de forma \emph{implícita}, por um \textbf{oráculo} que responde ``$X$ é independente?'', pois listá-los todos poderia exigir tempo exponencial em $|E|$. Na matroide gráfica, por exemplo, o oráculo é ``as arestas de $X$ formam ciclo?'', respondido com Union-Find; na linear, é um escalonamento de Gauss.
 \begin{pseudo}{Algoritmo guloso para matroides: $O(n\log n+n\,h)$, sendo $h$ o custo do oráculo}
 \begin{algorithmic}
 \Function{Guloso}{$M,c$}
@@ -85,6 +165,24 @@ Matroide & Independentes\\
 \EndFunction
 \end{algorithmic}
 \end{pseudo}
+
+\begin{exemplo}[O guloso na matroide gráfica]\label{ex:gulosograf}
+No grafo da Figura~\ref{fig:gulosograf}, com as arestas $AB$ (7), $AC$ (5), $BC$ (8), $BD$ (6), $CD$ (9), $CE$ (4) e $DE$ (3), queremos uma árvore geradora de peso \emph{máximo}. Em ordem decrescente de peso, o guloso aceita $CD$ (9), $BC$ (8) e $AB$ (7); rejeita $BD$ (6), que fecharia o ciclo $B,C,D$, e $AC$ (5), que fecharia $A,B,C$; aceita $CE$ (4); e rejeita $DE$ (3). A árvore tem peso $9+8+7+4=28$, e, pelo teorema a seguir, nenhuma árvore geradora pesa mais (o que se confirma testando as poucas árvores possíveis).
+\begin{figura}[O guloso para a árvore geradora de peso máximo. As arestas aceitas estão em azul; as rejeitadas, que fechariam ciclos, em cinza tracejado.\label{fig:gulosograf}]
+\begin{tikzpicture}[x=1.4cm,y=1.2cm]
+\node[vtx] (A) at (0,1) {$A$}; \node[vtx] (B) at (1.5,1.8) {$B$}; \node[vtx] (C) at (1.5,0) {$C$};
+\node[vtx] (D) at (3,1) {$D$}; \node[vtx] (E) at (3,-0.6) {$E$};
+\draw[aresta, MidnightBlue, very thick] (A) -- node[peso] {7} (B);
+\draw[gray, dashed] (A) -- node[peso] {5} (C);
+\draw[aresta, MidnightBlue, very thick] (B) -- node[peso] {8} (C);
+\draw[gray, dashed] (B) -- node[peso] {6} (D);
+\draw[aresta, MidnightBlue, very thick] (C) -- node[peso] {9} (D);
+\draw[aresta, MidnightBlue, very thick] (C) -- node[peso] {4} (E);
+\draw[gray, dashed] (D) -- node[peso] {3} (E);
+\end{tikzpicture}
+\end{figura}
+\end{exemplo}
+
 \begin{teo}\label{teo:gulosomat}
 Se $M$ é uma matroide, o algoritmo \textup{\textsc{Guloso}} devolve uma base de peso máximo, qualquer que seja a função de peso $c$.
 \end{teo}
@@ -96,9 +194,24 @@ Seja $B$ a saída, que é uma base, pois nada mais pode ser acrescentado a ela, 
 \begin{itemize}
   \item \textbf{Base de peso mínimo}: use a ordem não decrescente, ou os pesos $-c$. O algoritmo de Kruskal é exatamente isso na matroide gráfica (Capítulo~\ref{cap:agm}).
   \item \textbf{Testar se $k$ colunas de uma matriz $m\times k$ são linearmente independentes}: escalonamento de Gauss, em $O(m\,k\min\{m,k\})$; se $k>m$, elas já são dependentes.
-  \item \textbf{Seleção de intervalos} com pesos unitários: o guloso que escolhe ``o que termina primeiro'' é ótimo, mas a família dos conjuntos de intervalos disjuntos \textbf{não} é uma matroide. Com $I_1=\{[1,10]\}$ e $I_2=\{[1,2],[3,4]\}$, nenhum intervalo de $I_2$ é compatível com $[1,10]$, e (I3) falha. A otimalidade vem de um argumento de troca específico; com pesos arbitrários, o guloso falha e é preciso programação dinâmica.
+  \item \textbf{Seleção de intervalos} com pesos unitários: o guloso que escolhe ``o que termina primeiro'' é ótimo, mas a família dos conjuntos de intervalos disjuntos \textbf{não} é uma matroide. Com $I_1=\{[1,10]\}$ e $I_2=\{[1,2],[3,4]\}$, nenhum intervalo de $I_2$ é compatível com $[1,10]$, e (I3) falha (Figura~\ref{fig:naomat}). A otimalidade vem de um argumento de troca específico; com pesos arbitrários, o guloso falha e é preciso programação dinâmica.
   \item \textbf{Emparelhamentos} (conjuntos de arestas sem extremos em comum) num grafo qualquer \textbf{não} formam uma matroide: no caminho $a\!-\!b\!-\!c\!-\!d$, o emparelhamento $\{bc\}$ não pode ser aumentado por $ab$ nem por $cd$, que formam o emparelhamento $\{ab,cd\}$. Um guloso que escolha $bc$ primeiro fica com uma aresta, e o máximo é 2.
 \end{itemize}
+
+\begin{figura}[Duas famílias que não são matroides. À esquerda, intervalos: $I_1=\{[1,10]\}$ tem menos elementos que $I_2=\{[1,2],[3,4]\}$, mas nenhum intervalo de $I_2$ pode ser acrescentado a $I_1$. À direita, emparelhamentos no caminho $a\!-\!b\!-\!c\!-\!d$: $\{bc\}$ (vermelho) é maximal, mas menor que $\{ab,cd\}$ (azul).\label{fig:naomat}]
+\begin{tikzpicture}[x=4.5mm,y=5mm, baseline=(base)]
+\draw[gray] (0.5,0) -- (11,0); \foreach \xx in {1,...,10} {\draw[gray] (\xx,0.1) -- (\xx,-0.1); \node[font=\tiny, text=gray] at (\xx,-0.45) {\xx};}
+\draw[line width=3pt, BrickRed!70] (1,1) -- (10,1); \node[font=\scriptsize, anchor=west] at (10.3,1) {$I_1$};
+\draw[line width=3pt, MidnightBlue!70] (1,2) -- (2,2); \draw[line width=3pt, MidnightBlue!70] (3,2) -- (4,2); \node[font=\scriptsize, anchor=west] at (10.3,2) {$I_2$};
+\coordinate (base) at (0,1);
+\end{tikzpicture}
+\hspace{1.5cm}
+\begin{tikzpicture}[x=1.2cm,y=1cm, baseline=(base)]
+\foreach \nm [count=\k] in {a,b,c,d} {\node[vtxs] (m\nm) at (\k,0.5) {$\nm$};}
+\draw[line width=2.5pt, MidnightBlue!70] (ma) -- (mb); \draw[line width=2.5pt, BrickRed!70] (mb) -- (mc); \draw[line width=2.5pt, MidnightBlue!70] (mc) -- (md);
+\coordinate (base) at (0,0.5);
+\end{tikzpicture}
+\end{figura}
 
 \begin{complemento}[Para saber mais: interseção de matroides]
 Dadas duas matroides $M_1=(E,\mathcal I_1)$ e $M_2=(E,\mathcal I_2)$, o problema da \textbf{interseção de matroides} pede um conjunto $I\in\mathcal I_1\cap\mathcal I_2$ de tamanho (ou peso) máximo. Vários problemas são desse tipo: o \emph{emparelhamento máximo em grafos bipartidos} é a interseção de duas matroides de partição (no máximo uma aresta por vértice de cada lado); a \emph{floresta colorida} --- o maior conjunto de arestas que é uma floresta e tem no máximo uma aresta de cada cor --- é a interseção da matroide gráfica com uma de partição pelas cores.
