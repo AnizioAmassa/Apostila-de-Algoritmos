@@ -12,6 +12,10 @@
 
 Quando as arestas têm pesos, a busca em largura deixa de fornecer distâncias. O algoritmo de Dijkstra generaliza a busca: em vez de uma fila, usa uma \textbf{fila de prioridades} e processa sempre o vértice mais próximo da origem que ainda não teve a distância fixada. É o primeiro algoritmo deste livro em que a escolha da implementação da fila de prioridades --- vetor, heap binário ou heap de Fibonacci --- muda a complexidade de forma decisiva. O exemplo do capítulo usa o digrafo da §\ref{sec:fwmatriz}.
 
+\begin{intuicao}
+Imagine que cada aresta é um pavio, que queima em tempo igual ao seu peso, e que acendemos a origem no instante 0. O fogo chega a cada vértice exatamente no instante $\operatorname{dist}(s,v)$, pelo caminho mais rápido, e acende os pavios que saem dele. O algoritmo de Dijkstra simula esse incêndio: ele mantém, para cada vértice, a melhor estimativa de quando o fogo chegará, e processa os vértices na ordem em que o fogo os alcança. Quando um vértice é processado, nenhum caminho ainda não explorado pode chegar antes, porque esses caminhos passam por vértices que o fogo ainda não alcançou.
+\end{intuicao}
+
 \section{O algoritmo}
 \textbf{Problema:} dado um digrafo com pesos \textbf{não negativos} e uma raiz $s$, calcular os caminhos mínimos de $s$ a todos os vértices. O algoritmo mantém, para cada vértice $w$, um rótulo $L(w)$, que é o custo do melhor caminho de $s$ a $w$ encontrado até o momento, e um ponteiro $pai(w)$. A cada passo, retira da fila de prioridades o vértice de menor rótulo, fixa esse rótulo como definitivo e tenta melhorar os rótulos dos seus vizinhos.
 \begin{pseudo}{Algoritmo de Dijkstra}
@@ -31,7 +35,9 @@ Quando as arestas têm pesos, a busca em largura deixa de fornecer distâncias. 
 \EndProcedure
 \end{algorithmic}
 \end{pseudo}
-\begin{exemplo}[Raiz $a$ no digrafo da §\ref{sec:fwmatriz}]\leavevmode
+O passo central é o \textbf{relaxamento} de uma aresta $vw$: se chegar a $v$ e seguir a aresta $vw$ é melhor que o melhor caminho conhecido até $w$, esse caminho passa a ser o novo melhor. Por exemplo, se $L(v)=4$, $W(v,w)=3$ e $L(w)=9$, o relaxamento faz $L(w):=7$ e $pai(w):=v$; se fosse $L(w)=6$, nada mudaria.
+
+\begin{exemplo}[Raiz $a$ no digrafo da §\ref{sec:fwmatriz}]\label{ex:dijkstra}\leavevmode
 \begin{center}\small
 \begin{tabular}{l|ccccc|l}
 Removido & $L(a)$ & $L(b)$ & $L(c)$ & $L(d)$ & $L(e)$ & mudanças em $pai$\\ \hline
@@ -42,7 +48,25 @@ $d$ (3) & & & & \textbf{3} & 5 & $e\leftarrow d$\\
 $e$ (5) & & & & & \textbf{5} & ---
 \end{tabular}
 \end{center}
-Os ponteiros $pai$ formam a \textbf{árvore de caminhos mínimos}: $a\to b\to c\to d\to e$. Por exemplo, o caminho mínimo de $a$ a $e$ é $a,b,c,d,e$, com custo $L(e)=5$, embora a aresta direta custe 6. A primeira linha da matriz de distâncias calculada pelo Floyd-Warshall (Capítulo~\ref{cap:fw}) confirma os valores $0,1,2,3,5$.
+Os ponteiros $pai$ formam a \textbf{árvore de caminhos mínimos}: $a\to b\to c\to d\to e$. Por exemplo, o caminho mínimo de $a$ a $e$ é $a,b,c,d,e$, com custo $L(e)=5$, embora a aresta direta custe 6. A primeira linha da matriz de distâncias calculada pelo Floyd-Warshall (Capítulo~\ref{cap:fw}) confirma os valores $0,1,2,3,5$. A Figura~\ref{fig:dijkstra} mostra o estado do algoritmo em três momentos: o rótulo de $c$ começa em 3, pela aresta direta, e cai para 2 quando $b$ é processado; o de $e$ começa em 6 e só cai para 5 no fim, quando $d$ é processado.
+\begin{figura}[O algoritmo de Dijkstra a partir de $a$. Em verde, os vértices já removidos (com rótulo definitivo); em vermelho, os rótulos $L$; em azul, as arestas $pai(w)\to w$ atuais. À direita, a árvore de caminhos mínimos final.\label{fig:dijkstra}]
+\tikzset{rotL/.style={font=\scriptsize\bfseries, text=BrickRed}}
+\begin{tabular}{@{}c@{\hspace{3mm}}c@{\hspace{3mm}}c@{}}
+\begin{tikzpicture}[x=0.74cm, y=0.76cm, v1/.style={fill=feito}, a12/.style={MidnightBlue, line width=1.6pt}, a13/.style={MidnightBlue, line width=1.6pt}, a15/.style={MidnightBlue, line width=1.6pt}]
+\digrafoFW{$a$}{$b$}{$c$}{$d$}{$e$}
+\node[rotL, left=1pt of n1] {0}; \node[rotL, above=1pt of n2] {1}; \node[rotL, above left=0pt and 0pt of n3] {3}; \node[rotL, right=1pt of n4] {$\infty$}; \node[rotL, below=1pt of n5] {6};
+\end{tikzpicture} &
+\begin{tikzpicture}[x=0.74cm, y=0.76cm, v1/.style={fill=feito}, v2/.style={fill=feito}, a12/.style={MidnightBlue, line width=1.6pt}, a23/.style={MidnightBlue, line width=1.6pt}, a24/.style={MidnightBlue, line width=1.6pt}, a15/.style={MidnightBlue, line width=1.6pt}]
+\digrafoFW{$a$}{$b$}{$c$}{$d$}{$e$}
+\node[rotL, left=1pt of n1] {0}; \node[rotL, above=1pt of n2] {1}; \node[rotL, above left=0pt and 0pt of n3] {2}; \node[rotL, right=1pt of n4] {4}; \node[rotL, below=1pt of n5] {6};
+\end{tikzpicture} &
+\begin{tikzpicture}[x=0.74cm, y=0.76cm, v1/.style={fill=feito}, v2/.style={fill=feito}, v3/.style={fill=feito}, v4/.style={fill=feito}, v5/.style={fill=feito}, a12/.style={MidnightBlue, line width=1.6pt}, a23/.style={MidnightBlue, line width=1.6pt}, a34/.style={MidnightBlue, line width=1.6pt}, a45/.style={MidnightBlue, line width=1.6pt}]
+\digrafoFW{$a$}{$b$}{$c$}{$d$}{$e$}
+\node[rotL, left=1pt of n1] {0}; \node[rotL, above=1pt of n2] {1}; \node[rotL, above left=0pt and 0pt of n3] {2}; \node[rotL, right=1pt of n4] {3}; \node[rotL, below=1pt of n5] {5};
+\end{tikzpicture}\\
+\small (a) depois de remover $a$ & \small (b) depois de remover $b$ & \small (c) no final
+\end{tabular}
+\end{figura}
 \end{exemplo}
 Para um grafo não direcionado, basta trocar cada aresta $xy$ de peso $p$ pelas arestas direcionadas $x\to y$ e $y\to x$, ambas de peso $p$. E, se todos os pesos são iguais a 1, o algoritmo se comporta como a busca em largura: a fila de prioridades passa a liberar os vértices em ordem de nível, e $L(w)$ é a distância em número de arestas.
 
@@ -53,7 +77,32 @@ Com pesos não negativos, quando um vértice $v$ é removido de $D$, vale $L(v)=
 \begin{proof}
 Sempre vale $L(v)\ge\operatorname{dist}(s,v)$, pois $L(v)$ é o custo de algum caminho. Suponha que $u$ seja o primeiro vértice removido com $L(u)>\operatorname{dist}(s,u)$. Num caminho mínimo de $s$ a $u$, seja $y$ o primeiro vértice ainda não marcado e $x$ o vértice anterior a ele, que já foi marcado e, portanto, tem $L(x)=\operatorname{dist}(s,x)$. Quando $x$ foi marcado, a aresta $xy$ foi relaxada, e então $L(y)\le\operatorname{dist}(s,x)+W(x,y)=\operatorname{dist}(s,y)\le\operatorname{dist}(s,u)<L(u)$. A segunda desigualdade usa que os \textbf{pesos não são negativos}: o trecho do caminho de $y$ até $u$ custa pelo menos 0. Mas então $u$ não tinha o menor rótulo em $D$, uma contradição.
 \end{proof}
-A hipótese sobre os pesos é essencial. Com as arestas $x\to y$ (1), $x\to z$ (2) e $z\to y$ ($-2$), o algoritmo fixa $L(y)=1$, mas o caminho $x,z,y$ custa 0. Para pesos negativos sem ciclos negativos, existem outros algoritmos, como o de Bellman-Ford, em $O(nm)$; para todos os pares, o Floyd-Warshall.
+
+\begin{figura}[A situação da prova. A região verde contém os vértices já marcados. Um caminho mínimo de $s$ a $u$ sai da região pela aresta $xy$; como o trecho de $y$ a $u$ não tem custo negativo, $L(y)\le\operatorname{dist}(s,u)<L(u)$, e $y$ teria saído da fila antes de $u$.\label{fig:dijkprova}]
+\begin{tikzpicture}[x=1cm,y=1cm]
+\fill[feito, rounded corners=12pt] (-0.6,-0.9) rectangle (3.2,1.1);
+\node[rot, anchor=west] at (-0.5,0.85) {marcados};
+\node[vtx] (s) at (0,0) {$s$}; \node[vtx] (x) at (2.4,0) {$x$}; \node[vtx] (y) at (4.2,0) {$y$}; \node[vtx] (u) at (6.6,0) {$u$};
+\draw[seta, densely dashed] (s) -- node[above, rot] {$\operatorname{dist}(s,x)$} (x);
+\draw[seta] (x) -- node[above, rot] {$W(x,y)$} (y);
+\draw[seta, densely dashed] (y) -- node[above, rot] {custo $\ge0$} (u);
+\end{tikzpicture}
+\end{figura}
+
+A hipótese sobre os pesos é essencial: com uma aresta negativa, um vértice já marcado pode ganhar, depois, um caminho mais barato, que o algoritmo nunca mais examina. Para pesos negativos sem ciclos negativos, existem outros algoritmos, como o de Bellman-Ford, em $O(nm)$; para todos os pares, o Floyd-Warshall.
+
+\begin{exemplo}[Uma aresta negativa engana o algoritmo]
+No digrafo da Figura~\ref{fig:dijkneg}, com as arestas $s\to a$ (1), $s\to b$ (3), $b\to a$ ($-3$) e $a\to c$ (1), o algoritmo remove $s$ (rótulo 0), depois $a$ (rótulo 1), que é marcado como definitivo, e então $c$ (rótulo 2). Só depois remove $b$ (rótulo 3) e relaxa a aresta $b\to a$; mas $a$ já está marcado e não é revisto. O resultado diz $L(a)=1$ e $L(c)=2$, enquanto o caminho $s\to b\to a$ custa $3-3=0$ e, com ele, $s\to b\to a\to c$ custa 1. O erro num vértice se propaga para os que dependem dele.
+\begin{figura}[Um digrafo com uma aresta negativa em que o algoritmo de Dijkstra erra. Em vermelho, os rótulos calculados; entre parênteses, as distâncias corretas.\label{fig:dijkneg}]
+\begin{tikzpicture}[x=1.6cm,y=1.1cm]
+\node[vtx] (s) at (0,0) {$s$}; \node[vtx] (a) at (1.5,0.8) {$a$}; \node[vtx] (b) at (1.5,-0.8) {$b$}; \node[vtx] (c) at (3,0.8) {$c$};
+\draw[arco] (s) -- node[peso] {1} (a); \draw[arco] (s) -- node[peso] {3} (b);
+\draw[arco, BrickRed] (b) -- node[peso] {$-3$} (a); \draw[arco] (a) -- node[peso] {1} (c);
+\node[font=\scriptsize, text=BrickRed, above=1pt of a] {1 (0)}; \node[font=\scriptsize, text=BrickRed, above=1pt of c] {2 (1)};
+\node[font=\scriptsize, text=BrickRed, below=1pt of b] {3 (3)}; \node[font=\scriptsize, text=BrickRed, left=1pt of s] {0};
+\end{tikzpicture}
+\end{figura}
+\end{exemplo}
 
 \section{Implementações e complexidade}
 \begin{center}\small
@@ -68,6 +117,24 @@ Heap de Fibonacci & $O(m+n\log n)$ & teórico: redução de chave em $O(1)$\am\\
 \end{tabularx}
 \end{center}
 Os custos vêm de $n$ inserções, $n$ remoções do mínimo e até $m$ reduções de prioridade (Capítulos~\ref{cap:heap} e~\ref{cap:heapav}). No heap binário, ``reposicionar'' é uma operação \emph{subir}, e exige um vetor $pos[w]$ com a posição de cada vértice no heap.
+
+\begin{exemplo}[O heap com vetor de posições]
+Na execução do Exemplo~\ref{ex:dijkstra} com um heap binário de mínimo, depois que $b$ é removido o heap guarda $(c{:}2,\ e{:}6,\ d{:}4)$, nessa ordem no vetor, e o vetor de posições diz $pos[c]=1$, $pos[e]=2$ e $pos[d]=3$. Quando $c$ é removido, o último elemento, $d{:}4$, vai para a raiz e desce (aqui, não precisa descer), e $pos[d]$ passa a 1. Em seguida, o relaxamento da aresta $cd$ reduz $L(d)$ de 4 para 3: é $pos[d]=1$ que diz onde $d$ está no heap, e a operação subir a partir da posição 1 confirma que nada precisa mudar. Sem o vetor $pos$, seria preciso procurar $d$ no heap inteiro, em $O(n)$.
+\end{exemplo}
+
+\begin{figura}[O custo das duas implementações principais para $n=1000$ vértices, em função do número de arestas $m$. A versão com vetor custa cerca de $n^2$, qualquer que seja $m$; a com heap binário, cerca de $(n+m)\log_2n$. As curvas se cruzam perto de $m\approx n^2/\log_2n\approx10^5$: abaixo disso, o heap é melhor; acima, o vetor.\label{fig:dijkcusto}]
+\begin{tikzpicture}
+\begin{axis}[width=10cm, height=5.6cm, xmin=0, xmax=300000, ymin=0, ymax=3200000,
+  xlabel={número de arestas $m$}, ylabel={operações}, scaled ticks=false,
+  xtick={0,100000,200000,300000}, xticklabels={0,$10^5$,$2\cdot10^5$,$3\cdot10^5$},
+  ytick={0,1000000,2000000,3000000}, yticklabels={0,$10^6$,$2\cdot10^6$,$3\cdot10^6$},
+  tick label style={font=\scriptsize}, label style={font=\small}, legend style={font=\scriptsize, at={(0.03,0.97)}, anchor=north west}]
+\addplot[very thick, ForestGreen, domain=0:300000] {1000000};
+\addplot[very thick, MidnightBlue, domain=0:300000, samples=2] {(1000+x)*9.966};
+\legend{vetor: $n^2$, heap binário: $(n+m)\log_2n$}
+\end{axis}
+\end{tikzpicture}
+\end{figura}
 
 \begin{cuidado}[Armadilhas do algoritmo de Dijkstra]
 \begin{itemize}
