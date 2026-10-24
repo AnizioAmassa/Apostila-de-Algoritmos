@@ -12,8 +12,12 @@
 
 Uma \textbf{busca} é um procedimento sistemático para visitar todos os vértices e todas as arestas de um grafo, com o objetivo de resolver um problema ou extrair informação da sua estrutura. Na busca em largura, os vértices são visitados em camadas: primeiro a raiz, depois os vizinhos dela, depois os vizinhos dos vizinhos, e assim por diante. Por isso ela calcula distâncias em número de arestas e reconhece grafos bipartidos. A notação de grafos está na §\ref{sec:buscas}.
 
+\begin{intuicao}
+Jogue uma pedra num lago: a perturbação se espalha em ondas circulares, e cada ponto é atingido pela primeira onda que chega até ele. A busca em largura faz o mesmo num grafo: a raiz é a pedra, a primeira onda atinge os vizinhos da raiz, a segunda atinge os vizinhos deles que ainda não tinham sido atingidos, e assim por diante. O número da onda que atinge um vértice é a sua distância à raiz.
+\end{intuicao}
+
 \section{O algoritmo}
-A regra da busca em largura é ``\emph{esgotar o pai antes de processar os filhos}'': a próxima aresta examinada parte sempre do vértice \textbf{mais antigo} na busca. A estrutura que realiza essa regra é uma \textbf{fila} $F$. Cada vértice recebe um rótulo $L(v)$, com a ordem em que foi alcançado, e um nível $nivel(v)$, a sua profundidade na floresta de largura; os ponteiros $pai(v)$ definem a floresta.
+A regra da busca em largura é ``\emph{esgotar o pai antes de processar os filhos}'': a próxima aresta examinada parte sempre do vértice \textbf{mais antigo} na busca. A estrutura que realiza essa regra é uma \textbf{fila} $F$: os vértices são processados na ordem em que foram alcançados. Cada vértice recebe um rótulo $L(v)$, com a ordem em que foi alcançado, e um nível $nivel(v)$, a sua profundidade na floresta de largura; os ponteiros $pai(v)$ definem a floresta.
 \begin{pseudo}{Busca em largura com classificação das arestas}
 \begin{algorithmic}
 \Procedure{BuscaLargura}{$G$}
@@ -36,25 +40,41 @@ A regra da busca em largura é ``\emph{esgotar o pai antes de processar os filho
 \end{algorithmic}
 \end{pseudo}
 
-\begin{center}
-\begin{tikzpicture}[v/.style={circle,draw,fill=yellow!40,inner sep=1.2pt,minimum size=5mm,font=\small},
-  pai/.style={very thick,MidnightBlue}, irm/.style={thick,BrickRed}, pri/.style={thick,dotted,orange!85!black}, tio/.style={thick,dashed,ForestGreen},
+\begin{figura}[Busca em largura a partir de $a$, com os vizinhos em ordem alfabética; os rótulos são $L/nivel$, e cada faixa é um nível. Em azul grosso, as arestas-pai; em vermelho, as arestas-irmão ($bc$ e $fg$); em laranja pontilhado, as arestas-primo ($de$ e $gh$); em verde tracejado, as arestas-tio ($cd$ e $ef$).\label{fig:bfs}]
+\begin{tikzpicture}[pai/.style={very thick,MidnightBlue}, irm/.style={thick,BrickRed}, pri/.style={thick,dotted,orange!85!black}, tio/.style={thick,dashed,ForestGreen},
   lab/.style={font=\scriptsize,text=gray!70!black}]
-\node[v] (a) at (0.9,3.6) {$a$};
-\node[v] (b) at (0,2.4) {$b$}; \node[v] (c) at (1.8,2.4) {$c$};
-\node[v] (d) at (0,1.2) {$d$}; \node[v] (e) at (1.8,1.2) {$e$};
-\node[v] (f) at (0,0) {$f$}; \node[v] (g) at (1.4,0) {$g$}; \node[v] (h) at (2.8,0) {$h$};
+\foreach \nv/\yy in {0/3.6,1/2.4,2/1.2,3/0} {\fill[azul!45, rounded corners=4pt] (-1.1,\yy-0.4) rectangle (4.1,\yy+0.4); \node[rot, anchor=west] at (4.2,\yy) {nível \nv};}
+\node[vtx] (a) at (0.9,3.6) {$a$};
+\node[vtx] (b) at (0,2.4) {$b$}; \node[vtx] (c) at (1.8,2.4) {$c$};
+\node[vtx] (d) at (0,1.2) {$d$}; \node[vtx] (e) at (1.8,1.2) {$e$};
+\node[vtx] (f) at (0,0) {$f$}; \node[vtx] (g) at (1.4,0) {$g$}; \node[vtx] (h) at (2.8,0) {$h$};
 \draw[pai] (a)--(b); \draw[pai] (a)--(c); \draw[pai] (b)--(d); \draw[pai] (c)--(e); \draw[pai] (d)--(f); \draw[pai] (d)--(g); \draw[pai] (e)--(h);
 \draw[irm] (b)--(c); \draw[irm] (f)--(g); \draw[pri] (d)--(e); \draw[pri] (g)--(h); \draw[tio] (c)--(d); \draw[tio] (e)--(f);
 \node[lab,right=1pt of a] {1/0}; \node[lab,left=1pt of b] {2/1}; \node[lab,right=1pt of c] {3/1}; \node[lab,left=1pt of d] {4/2};
-\node[lab,right=1pt of e] {5/2}; \node[lab,below=1pt of f] {6/3}; \node[lab,below=1pt of g] {7/3}; \node[lab,below=1pt of h] {8/3};
+\node[lab,right=1pt of e] {5/2}; \node[lab,left=1pt of f] {6/3}; \node[lab,below right=0pt and 1pt of g] {7/3}; \node[lab,right=1pt of h] {8/3};
 \end{tikzpicture}
-\qquad
-\begin{minipage}[b]{0.5\linewidth}\small
-\textbf{Exemplo.} Busca a partir de $a$, com os vizinhos em ordem alfabética; os rótulos são $L/nivel$. Em azul grosso, as arestas-pai; em vermelho, as arestas-irmão ($bc$ e $fg$); em amarelo pontilhado, as arestas-primo ($de$ e $gh$); em verde tracejado, as arestas-tio ($cd$ e $ef$).
-As distâncias a partir de $a$ são 1 para $b,c$; 2 para $d,e$; e 3 para $f,g,h$. O grafo não é bipartido: o triângulo $abc$ é um ciclo ímpar, e isso aparece nas arestas-irmão e primo.
-\end{minipage}
+\end{figura}
+
+\begin{exemplo}[A fila durante a busca]\label{ex:bfsfila}
+Na busca da Figura~\ref{fig:bfs}, a fila evolui assim (cada linha é um vértice retirado da fila e o exame dos seus vizinhos):
+\begin{center}\small
+\begin{tabular}{@{}cll@{}}
+\toprule
+sai & vizinhos examinados & fila depois\\
+\midrule
+$a$ & $b$ e $c$: novos (pai $a$) & $b,c$\\
+$b$ & $c$: mesmo nível, mesmo pai (irmão); $d$: novo & $c,d$\\
+$c$ & $d$: um nível abaixo, já alcançado (tio); $e$: novo & $d,e$\\
+$d$ & $e$: mesmo nível, pais diferentes (primo); $f$ e $g$: novos & $e,f,g$\\
+$e$ & $f$: tio; $h$: novo & $f,g,h$\\
+$f$ & $g$: irmão & $g,h$\\
+$g$ & $h$: primo & $h$\\
+$h$ & --- & vazia\\
+\bottomrule
+\end{tabular}
 \end{center}
+(Arestas para vértices que já saíram da fila, como $ba$ vista a partir de $b$, não são classificadas de novo.) Observe que, em todo momento, a fila contém vértices de no máximo dois níveis consecutivos, e os de nível menor vêm na frente: depois que $d$ sai, a fila é $e,f,g$, com $e$ no nível 2 e $f,g$ no nível 3. As distâncias a partir de $a$ são 1 para $b,c$; 2 para $d,e$; e 3 para $f,g,h$. O grafo não é bipartido: o triângulo $abc$ é um ciclo ímpar, e isso aparece nas arestas-irmão e primo.
+\end{exemplo}
 
 \section{Propriedades e aplicações}
 A floresta de largura alcança todos os vértices, e somente as arestas-pai pertencem a ela. As demais arestas são caracterizadas pelos níveis:
@@ -64,6 +84,7 @@ A floresta de largura alcança todos os vértices, e somente as arestas-pai pert
   \item $vw$ é aresta-\textbf{irmão} se e somente se $nivel(w)=nivel(v)$ e $pai(w)=pai(v)$;
   \item $vw$ é aresta-\textbf{primo} se e somente se $nivel(w)=nivel(v)$ e $pai(w)\ne pai(v)$.
 \end{itemize}
+Os nomes vêm da árvore genealógica: na Figura~\ref{fig:bfs}, $c$ é irmão de $b$ (mesmo pai, $a$), e $d$, filho de $b$, é ``sobrinho'' de $c$; a aresta $cd$ liga, portanto, um tio ao sobrinho. Já $d$ e $e$ são primos: estão no mesmo nível, mas têm pais diferentes.
 
 \begin{teo}[Propriedade fundamental]
 Para toda aresta $vw$ de um grafo e toda floresta de largura, $|nivel(v)-nivel(w)|\le1$.
@@ -75,7 +96,42 @@ A demonstração se reduz ao caso das arestas-tio e usa uma observação sobre a
   \item \textbf{Complexidade.} $O(n+m)$ com listas de adjacência, pois cada vértice entra na fila uma vez e cada lista é percorrida uma vez; $O(n^2)$ com matriz de adjacência.
 \end{itemize}
 
+\begin{exemplo}[Um caminho mínimo, de trás para frente]
+Na busca da Figura~\ref{fig:bfs}, para obter um caminho mínimo de $a$ até $h$, sobe-se pelos ponteiros: $pai(h)=e$, $pai(e)=c$ e $pai(c)=a$. Lido ao contrário, o caminho é $a,c,e,h$, com $3=nivel(h)$ arestas. Pela propriedade fundamental, não pode haver caminho mais curto: cada aresta muda o nível em no máximo 1, e é preciso ir do nível 0 ao nível 3.
+\end{exemplo}
+
+\begin{exemplo}[Reconhecendo um grafo bipartido]
+O grafo da Figura~\ref{fig:bipbfs} é um quadrado $1,2,3,4$ com duas arestas pendentes, $45$ e $26$. A busca a partir de 1 põe 2 e 4 no nível 1 e 3, 5 e 6 no nível 2; a aresta $43$ é uma aresta-tio, e não há arestas-irmão nem primo. O grafo é bipartido, e as cores pela paridade do nível, $\{1,3,5,6\}$ e $\{2,4\}$, formam uma 2-coloração: toda aresta liga um vértice de nível par a um de nível ímpar.
+\begin{figura}[Um grafo bipartido e a 2-coloração dada pela paridade dos níveis da busca em largura a partir de 1. A aresta $43$ (tracejada) é uma aresta-tio.\label{fig:bipbfs}]
+\begin{tikzpicture}[x=1.4cm,y=1.1cm]
+\node[vtx, fill=destaque] (u1) at (1,2) {1};
+\node[vtx, fill=azul] (u2) at (0,1) {2}; \node[vtx, fill=azul] (u4) at (2,1) {4};
+\node[vtx, fill=destaque] (u6) at (-0.6,0) {6}; \node[vtx, fill=destaque] (u3) at (0.6,0) {3}; \node[vtx, fill=destaque] (u5) at (2.4,0) {5};
+\draw[aresta, MidnightBlue] (u1)--(u2) (u1)--(u4) (u2)--(u3) (u2)--(u6) (u4)--(u5);
+\draw[thick, dashed, ForestGreen] (u4)--(u3);
+\foreach \nv/\yy in {0/2,1/1,2/0} {\node[rot, anchor=west] at (3,\yy) {nível \nv};}
+\end{tikzpicture}
+\end{figura}
+\end{exemplo}
+
 \paragraph{Pilha ou fila.} Considere o seguinte esquema genérico: marque a raiz e insira-a numa estrutura $D$; enquanto $D$ não estiver vazia, seja $v$ o primeiro elemento de $D$; se $v$ tem um vizinho desmarcado $w$, marque $w$, faça $pai(w):=v$ e insira $w$ em $D$; senão, remova $v$ de $D$. Se $D$ é uma \textbf{pilha}, esse esquema é a busca em profundidade (Capítulo~\ref{cap:dfs}); se $D$ é uma \textbf{fila}, é a busca em largura; e, com uma \textbf{fila de prioridades}, chega-se ao algoritmo de Dijkstra (Capítulo~\ref{cap:dijkstra}).
+
+\begin{exemplo}[O mesmo esquema, duas estruturas]
+No grafo com as arestas $12$, $13$, $24$, $34$, $36$ e $45$, executamos o esquema a partir de 1, com os vizinhos em ordem crescente (Figura~\ref{fig:pilhafila}). Com \textbf{fila}, o vértice consultado é sempre o mais antigo ainda com vizinhos desmarcados: 1 marca 2 e 3; depois 2 marca 4; 3 marca 6; e 4 marca 5. A ordem de marcação é $1,2,3,4,6,5$. Com \textbf{pilha}, o consultado é sempre o mais recente: 1 marca 2; 2 marca 4; 4 marca 3; 3 marca 6; 6 não tem vizinhos desmarcados e sai da pilha, e o mesmo acontece com 3; de volta a 4, ele marca 5. A ordem é $1,2,4,3,6,5$, e a árvore é bem diferente: ``funda'', em vez de ``larga''.
+\begin{figura}[As árvores produzidas pelo esquema genérico com fila (à esquerda) e com pilha (à direita) no mesmo grafo. Em azul, as arestas da árvore; em cinza, as demais. Os números pequenos dão a ordem de marcação.\label{fig:pilhafila}]
+\begin{tikzpicture}[x=1.1cm,y=1cm]
+\foreach \xo/\tit/\arv/\ordem in {0/{fila (largura)}/{1/2,1/3,2/4,3/6,4/5}/{1/1,2/2,3/3,4/4,6/5,5/6},5/{pilha (profundidade)}/{1/2,2/4,4/3,3/6,4/5}/{1/1,2/2,4/3,3/4,6/5,5/6}} {
+  \begin{scope}[xshift=\xo cm]
+  \node[vtxs] (k1) at (1,2) {1}; \node[vtxs] (k2) at (0,1) {2}; \node[vtxs] (k3) at (2,1) {3};
+  \node[vtxs] (k4) at (1,0) {4}; \node[vtxs] (k6) at (3,0) {6}; \node[vtxs] (k5) at (1,-1) {5};
+  \draw[gray!50, thick] (k1)--(k2) (k1)--(k3) (k2)--(k4) (k3)--(k4) (k3)--(k6) (k4)--(k5);
+  \foreach \pp/\qq in \arv {\draw[aresta, MidnightBlue, very thick] (k\pp)--(k\qq);}
+  \foreach \nn/\oo in \ordem {\node[font=\tiny, text=BrickRed, above right=-1pt and -1pt of k\nn] {\oo};}
+  \node[rot] at (1.5,-1.7) {\tit};
+  \end{scope}}
+\end{tikzpicture}
+\end{figura}
+\end{exemplo}
 
 \begin{cuidado}[Armadilhas da busca em largura]
 \begin{itemize}
