@@ -189,7 +189,7 @@ A segunda heurística aproveita cada \Find: depois de encontrar a raiz, faz-se \
 \end{pseudo}
 O \Find{} recursivo acima comprime o caminho na volta da recursão: a chamada sobre $E$ chama a de $D$, que chama a de $C$, e assim por diante até a raiz $A$; na volta, cada chamada faz o seu nó apontar para o valor devolvido, que é $A$. Uma versão iterativa faz duas passadas: a primeira sobe até encontrar a raiz $y$; a segunda percorre o mesmo caminho fazendo $pai[\cdot]:=y$.
 
-\section{União por rank com compressão: $O(m\log^*n)$}\label{sec:uflogstar}
+\section{\texorpdfstring{União por rank com compressão: $O(m\log^*n)$}{União por rank com compressão: O(m log* n)}}\label{sec:uflogstar}
 \begin{intuicao}
 O logaritmo iterado $\lgs n$ responde à pergunta: ``quantas vezes preciso apertar a tecla $\log_2$ da calculadora, começando em $n$, até o visor mostrar um número $\le1$?''. Para $n=1000$: $1000\to9{,}97\to3{,}32\to1{,}73\to0{,}79$, quatro vezes. Essa função cresce tão devagar que, para efeitos práticos, é uma constante.
 \end{intuicao}
@@ -226,7 +226,7 @@ A análise acima não é a melhor possível. O limite justo, devido a Tarjan, é
 \begin{table}[h]
 \centering\small
 \caption{Implementações de Union-Find e quando usar cada uma.}\label{tab:uf}
-\begin{tabularx}{\linewidth}{@{}p{3.3cm}cccX@{}}
+\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{3.3cm}ccc>{\raggedright\arraybackslash}X@{}}
 \toprule
 Implementação & \MakeSet & \Find & \Union & Quando é a melhor escolha\\
 \midrule

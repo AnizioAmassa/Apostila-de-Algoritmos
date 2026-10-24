@@ -4,6 +4,7 @@
 \usepackage[brazil]{babel}
 \usepackage{amsmath,amsthm,mathtools}
 \usepackage{newpxtext,newpxmath}
+\usepackage[scaled=0.9]{helvet}  % sem serifa (a TeX Gyre Heros do newpxtext pode faltar)
 \usepackage{microtype}
 \usepackage[a4paper,top=2.6cm,bottom=2.6cm,inner=2.5cm,outer=2.5cm,headheight=14pt]{geometry}
 \usepackage{enumitem}
@@ -136,9 +137,10 @@
   before skip=8pt, after skip=8pt}
 
 % Figuras no lugar em que aparecem (não flutuam), com legenda numerada
+% (o tipo é declarado no início, para que o link da legenda aponte para o topo da figura)
 \NewDocumentEnvironment{figura}{o}
-  {\par\addvspace{6pt}\noindent\begin{minipage}{\linewidth}\centering}
-  {\IfValueT{#1}{\par\smallskip\captionof{figure}{#1}}\end{minipage}\par\addvspace{6pt}}
+  {\par\addvspace{6pt}\noindent\begin{minipage}{\linewidth}\centering\IfValueT{#1}{\captionsetup{type=figure}}}
+  {\IfValueT{#1}{\par\smallskip\caption{#1}}\end{minipage}\par\addvspace{6pt}}
 
 % ------------------------------------------------------------------
 % Estilos TikZ usados nas figuras
@@ -236,6 +238,7 @@
 % Folha de rosto
 % ------------------------------------------------------------------
 \frontmatter
+\hypersetup{pageanchor=false}  % a folha de rosto não tem número; evita duas páginas "i"
 \begin{titlepage}
 \centering
 \vspace*{2.5cm}
@@ -259,6 +262,7 @@ a partir da orientação e do material didático proporcionados pelo Prof.\ Uév
 \end{tcolorbox}
 \vspace{1cm}
 \end{titlepage}
+\hypersetup{pageanchor=true}
 
 \chapter{Prefácio}
 Este livro apresenta os fundamentos de projeto e análise de algoritmos na sequência em que eles são estudados na disciplina de Algoritmos do IMPA Tech: começa pela linguagem da análise de complexidade, passa pelas estruturas de dados clássicas (filas de prioridades, conjuntos disjuntos, árvores de busca), pela ordenação, pela seleção e pela técnica de divisão e conquista, e chega à programação dinâmica, aos algoritmos gulosos e aos algoritmos em grafos.

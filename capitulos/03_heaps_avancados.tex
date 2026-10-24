@@ -85,7 +85,7 @@ A operação central é a \textbf{fusão}, e as demais são escritas em termos d
 \begin{pseudo}{Link e fusão de heaps binomiais}
 \begin{algorithmic}
 \Procedure{Link}{$y,z$} \Comment{$y$ e $z$ são raízes de árvores $B_{k-1}$; $z$ fica por cima}
-  \State $pai[y]\gets z$;\quad $irmão[y]\gets filho[z]$;\quad $filho[z]\gets y$;\quad $grau[z]\gets grau[z]+1$
+  \State $pai[y]\gets z$;\quad $\textit{irmão}[y]\gets filho[z]$;\quad $filho[z]\gets y$;\quad $grau[z]\gets grau[z]+1$
 \EndProcedure
 \Procedure{Fusão}{$H',H''$}
   \State $H := H'\cup H''$ \Comment{intercala as listas de raízes por ordem crescente: $O(\log n)$}
@@ -298,7 +298,7 @@ Ao final, $X$ e $Y$ estão na lista de raízes, desmarcados, e $Z$ continua no s
 \end{figura}
 \end{exemplo}
 
-\subsection{Por que funciona: o grau máximo é $O(\log n)$}
+\subsection{\texorpdfstring{Por que funciona: o grau máximo é $O(\log n)$}{Por que funciona: o grau máximo é O(log n)}}
 \begin{lema}
 Seja $x$ um nó e sejam $y_1,\dots,y_k$ os seus filhos, na ordem em que foram ligados a $x$. Então $\operatorname{grau}(y_i)\ge i-2$.
 \end{lema}
