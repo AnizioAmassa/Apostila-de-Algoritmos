@@ -51,18 +51,18 @@ $e$ (5) & & & & & \textbf{5} & ---
 Os ponteiros $pai$ formam a \textbf{árvore de caminhos mínimos}: $a\to b\to c\to d\to e$. Por exemplo, o caminho mínimo de $a$ a $e$ é $a,b,c,d,e$, com custo $L(e)=5$, embora a aresta direta custe 6. A primeira linha da matriz de distâncias calculada pelo Floyd-Warshall (Capítulo~\ref{cap:fw}) confirma os valores $0,1,2,3,5$. A Figura~\ref{fig:dijkstra} mostra o estado do algoritmo em três momentos: o rótulo de $c$ começa em 3, pela aresta direta, e cai para 2 quando $b$ é processado; o de $e$ começa em 6 e só cai para 5 no fim, quando $d$ é processado.
 \begin{figura}[O algoritmo de Dijkstra a partir de $a$. Em verde, os vértices já removidos (com rótulo definitivo); em vermelho, os rótulos $L$; em azul, as arestas $pai(w)\to w$ atuais. À direita, a árvore de caminhos mínimos final.\label{fig:dijkstra}]
 \tikzset{rotL/.style={font=\scriptsize\bfseries, text=BrickRed}}
-\begin{tabular}{@{}c@{\hspace{3mm}}c@{\hspace{3mm}}c@{}}
-\begin{tikzpicture}[x=0.74cm, y=0.76cm, v1/.style={fill=feito}, a12/.style={MidnightBlue, line width=1.6pt}, a13/.style={MidnightBlue, line width=1.6pt}, a15/.style={MidnightBlue, line width=1.6pt}]
+\begin{tabular}{@{}c@{\hspace{2mm}}c@{\hspace{2mm}}c@{}}
+\begin{tikzpicture}[x=0.64cm, y=0.74cm, v1/.style={fill=feito}, a12/.style={MidnightBlue, line width=1.6pt}, a13/.style={MidnightBlue, line width=1.6pt}, a15/.style={MidnightBlue, line width=1.6pt}]
 \digrafoFW{$a$}{$b$}{$c$}{$d$}{$e$}
-\node[rotL, left=1pt of n1] {0}; \node[rotL, above=1pt of n2] {1}; \node[rotL, above left=0pt and 0pt of n3] {3}; \node[rotL, right=1pt of n4] {$\infty$}; \node[rotL, below=1pt of n5] {6};
+\node[rotL, left=1pt of n1] {0}; \node[rotL, above=1pt of n2] {1}; \node[rotL, above right=-1pt and 1pt of n3] {3}; \node[rotL, right=1pt of n4] {$\infty$}; \node[rotL, below=1pt of n5] {6};
 \end{tikzpicture} &
-\begin{tikzpicture}[x=0.74cm, y=0.76cm, v1/.style={fill=feito}, v2/.style={fill=feito}, a12/.style={MidnightBlue, line width=1.6pt}, a23/.style={MidnightBlue, line width=1.6pt}, a24/.style={MidnightBlue, line width=1.6pt}, a15/.style={MidnightBlue, line width=1.6pt}]
+\begin{tikzpicture}[x=0.64cm, y=0.74cm, v1/.style={fill=feito}, v2/.style={fill=feito}, a12/.style={MidnightBlue, line width=1.6pt}, a23/.style={MidnightBlue, line width=1.6pt}, a24/.style={MidnightBlue, line width=1.6pt}, a15/.style={MidnightBlue, line width=1.6pt}]
 \digrafoFW{$a$}{$b$}{$c$}{$d$}{$e$}
-\node[rotL, left=1pt of n1] {0}; \node[rotL, above=1pt of n2] {1}; \node[rotL, above left=0pt and 0pt of n3] {2}; \node[rotL, right=1pt of n4] {4}; \node[rotL, below=1pt of n5] {6};
+\node[rotL, left=1pt of n1] {0}; \node[rotL, above=1pt of n2] {1}; \node[rotL, above right=-1pt and 1pt of n3] {2}; \node[rotL, right=1pt of n4] {4}; \node[rotL, below=1pt of n5] {6};
 \end{tikzpicture} &
-\begin{tikzpicture}[x=0.74cm, y=0.76cm, v1/.style={fill=feito}, v2/.style={fill=feito}, v3/.style={fill=feito}, v4/.style={fill=feito}, v5/.style={fill=feito}, a12/.style={MidnightBlue, line width=1.6pt}, a23/.style={MidnightBlue, line width=1.6pt}, a34/.style={MidnightBlue, line width=1.6pt}, a45/.style={MidnightBlue, line width=1.6pt}]
+\begin{tikzpicture}[x=0.64cm, y=0.74cm, v1/.style={fill=feito}, v2/.style={fill=feito}, v3/.style={fill=feito}, v4/.style={fill=feito}, v5/.style={fill=feito}, a12/.style={MidnightBlue, line width=1.6pt}, a23/.style={MidnightBlue, line width=1.6pt}, a34/.style={MidnightBlue, line width=1.6pt}, a45/.style={MidnightBlue, line width=1.6pt}]
 \digrafoFW{$a$}{$b$}{$c$}{$d$}{$e$}
-\node[rotL, left=1pt of n1] {0}; \node[rotL, above=1pt of n2] {1}; \node[rotL, above left=0pt and 0pt of n3] {2}; \node[rotL, right=1pt of n4] {3}; \node[rotL, below=1pt of n5] {5};
+\node[rotL, left=1pt of n1] {0}; \node[rotL, above=1pt of n2] {1}; \node[rotL, above right=-1pt and 1pt of n3] {2}; \node[rotL, right=1pt of n4] {3}; \node[rotL, below=1pt of n5] {5};
 \end{tikzpicture}\\
 \small (a) depois de remover $a$ & \small (b) depois de remover $b$ & \small (c) no final
 \end{tabular}

@@ -271,12 +271,12 @@ Com $n=2^{10}=1024$, a recursão tem 10 níveis. O produto por blocos com 8 mult
 Nos três, a divisão produz subproblemas do mesmo tipo, mas a combinação é trivial; o que muda é quantos subproblemas são resolvidos. A busca binária e a potência resolvem \emph{um} subproblema de metade do tamanho, e por isso são logarítmicas; o \textsc{MaxMin} resolve dois.
 
 \begin{exemplo}[Os três algoritmos em ação]\label{ex:outrosdc}
-\textbf{Busca binária}: procuramos $x=34$ no vetor ordenado $V=(3,8,12,\allowbreak17,21,30,\allowbreak34,41,50)$ (Figura~\ref{fig:buscabin}). Com $ini=1$ e $fim=9$, o meio é a posição 5, com $V[5]=21<34$, e a busca segue em $[6,9]$; o meio passa a ser 7, com $V[7]=34$: encontrado, com 2 comparações, contra até 9 de uma busca sequencial.
+\textbf{Busca binária}: procuramos $x=34$ no vetor ordenado $V=(3,8,12,\allowbreak17,21,30,\allowbreak34,41,50)$ (Figura~\ref{fig:buscabindc}). Com $ini=1$ e $fim=9$, o meio é a posição 5, com $V[5]=21<34$, e a busca segue em $[6,9]$; o meio passa a ser 7, com $V[7]=34$: encontrado, com 2 comparações, contra até 9 de uma busca sequencial.
 
 \textbf{Potência rápida} $2^{10}$: \textsc{Pot}$(2,10)$ chama \textsc{Pot}$(2,5)$, que chama \textsc{Pot}$(2,2)$, \textsc{Pot}$(2,1)$ e \textsc{Pot}$(2,0)=1$. Na volta: $2^1=1\cdot1\cdot2$; $2^2=2\cdot2$; $2^5=4\cdot4\cdot2=32$; $2^{10}=32\cdot32=1024$. São 6 multiplicações (duas nos níveis ímpares, uma nos pares), contra 9 do produto $2\cdot2\cdots2$.
 
 \textbf{Máximo e mínimo} de 6 elementos: o vetor se divide em duas metades de 3, e cada uma em partes de 2 e de 1. Uma parte de 2 custa 1 comparação, e uma de 1 não custa nada; combinar custa 2 (uma para o máximo, outra para o mínimo). Cada metade de 3 custa $1+0+2=3$, e o total é $3+3+2=8$ comparações, contra $2\cdot6-2=10$ do método que procura o máximo e depois o mínimo.
-\begin{figura}[Busca binária por 34. Em cada passo, o intervalo $[ini,fim]$ ainda possível está em branco, o meio em destaque e as posições descartadas em cinza.\label{fig:buscabin}]
+\begin{figura}[Busca binária por 34. Em cada passo, o intervalo $[ini,fim]$ ainda possível está em branco, o meio em destaque e as posições descartadas em cinza.\label{fig:buscabindc}]
 \begin{tikzpicture}[x=7mm,y=7mm]
 \foreach \lin/\ini/\fim/\meio/\txt in {0/1/9/5/{$V[5]=21<34$: descarta $[1,5]$},1/6/9/7/{$V[7]=34$: encontrado}} {
   \foreach \xx [count=\k] in {3,8,12,17,21,30,34,41,50} {
