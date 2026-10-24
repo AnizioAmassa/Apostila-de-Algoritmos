@@ -40,7 +40,7 @@ jobs:
             texlive-science texlive-plain-generic cm-super
 
       - name: Verifica os exercícios e os números do texto
-        run: make verificar
+        run: python3 verificacao/rodar.py
 
       - name: Compila a apostila
         run: |
@@ -48,7 +48,8 @@ jobs:
           # geram o mesmo arquivo, e o PDF só é commitado quando o conteúdo muda.
           export SOURCE_DATE_EPOCH="$(git log -1 --format=%ct -- apostila.tex capitulos)"
           export FORCE_SOURCE_DATE=1
-          latexmk -pdf -interaction=nonstopmode -halt-on-error apostila.tex
+          # A configuração do latexmk (estilo do índice) fica em AI-helper/.
+          latexmk -r AI-helper/latexmkrc -pdf -interaction=nonstopmode -halt-on-error apostila.tex
 
       - name: Resume os avisos da compilação
         run: python3 verificacao/log.py apostila.log || true

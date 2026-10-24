@@ -21,8 +21,10 @@ baixá-lo daqui.
 | `capitulos/respostas/NN.tex` | respostas dos exercícios do capítulo `NN` (e `A.tex`, do Apêndice A) |
 | `capitulos/referencias.tex` | referências bibliográficas |
 | `verificacao/` | scripts Python que conferem os exercícios e os números do texto (veja abaixo) |
-| `Makefile` | atalhos para compilar, verificar e limpar |
-| `latexmkrc`, `indice.ist` | configuração do `latexmk` e estilo do `makeindex` para o índice remissivo |
+| `AI-helper/AImanual.md` | este manual |
+| `AI-helper/Makefile` | atalhos para compilar, verificar e limpar (rodam na raiz do repositório) |
+| `AI-helper/latexmkrc` | configuração do `latexmk`: o índice remissivo usa o estilo `indice.ist` |
+| `indice.ist` | estilo do `makeindex` para o índice remissivo |
 | `.github/workflows/apostila.yml` | a CI que verifica, compila e atualiza o `apostila.pdf` |
 | `apostila.pdf` | o PDF compilado, mantido no repositório |
 
@@ -48,21 +50,25 @@ antigos.
 
 ## Como compilar
 
+Da raiz do repositório:
+
 ```sh
-make pdf          # equivale a: latexmk -pdf apostila.tex
+make -C AI-helper pdf    # equivale a: latexmk -r AI-helper/latexmkrc -pdf apostila.tex
 ```
 
 O `latexmk` roda o `pdflatex` quantas vezes for preciso (sumário e referências
 cruzadas) e também o `makeindex`, que gera o índice remissivo no fim do livro,
-com o estilo `indice.ist` indicado no `latexmkrc`. A compilação completa leva
-cerca de 2 minutos.
+com o estilo `indice.ist` indicado no `AI-helper/latexmkrc`. Como esse arquivo
+não fica na raiz, o `latexmk` só o lê com `-r AI-helper/latexmkrc`; sem ele a
+apostila compila do mesmo jeito, mas o índice sai sem as letras de cada grupo.
+A compilação completa leva cerca de 2 minutos.
 
-Outros alvos do `Makefile`:
+Outros alvos do `AI-helper/Makefile`:
 
 ```sh
-make verificar    # integridade dos exercícios + conferência dos números (Python 3)
-make avisos       # resume erros, avisos e linhas estouradas do apostila.log
-make limpar       # apaga os arquivos auxiliares; o apostila.pdf é mantido
+make -C AI-helper verificar   # integridade dos exercícios + conferência dos números (Python 3)
+make -C AI-helper avisos      # resume erros, avisos e linhas estouradas do apostila.log
+make -C AI-helper limpar      # apaga os arquivos auxiliares; o apostila.pdf é mantido
 ```
 
 Para compilar um capítulo isolado, monte um `.tex` com as linhas do preâmbulo
@@ -97,7 +103,8 @@ completa do TeX Live (`scheme-full`) também serve.
 
 ## Verificação
 
-`make verificar` roda `verificacao/rodar.py`, que executa:
+`make -C AI-helper verificar` roda `verificacao/rodar.py` (que também pode ser
+chamado diretamente, da raiz), que executa:
 
 * `verificacao/integridade.py` — compara a seção de exercícios de cada capítulo
   e os arquivos de `capitulos/respostas/` com o commit de referência `9a09ba5`.
@@ -116,8 +123,8 @@ completa do TeX Live (`scheme-full`) também serve.
 A cada push, em qualquer branch, o GitHub Actions (`.github/workflows/apostila.yml`):
 
 1. instala o TeX;
-2. roda `make verificar`;
-3. compila com `latexmk -pdf apostila.tex`;
+2. roda `python3 verificacao/rodar.py`;
+3. compila com `latexmk -r AI-helper/latexmkrc -pdf apostila.tex`;
 4. se o `apostila.pdf` mudou, faz um commit dele de volta no mesmo branch, como
    `github-actions[bot]`, com a mensagem “Atualiza apostila.pdf [skip ci]”.
 

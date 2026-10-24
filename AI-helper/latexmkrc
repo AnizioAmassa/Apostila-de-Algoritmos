@@ -1,3 +1,6 @@
 # Configuração do latexmk para a apostila: o índice remissivo usa o estilo indice.ist
-# (cabeçalhos com a letra inicial de cada grupo de termos).
+# (cabeçalhos com a letra inicial de cada grupo de termos). Como este arquivo fica em
+# AI-helper/, o latexmk não o lê sozinho: rode-o da raiz com
+#   latexmk -r AI-helper/latexmkrc -pdf apostila.tex
+# (é o que fazem o "make -C AI-helper pdf" e a CI).
 $makeindex = 'makeindex -s indice.ist %O -o %D %S';

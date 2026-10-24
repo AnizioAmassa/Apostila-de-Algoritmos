@@ -20,7 +20,7 @@ PADROES = [
 def main():
     log = Path(sys.argv[1] if len(sys.argv) > 1 else "apostila.log")
     if not log.exists():
-        sys.exit(f"{log} não existe: compile antes com 'make pdf'.")
+        sys.exit(f"{log} não existe: compile antes com 'make -C AI-helper pdf'.")
     linhas = log.read_text(encoding="latin-1").splitlines()
     achados = {nome: [] for nome, _ in PADROES}
     for i, linha in enumerate(linhas):
