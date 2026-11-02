@@ -10,16 +10,21 @@
 \end{itemize}
 \end{objetivos}
 
-Distribuir disciplinas entre professores, alunos entre vagas de estágio ou doadores entre receptores compatíveis são problemas da mesma forma: há pares possíveis, dados pelas arestas de um grafo, e cada elemento pode entrar em no máximo um par. Queremos formar o maior número possível de pares. Este capítulo mostra que um emparelhamento é máximo exatamente quando não pode ser melhorado ao longo de um certo tipo de caminho, e usa essa ideia em dois algoritmos: o método húngaro, para grafos bipartidos, e o algoritmo de Edmonds, que trata os ciclos ímpares contraindo-os.
+Distribuir disciplinas entre professores, alunos entre vagas de estágio ou doadores entre receptores compatíveis são problemas da mesma forma: há pares possíveis, dados pelas arestas de um grafo, e cada elemento pode entrar em no máximo um par. Queremos formar o maior número possível de pares. Dois problemas típicos:
+\begin{itemize}
+  \item \textbf{Operários e máquinas.} Para cada operário de uma fábrica há uma lista das máquinas que ele está habilitado a operar. Queremos uma alocação com o maior número possível de pares ``o operário $i$ opera a máquina $j$''. O grafo é bipartido: operários de um lado, máquinas do outro.
+  \item \textbf{Processadores parceiros.} Numa rede de processadores, dois processadores ligados diretamente podem trabalhar em parceria. Queremos o maior número de pares de parceiros. Agora o grafo é a própria rede, que em geral não é bipartida.
+\end{itemize}
+Este capítulo mostra que um emparelhamento é máximo exatamente quando não pode ser melhorado ao longo de um certo tipo de caminho, e usa essa ideia em dois algoritmos: o método húngaro, para grafos bipartidos, e o algoritmo de Edmonds, que trata os ciclos ímpares contraindo-os.
 
 \section{Definições}\label{sec:emp}
-Um \textbf{emparelhamento}\index{emparelhamento} num grafo $G=(V,E)$ é um conjunto $M\subseteq E$ de arestas sem extremos em comum. Um vértice é \textbf{saturado}\index{vertice saturado@vértice saturado} (ou coberto) por $M$ se é extremo de alguma aresta de $M$, e \textbf{livre}\index{vertice livre@vértice livre} (ou exposto) caso contrário; se $vw\in M$, dizemos que $w$ é o \emph{par} de $v$. O emparelhamento é:
+Um \textbf{emparelhamento}\index{emparelhamento} num grafo $G=(V,E)$ é um conjunto $M\subseteq E$ de arestas sem extremos em comum. Um vértice $v$ é \textbf{$M$-saturado}\index{vertice saturado@vértice saturado} (ou coberto) se alguma aresta de $M$ incide sobre $v$, e \textbf{$M$-insaturado}, ou \textbf{livre}\index{vertice livre@vértice livre}, caso contrário; se $vw\in M$, dizemos que $w$ é o \emph{par} de $v$. O emparelhamento é:
 \begin{itemize}
   \item \textbf{maximal}\index{emparelhamento!maximal} se nenhuma aresta pode ser acrescentada a ele, isto é, toda aresta de $G$ tem algum extremo saturado;
   \item \textbf{máximo}\index{emparelhamento!maximo@máximo} se nenhum emparelhamento de $G$ tem mais arestas; o seu tamanho é denotado por $\nu(G)$;
   \item \textbf{perfeito}\index{emparelhamento!perfeito} se satura todos os vértices; nesse caso $|M|=n/2$, e $n$ precisa ser par.
 \end{itemize}
-Todo emparelhamento máximo é maximal, mas a recíproca é falsa: é o mesmo fenômeno das matroides do Capítulo~\ref{cap:gulosos}, onde se viu que os emparelhamentos \emph{não} formam uma matroide e que um guloso pode parar num conjunto maximal pequeno.
+Todo emparelhamento perfeito é máximo, e todo máximo é maximal; as recíprocas são falsas. Um grafo pode ter muitos emparelhamentos máximos --- até um número exponencial deles ---, e qualquer um serve como resposta. Que maximal não implica máximo é o mesmo fenômeno das matroides do Capítulo~\ref{cap:gulosos}, onde se viu que os emparelhamentos \emph{não} formam uma matroide e que um guloso pode parar num conjunto maximal pequeno.
 
 \begin{intuicao}
 Pense numa festa em que as arestas ligam pessoas dispostas a dançar juntas. Um emparelhamento é um conjunto de pares dançando ao mesmo tempo. Ele é maximal quando ninguém mais consegue entrar na pista sem desfazer algum par --- mas pode ser que, desfazendo alguns pares e refazendo-os de outro jeito, caibam mais pares do que antes. Os algoritmos deste capítulo dizem exatamente \emph{como} refazer os pares.
@@ -196,42 +201,87 @@ Num grafo qualquer, o teorema de Berge continua valendo, mas a busca alternante 
 
 Na Figura~\ref{fig:flor}, o caminho $s,u,v,f,e,d,c,t$ é aumentante: as suas arestas alternam entre fora de $M$ ($su$, $vf$, $ed$, $ct$) e em $M$ ($uv$, $fe$, $dc$). Mas a busca do método húngaro a partir de $s$ não o encontra. Ela chega a $c$ pelo lado de $a$ e $b$, pela aresta $bc$, fora de $M$, e o rotula como ímpar; a partir de um vértice ímpar, a busca só segue a aresta de $M$, até $d$, e a aresta $ct$ nunca é examinada. Quando $d$ e $e$, ambos pares, são processados, cada um encontra o outro já marcado, e a busca termina sem caminho. A aresta $de$, entre dois vértices pares, denuncia o problema: o vértice $c$ também podia ser alcançado por um caminho de comprimento par, $s,u,v,f,e,d,c$.
 
-\paragraph{Flores e blossoms.} Seja $r$ um vértice livre. Uma \textbf{flor}\index{flor} é formada por uma \textbf{haste}\index{haste}, um caminho $M$-alternante de comprimento par de $r$ até um vértice $b$, chamado \textbf{base}, que termina numa aresta de $M$ (ou é só o vértice $r=b$), e por um \textbf{blossom}\index{blossom}, um ciclo ímpar de comprimento $2k+1$ que passa por $b$ e tem $k$ arestas de $M$, nenhuma delas incidente em $b$. Na figura, a haste é $s,u,v$, a base é $v$ e o blossom é $v,a,b,c,d,e,f$, com 7 vértices e as 3 arestas $ab$, $cd$ e $ef$ de $M$. A propriedade essencial é que \emph{todo} vértice do blossom pode ser alcançado a partir de $r$ por um caminho alternante de comprimento par: basta contornar o ciclo pelo lado certo. É o que acontece com $c$: pelo lado de $a$ e $b$, o caminho de $s$ até ele é ímpar; pelo lado de $f$, $e$ e $d$, é par.
+\paragraph{A árvore alternante e os seus quatro casos.} Como no método húngaro, a busca a partir de um vértice livre $r$ constrói uma \emph{árvore alternante}: a raiz e os vértices alcançados por arestas de $M$ são \textbf{pares}, e os alcançados por arestas fora de $M$ são \textbf{ímpares}. Só se examinam arestas $xy$ que saem de vértices pares $x$, e há quatro casos:
+\begin{enumerate}
+  \item $y$ é livre e não está na árvore: o caminho da árvore de $r$ até $x$, seguido de $xy$, é aumentante;
+  \item $y$ é saturado e não está na árvore: a árvore cresce; $y$ entra como ímpar e o seu par, como par;
+  \item $y$ já está na árvore como ímpar: nada a fazer (é um outro caminho, de comprimento ímpar, até um vértice que já tem um);
+  \item $y$ já está na árvore como par: num grafo bipartido isso é impossível (Exercício~\ref{ex:em-bipcorreto}); num grafo qualquer, a aresta $xy$ fecha um ciclo ímpar, e $y$ \emph{não pode ser ignorado}.
+\end{enumerate}
+No caso 4, seja $w$ o vértice em que os caminhos da árvore até $x$ e até $y$ se separam. O ciclo formado pelo caminho de $w$ até $x$, pela aresta $xy$ e pelo caminho de $y$ de volta a $w$ é um blossom, e $w$ é a sua base.
 
-\paragraph{Contração.} \textbf{Contrair}\index{blossom!contracao@contração} o blossom $B$ significa trocar todos os seus vértices por um único vértice novo, $B$, ligado a todos os vizinhos externos deles; o grafo resultante é $G/B$, e $M/B$ é o emparelhamento que sobra (as arestas de $M$ dentro de $B$ desaparecem, e a aresta de $M$ que chega à base passa a chegar em $B$).
+\paragraph{Flores e blossoms.} Seja $r$ um vértice livre. Uma \textbf{flor}\index{flor} em relação a $M$ é formada por duas partes:
+\begin{itemize}
+  \item a \textbf{haste}\index{haste}: um caminho $M$-alternante de comprimento par que começa na raiz $r$ e termina num vértice $w$; admite-se $r=w$ (haste vazia);
+  \item o \textbf{blossom}\index{blossom}: um ciclo alternante de comprimento ímpar que começa e termina em $w$ e não tem outro vértice em comum com a haste; $w$ é a \textbf{base} do blossom.
+\end{itemize}
+Na Figura~\ref{fig:flor}, a haste é $s,u,v$, a base é $v$ e o blossom é $v,a,b,c,d,e,f$. As flores têm cinco propriedades, todas fáceis de conferir na figura:
+\begin{enumerate}
+  \item a haste tem $2\ell+1$ vértices e $\ell$ arestas de $M$, para algum $\ell\ge0$ (na figura, $\ell=1$: a aresta $uv$);
+  \item o blossom tem $2k+1$ vértices e $k$ arestas de $M$, para algum $k\ge1$, que emparelham todos os vértices do blossom exceto a base (na figura, $k=3$: $ab$, $cd$ e $ef$);
+  \item a base é um vértice par da árvore alternante com raiz $r$;
+  \item todo vértice $x$ do blossom, exceto a base, é alcançável a partir de $r$ (ou da base) por \emph{dois} caminhos alternantes distintos, um de comprimento par e outro de comprimento ímpar, contornando o ciclo por um lado ou pelo outro;
+  \item o caminho par até $x$ termina numa aresta de $M$, e o ímpar, numa aresta fora de $M$.
+\end{enumerate}
+As propriedades 4 e 5 explicam o problema da busca do método húngaro: ela rotulou $c$ como ímpar porque o encontrou primeiro pelo caminho ímpar ($s,u,v,a,b,c$), mas o caminho aumentante precisava do par ($s,u,v,f,e,d,c$).
+
+\paragraph{Contração.} Quando a busca descobre um blossom $B$, o grafo $G$ é trocado por $G'=G/B$, obtido \textbf{contraindo}\index{blossom!contracao@contração} $B$:
+\begin{itemize}
+  \item apagam-se de $G$ todos os vértices de $B$ e as arestas que incidem neles;
+  \item acrescenta-se um vértice novo (um \emph{pseudovértice}), que também chamaremos de $B$, ligado a todos os vértices de $V\setminus B$ que tinham pelo menos uma aresta para algum vértice de $B$;
+  \item as arestas da árvore que ligavam um vértice $u\notin B$ a um vértice de $B$ passam a ligar $u$ a $B$;
+  \item a aresta de $M$ que ligava um vértice fora de $B$ a um vértice de $B$ (há no máximo uma, a que chega à base) passa a ser uma aresta do novo emparelhamento $M'$; as arestas de $M$ dentro de $B$ desaparecem.
+\end{itemize}
+O pseudovértice $B$ é par, e a busca continua no grafo contraído a partir dele. A contração é segura: ela não cria nem destrói caminhos aumentantes. É o que dizem os dois lemas abaixo, que juntos formam o teorema de Edmonds.
+
+\begin{lema}\label{lema:expande}
+Seja $G'=G/B$, onde $B$ é o blossom de uma flor com raiz $r$ e base $w$, e $M'$ o emparelhamento contraído. Se $G'$ tem um caminho $M'$-aumentante $P'$ que começa em $r$ (ou no pseudovértice que contém $r$), então $G$ tem um caminho $M$-aumentante que começa em $r$.
+\end{lema}
+\begin{proof}
+Se $P'$ não passa por $B$, ele já é aumentante em $G$. Suponha que passa. \emph{Haste não vazia}: $P'$ é da forma $P_1\circ(i,B)\circ(B,\ell)\circ P_3$, em que $P_1$ vai de $r$ a $i$, a aresta $(i,B)$ é a aresta de $M'$ que vinha da base, e $(B,\ell)$ está fora de $M'$. Em $G$, a aresta $(i,B)$ volta a ser $(i,w)$, e $\ell$ é vizinho de algum vértice $k$ do blossom. Se $k=w$, o caminho $P_1\circ(i,w)\circ(w,\ell)\circ P_3$ serve. Se $k\ne w$, pela propriedade 5 há um caminho alternante par $P_2$ de $w$ até $k$ que termina numa aresta de $M$, e $P_1\circ(i,w)\circ P_2\circ(k,\ell)\circ P_3$ é alternante e aumentante. \emph{Haste vazia}: então $w=r$, o caminho $P'$ começa em $B$ e é da forma $(B,\ell)\circ P_3$; com $P_2$ como antes, $r\circ P_2\circ(k,\ell)\circ P_3$ é aumentante em $G$.
+\end{proof}
+
+\begin{lema}\label{lema:contrai}
+Nas mesmas condições, se $G$ tem um caminho $M$-aumentante de $r$ até um vértice $q$, então $G'$ tem um caminho $M'$-aumentante de $r$ (ou do pseudovértice que contém $r$) até $q$.
+\end{lema}
+\begin{proof}[Ideia]
+Se o caminho não toca $B$, nada muda. Pode-se supor que $r$ e $q$ são os únicos vértices livres. \emph{Haste vazia}: seja $i$ o último vértice do caminho que está no blossom; o caminho é da forma $P_1\circ(i,j)\circ P_2$, com $(i,j)\notin M$, e então $(B,j)\circ P_2$ é aumentante em $G'$. \emph{Haste não vazia}: seja $P_3$ a haste, de $r$ a $w$, e $M^+=M\triangle P_3$. Em $M^+$, $r$ é saturado e $w$ é livre, e $|M^+|=|M|$; como $M$ não é máximo, $M^+$ também não é, e há um caminho $M^+$-aumentante, necessariamente entre $w$ e $q$. Em relação a $M^+$ a flor tem haste vazia, e o caso anterior dá um caminho aumentante em $G'$ em relação a $(M^+)'$. Como $(M^+)'$ e $M'$ têm o mesmo tamanho, $G'$ também tem um caminho $M'$-aumentante, que só pode ligar $r$ a $q$.
+\end{proof}
+
 \begin{teo}[Edmonds]\label{teo:edmonds}\index{Edmonds, teorema de}
 Se $B$ é o blossom de uma flor em relação a $M$, então $G$ tem um caminho $M$-aumentante se e somente se $G/B$ tem um caminho $M/B$-aumentante.
 \end{teo}
-\begin{proof}[Ideia]
-Se $G/B$ tem um caminho aumentante que não passa por $B$, ele já serve em $G$. Se passa por $B$, ele chega a $B$ pela aresta de $M$ que entra na base (ou começa em $B$, se a base é livre) e sai de $B$ por alguma aresta $xy$, com $x$ no blossom. Em $G$, liga-se a base a $x$ pelo lado do ciclo que tem comprimento par e termina numa aresta de $M$ em $x$; o caminho continua alternante e aumentante. A recíproca é mais delicada: troca-se $M$ por $M\triangle H$, onde $H$ é a haste, o que não muda o tamanho de $M$ e torna a base livre; aí se mostra que um caminho aumentante em $G$ dá um em $G/B$.
-\end{proof}
+Assim, ao encontrar um blossom, o algoritmo pode contraí-lo e continuar a busca num grafo menor; quando acha um caminho aumentante no grafo contraído, expande os blossoms de volta, um a um, como na demonstração do Lema~\ref{lema:expande}.
 
-\paragraph{O algoritmo de Edmonds.} O \textbf{algoritmo de Edmonds}\index{Edmonds, algoritmo de} (ou \emph{algoritmo dos blossoms}) faz a mesma busca alternante do método húngaro a partir de um vértice livre $r$, rotulando os vértices como pares (a raiz e os alcançados por arestas de $M$) e ímpares, e examinando apenas as arestas que saem de vértices pares. Ao examinar uma aresta $uw$, com $u$ par:
-\begin{itemize}
-  \item se $w$ é livre e não está na árvore, o caminho de $r$ até $u$ seguido de $uw$ é aumentante;
-  \item se $w$ é saturado e não está na árvore, $w$ recebe o rótulo ímpar e o seu par, o rótulo par;
-  \item se $w$ é ímpar, nada a fazer;
-  \item se $w$ é par, a aresta $uw$ fecha um ciclo ímpar: os caminhos da árvore até $u$ e até $w$ se encontram na base de um blossom, que é \textbf{contraído}; o vértice $B$ é par, e a busca continua no grafo contraído.
-\end{itemize}
-Quando um caminho aumentante é encontrado num grafo com blossoms contraídos, ele é \emph{expandido} de volta, blossom a blossom, pelo Teorema~\ref{teo:edmonds}, e $M$ é ampliado. Se a busca termina sem caminho, não há caminho aumentante a partir de $r$.
-\begin{pseudo}{Algoritmo de Edmonds (uma busca a partir do vértice livre $r$)}
+\paragraph{O algoritmo de Edmonds.} O \textbf{algoritmo de Edmonds}\index{Edmonds, algoritmo de} (ou \emph{algoritmo dos blossoms}) faz, a partir de cada vértice livre $r$, a busca com os quatro casos acima, contraindo os blossoms do caso 4. Cada vértice guarda o seu predecessor na árvore, $pred$, e a lista de vizinhos de cada vértice é copiada no início da busca, para que as contrações possam alterá-la. A lista dos vértices a examinar pode ser uma fila ou uma pilha.
+\begin{pseudo}{Algoritmo de Edmonds: busca, exame e contração}
 \begin{algorithmic}
-\Function{BuscaEdmonds}{$G,M,r$}
-  \State rotule $r$ como par;\ $F:=(r)$
-  \While{$F\ne\emptyset$}
-    \State retire um vértice par $u$ de $F$
-    \For{\textbf{cada} aresta $uw$ do grafo atual (com os blossoms contraídos)}
-      \If{$w$ é livre e $w\ne r$} \State \Return o caminho de $r$ a $w$, expandindo os blossoms \Comment{aumentante}
-      \ElsIf{$w$ não tem rótulo} \State $w$ é ímpar;\ $par(w)$ é par;\ insira $par(w)$ em $F$
-      \ElsIf{$w$ é par} \State contraia o blossom fechado por $uw$ num vértice par $B$;\ insira $B$ em $F$
-      \EndIf \Comment{se $w$ é ímpar, nada a fazer}
-    \EndFor
+\Procedure{Busca}{$r$} \Comment{procura um caminho aumentante a partir do vértice livre $r$}
+  \State copie as listas de vizinhos: $\bar A(i):=A(i)$ para todo $i$;\ $achou:=$ falso
+  \State apague os rótulos;\ rotule $r$ como par;\ $lista:=\{r\}$
+  \While{$lista\ne\emptyset$}
+    \State retire um vértice $i$ de $lista$;\ \Call{Examina}{$i$}
+    \If{$achou$} \Return \Comment{amplia $M$ e recomeça a partir da próxima raiz} \EndIf
   \EndWhile
-  \State \Return $\nil$
-\EndFunction
+\EndProcedure
+\Procedure{Examina}{$i$} \Comment{$i$ é par}
+  \For{\textbf{cada} $j\in\bar A(i)$}
+    \If{$j$ é par} \State \Call{Contrai}{$i,j$};\ \Return \Comment{caso 4: um blossom}
+    \ElsIf{$j$ é livre} \State $q:=j$;\ $pred(q):=i$;\ $achou:=$ verdadeiro;\ \Return \Comment{caso 1}
+    \ElsIf{$j$ é saturado e sem rótulo} \Comment{caso 2: a árvore cresce}
+      \State $pred(j):=i$;\ $pred(par(j)):=j$;\ rotule $j$ ímpar e $par(j)$ par;\ insira $par(j)$ em $lista$
+    \EndIf \Comment{caso 3: $j$ ímpar, nada a fazer}
+  \EndFor
+\EndProcedure
+\Procedure{Contrai}{$i,j$}
+  \State siga $pred$ a partir de $i$ e de $j$ até se encontrarem: é o blossom $B$ \Comment{$O(m)$}
+  \State crie o pseudovértice $B$ com $\bar A(B):=\bigcup_{x\in B}\bar A(x)$ e inclua $B$ na lista de cada vizinho \Comment{$O(m)$}
+  \State rotule $B$ como par e insira $B$ em $lista$
+  \State guarde os vértices de $B$ numa lista circular duplamente encadeada (para expandir depois) e apague-os do grafo
+\EndProcedure
 \end{algorithmic}
 \end{pseudo}
-\textbf{Complexidade.} São no máximo $n/2$ ampliações. Numa busca, cada contração reduz o número de vértices em pelo menos 2, e por isso há menos de $n/2$ contrações; feita de modo direto, cada contração custa $O(m)$, e uma busca custa $O(nm)$. Uma implementação simples fica, portanto, em $O(n^2m)$, polinomial. Implementações mais cuidadosas chegam a $O(n^3)$, e o algoritmo de Micali e Vazirani, a $O(m\sqrt n)$.
+\textbf{Complexidade.} Uma contração custa $O(m)$, e os grafos contraídos nunca têm mais que $m$ arestas. Entre duas contrações, a busca é uma busca em largura (ou em profundidade) comum, de custo $O(m)$. Cada contração diminui o número de vértices, de modo que há no máximo $n$ contrações por busca, e uma busca custa $O(mn)$; a expansão dos blossoms cabe no mesmo tempo das contrações, e uma ampliação custa $O(n)$. Como há no máximo $n$ ampliações, o total é $n\cdot\bigl(O(mn)+O(n)\bigr)=O(mn^2)$, polinomial. Implementações mais cuidadosas chegam a $O(n^3)$, e o algoritmo de Micali e Vazirani, a $O(m\sqrt n)$.
 
 \begin{exemplo}[O algoritmo de Edmonds passo a passo]\label{ex:blossom}
 No grafo da Figura~\ref{fig:flor}, com $M=\{uv,ab,cd,ef\}$, fazemos a busca a partir de $s$, em largura e com os vizinhos em ordem alfabética.
@@ -274,11 +324,16 @@ Para expandir, o caminho entra no blossom pela base $v$ (vindo de $u$ pela arest
 \end{cuidado}
 
 \begin{chave}
-Emparelhamento: arestas sem extremos comuns; máximo $\ne$ maximal. Berge: $M$ é máximo $\iff$ não há caminho $M$-aumentante, e $M\triangle P$ amplia $M$ em 1. Bipartidos: método húngaro, com busca alternante a partir de cada vértice livre de $X$, $O(nm)$ com listas ou $O(n^3)$ com matriz; árvores húngaras são descartadas. Hall: satura $X$ $\iff$ $|N(S)|\ge|S|$; König: $\nu=\tau$. Grafos gerais: ciclos ímpares formam blossoms, que são contraídos (Edmonds); o caminho achado no grafo contraído é expandido pelo lado par do ciclo; $O(n^2m)$ de forma direta.
+Emparelhamento: arestas sem extremos comuns; máximo $\ne$ maximal. Berge: $M$ é máximo $\iff$ não há caminho $M$-aumentante, e $M\triangle P$ amplia $M$ em 1. Bipartidos: método húngaro, com busca alternante a partir de cada vértice livre de $X$, $O(nm)$ com listas ou $O(n^3)$ com matriz; árvores húngaras são descartadas. Hall: satura $X$ $\iff$ $|N(S)|\ge|S|$; König: $\nu=\tau$. Grafos gerais: ciclos ímpares formam blossoms, que são contraídos (Edmonds); o caminho achado no grafo contraído é expandido pelo lado par do ciclo; $O(mn^2)$ de forma direta.
 \end{chave}
 
 % ----------------------------------------------------------------
 \section{Exercícios}
+\excurso
+\begin{exercicio}{em-slides}[Slides]<sec:aumentante>
+Simule o algoritmo baseado no teorema de Berge no grafo com os vértices $1,\dots,9$ e as arestas $a=12$, $b=23$, $c=34$, $d=45$, $e=56$, $f=67$, $g=78$, $h=18$, $i=28$, $j=89$, $k=79$, $x=39$, $y=36$ e $z=46$, partindo do emparelhamento $M=\{b,g\}$: a cada passo, exiba um caminho $M$-aumentante e o novo emparelhamento, até que não haja mais caminho aumentante. Por que o resultado não é um emparelhamento perfeito?
+\end{exercicio}
+
 \excompl
 \begin{exercicio}{em-def}[Complementar]<sec:emp,ex:empmaximal>
 No caminho com os vértices $1,\dots,6$ e as arestas $12$, $23$, $34$, $45$ e $56$, dê um emparelhamento maximal que não seja máximo e um emparelhamento máximo. O caminho tem emparelhamento perfeito? E o caminho com 7 vértices?

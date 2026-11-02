@@ -229,4 +229,15 @@ v.tem("$5,6,6,7,9,11$", "em-atrib: custos no texto", R)
 v.igual(min(permutations(range(3)), key=lambda p: sum(C[i][p[i]] for i in range(3))), (1, 0, 2), "em-atrib: designação")
 v.igual(round(factorial(20) / 1e18, 1), 2.4, "em-atrib: 20!")
 
+# em-slides: o exemplo de simulação dos slides
+nomes = dict(a=(1, 2), b=(2, 3), c=(3, 4), d=(4, 5), e=(5, 6), f=(6, 7), g=(7, 8), h=(1, 8),
+             i=(2, 8), j=(8, 9), k=(7, 9), x=(3, 9), y=(3, 6), z=(4, 6))
+Es = list(nomes.values())
+M1 = difsim([nomes["b"], nomes["g"]], [(1, 2), (2, 3), (3, 4)])
+v.igual(M1, norm([nomes["a"], nomes["c"], nomes["g"]]), "em-slides: primeira ampliação")
+M2 = M1 ^ norm([nomes["e"]])
+v.igual(M2, norm([nomes[t] for t in "acge"]), "em-slides: segunda ampliação")
+v.igual(nu(Es), 4, "em-slides: nu = 4")
+v.tem(r"$M=\{a,c,g,e\}=\{12,34,78,56\}$", "em-slides no texto", R)
+
 v.fim()

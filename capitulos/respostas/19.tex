@@ -1,4 +1,6 @@
 \respcap{cap:emp}
+\resp{em-slides} Com $M=\{b,g\}=\{23,78\}$, os vértices livres são $1,4,5,6$ e $9$. O caminho $1,2,3,4$ alterna $a\notin M$, $b\in M$ e $c\notin M$ e liga dois vértices livres: é aumentante, e $M\triangle P=\{a,c,g\}$. Agora os livres são $5,6$ e $9$, e a própria aresta $e=56$ é um caminho aumentante: $M=\{a,c,g,e\}=\{12,34,78,56\}$. Restou só o vértice 9 livre, e um caminho aumentante precisa de \emph{dois} extremos livres: pelo teorema de Berge, $M$ é máximo, com 4 arestas. Não há emparelhamento perfeito porque o grafo tem 9 vértices, um número ímpar; outras escolhas de caminhos levam a outros emparelhamentos máximos, todos com 4 arestas.
+
 \resp{em-def} $\{23,45\}$ é maximal, pois toda aresta do caminho tem um extremo em $\{2,3,4,5\}$, mas tem só 2 arestas. $\{12,34,56\}$ é máximo e perfeito: satura os 6 vértices. Com 7 vértices não há emparelhamento perfeito, porque o número de vértices é ímpar; o máximo tem 3 arestas, por exemplo $\{12,34,56\}$, e deixa o vértice 7 livre.
 
 \resp{em-metade} Seja $M^*$ um emparelhamento máximo. Como $M$ é maximal, toda aresta de $M^*$ tem pelo menos um extremo saturado por $M$; e cada aresta de $M$ satura só 2 vértices, cada um deles extremo de no máximo uma aresta de $M^*$. Logo $|M^*|\le2|M|$. A igualdade vale no caminho $1,2,3,4$ com $M=\{23\}$, que é maximal, enquanto $\nu=2$ (com $\{12,34\}$).
