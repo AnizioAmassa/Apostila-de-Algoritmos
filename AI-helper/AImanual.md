@@ -3,7 +3,7 @@
 Apostila em LaTeX, em português, da disciplina de Algoritmos do IMPA Tech:
 complexidade, estruturas de dados (heaps, Union-Find, AVL, tabelas hash),
 ordenação e seleção, divisão e conquista, programação dinâmica, algoritmos
-gulosos e matroides e algoritmos em grafos. Cada capítulo traz exemplos
+gulosos e matroides e algoritmos em grafos, até emparelhamentos. Cada capítulo traz exemplos
 resolvidos, um resumo e uma lista de exercícios com respostas no Apêndice B.
 
 **O PDF pronto é o [`apostila.pdf`](apostila.pdf) da raiz do repositório.** Ele é
@@ -15,7 +15,7 @@ baixá-lo daqui.
 | Caminho | Conteúdo |
 |---|---|
 | `apostila.tex` | arquivo principal: preâmbulo com todos os estilos (caixas, figuras, pseudocódigo, exercícios), folha de rosto, prefácio e a lista de `\input` dos capítulos |
-| `capitulos/01_*.tex` … `capitulos/18_*.tex` | os 18 capítulos; cada um termina com `\section{Exercícios}` |
+| `capitulos/01_*.tex` … `capitulos/19_*.tex` | os 19 capítulos; cada um termina com `\section{Exercícios}` |
 | `capitulos/A_hash.tex` | Apêndice A: tabelas hash |
 | `capitulos/B_respostas.tex` | Apêndice B: inclui as respostas de `capitulos/respostas/NN.tex` |
 | `capitulos/respostas/NN.tex` | respostas dos exercícios do capítulo `NN` (e `A.tex`, do Apêndice A) |
@@ -110,8 +110,11 @@ chamado diretamente, da raiz), que executa:
   e os arquivos de `capitulos/respostas/` com o commit de referência `9a09ba5`.
   Enunciados e respostas existentes não podem mudar; só são aceitos o argumento
   `<...>` no cabeçalho de um exercício, exercícios novos no fim da lista e
-  respostas novas no fim do arquivo de respostas, na mesma ordem. O script
-  precisa do histórico do Git (num clone raso, use `git fetch --unshallow`).
+  respostas novas no fim do arquivo de respostas, na mesma ordem. Capítulos
+  criados depois desse commit (hoje, só o 19) ficam no conjunto `NOVOS` do
+  script: para eles, confere-se só que cada exercício tem a sua resposta, na
+  mesma ordem. Ao criar um capítulo, acrescente-o a `CAPITULOS` e a `NOVOS`.
+  O script precisa do histórico do Git (num clone raso, use `git fetch --unshallow`).
 * `verificacao/cap*.py` — recalculam os números dos exemplos e das respostas de
   simulação (heaps, Union-Find, AVL, ordenações, seleção, inversões, programação
   dinâmica, Floyd-Warshall, Kruskal e Prim, buscas, Dijkstra, hash etc.) e

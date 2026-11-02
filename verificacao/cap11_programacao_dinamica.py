@@ -401,4 +401,25 @@ def maior_substring(x, y):
 
 v.igual(maior_substring("ABABC", "BABCA"), (4, "BABC"), "pd-substring")
 
+
+# ---------- Teste 3: partição com diferença mínima e |A1| = k ----------
+def particao_k(A, k):
+    """Programação dinâmica da resposta: D[j][s] = dá para escolher j números com soma s."""
+    S = sum(A)
+    D = [[False] * (S + 1) for _ in range(k + 1)]
+    D[0][0] = True
+    for i, a in enumerate(A, 1):
+        for j in range(min(i, k), 0, -1):
+            for s in range(S, a - 1, -1):
+                D[j][s] = D[j][s] or D[j - 1][s - a]
+    return min(abs(S - 2 * s) for s in range(S + 1) if D[k][s])
+
+
+A3 = [2, 3, 5, 7, 9]
+v.igual(particao_k(A3, 2), 2, "pd-t3: diferença mínima")
+v.igual(particao_k(A3, 2), min(abs(26 - 2 * sum(c)) for c in combinations(A3, 2)), "pd-t3: força bruta")
+v.igual(sorted(sum(c) for c in combinations(A3, 2)), [5, 7, 8, 9, 10, 11, 12, 12, 14, 16], "pd-t3: somas dos pares")
+v.tem("$5,7,8,9,10,11,12,12,14,16$", "pd-t3: somas no texto", R)
+v.igual(sorted(c for c in combinations(A3, 2) if abs(26 - 2 * sum(c)) == 2), [(3, 9), (5, 7), (5, 9)], "pd-t3: escolhas ótimas")
+
 v.fim()

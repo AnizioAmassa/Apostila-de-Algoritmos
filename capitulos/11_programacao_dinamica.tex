@@ -392,3 +392,6 @@ De quantas maneiras é possível dar troco de 5 com moedas de valores $\{1,2,5\}
 \begin{exercicio}{pd-substring}[Complementar]<sec:lcs>
 O maior \emph{substring} comum de duas strings exige que os símbolos sejam contíguos nas duas. Dê uma programação dinâmica em $O(nm)$ e aplique-a a ``ABABC'' e ``BABCA''.
 \end{exercicio}
+\begin{exercicio}{pd-t3}[Avaliação]<sec:mochila>
+\emph{Partição com diferença mínima e cardinalidade restrita.} Dado um conjunto de $n$ inteiros positivos $A=\{a_1,\dots,a_n\}$, queremos particioná-lo em dois subconjuntos disjuntos $A_1$ e $A_2$, com $A_1\cup A_2=A$ e exatamente $k$ elementos em $A_1$ ($|A_1|=k$), de modo a minimizar a diferença $|\mathrm{soma}(A_1)-\mathrm{soma}(A_2)|$. Por exemplo, para $A=\{2,3,5,7,9\}$ e $k=2$, a escolha $A_1=\{7,9\}$, $A_2=\{2,3,5\}$ dá diferença $|16-10|=6$, e a escolha $A_1=\{3,9\}$, $A_2=\{2,5,7\}$ dá $|12-14|=2$. Desenvolva um algoritmo de programação dinâmica que determine a diferença mínima possível: (a) defina com precisão os estados (subproblemas); (b) indique os casos base e formule a recorrência, explicando o raciocínio; (c) apresente e explique o pseudocódigo; (d) analise as complexidades de tempo e de espaço em função de $n$, $k$ e $S=\mathrm{soma}(A)$; (e) diga se o algoritmo é polinomial e justifique.
+\end{exercicio}

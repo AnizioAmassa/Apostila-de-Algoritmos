@@ -31,8 +31,12 @@ CAPITULOS = {
     "10": "10_revisao", "11": "11_programacao_dinamica", "12": "12_floyd_warshall",
     "13": "13_gulosos_matroides", "14": "14_agm", "15": "15_busca_largura",
     "16": "16_dijkstra", "17": "17_busca_profundidade",
-    "18": "18_profundidade_digrafos", "A": "A_hash",
+    "18": "18_profundidade_digrafos", "19": "19_emparelhamentos", "A": "A_hash",
 }
+
+# Capítulos criados depois do commit de referência: todos os seus exercícios
+# são "novos"; confere-se só que cada um tem a sua resposta, na mesma ordem.
+NOVOS = {"19"}
 
 CABECALHO = re.compile(r"(\\begin\{exercicio\}\{([^}]*)\}(?:\[[^\]]*\])?)(<[^>\n]*>)?")
 EXERCICIO = re.compile(r"\\begin\{exercicio\}\{([^}]*)\}.*?\\end\{exercicio\}", re.S)
@@ -61,6 +65,12 @@ def rotulos(secao):
 
 def compara_capitulo(cod, arq, erros):
     caminho = f"capitulos/{arq}.tex"
+    if cod in NOVOS:
+        novo = secao_exercicios((RAIZ / caminho).read_text(encoding="utf-8"), caminho)
+        novos = rotulos(novo)
+        if len(set(novos)) != len(novos):
+            erros.append(f"{caminho}: há rótulos de exercício repetidos")
+        return [], novos
     antigo = secao_exercicios(no_commit(caminho), caminho)
     novo = secao_exercicios((RAIZ / caminho).read_text(encoding="utf-8"), caminho)
 
@@ -100,6 +110,12 @@ def compara_capitulo(cod, arq, erros):
 
 def compara_respostas(cod, velhos, novos, erros):
     caminho = f"capitulos/respostas/{cod}.tex"
+    if cod in NOVOS:
+        todas = RESP.findall((RAIZ / caminho).read_text(encoding="utf-8"))
+        if todas != novos:
+            erros.append(f"{caminho}: as respostas {todas} não correspondem, na ordem, "
+                         f"aos exercícios {novos}")
+        return
     antigo = no_commit(caminho).rstrip()
     novo = (RAIZ / caminho).read_text(encoding="utf-8")
     if not novo.startswith(antigo):

@@ -1,0 +1,342 @@
+% ================================================================
+\chapter{Emparelhamentos}\label{cap:emp}\label{sec:emparelhamentos}
+% ================================================================
+\begin{objetivos}
+\begin{itemize}
+  \item Emparelhamentos maximais, máximos e perfeitos.
+  \item Caminhos alternantes e aumentantes, e o teorema de Berge.
+  \item O método húngaro para grafos bipartidos, em $O(n^3)$, e os teoremas de Hall e de König.
+  \item Flores, blossoms e a sua contração: o algoritmo de Edmonds para grafos quaisquer.
+\end{itemize}
+\end{objetivos}
+
+Distribuir disciplinas entre professores, alunos entre vagas de estágio ou doadores entre receptores compatíveis são problemas da mesma forma: há pares possíveis, dados pelas arestas de um grafo, e cada elemento pode entrar em no máximo um par. Queremos formar o maior número possível de pares. Este capítulo mostra que um emparelhamento é máximo exatamente quando não pode ser melhorado ao longo de um certo tipo de caminho, e usa essa ideia em dois algoritmos: o método húngaro, para grafos bipartidos, e o algoritmo de Edmonds, que trata os ciclos ímpares contraindo-os.
+
+\section{Definições}\label{sec:emp}
+Um \textbf{emparelhamento}\index{emparelhamento} num grafo $G=(V,E)$ é um conjunto $M\subseteq E$ de arestas sem extremos em comum. Um vértice é \textbf{saturado}\index{vertice saturado@vértice saturado} (ou coberto) por $M$ se é extremo de alguma aresta de $M$, e \textbf{livre}\index{vertice livre@vértice livre} (ou exposto) caso contrário; se $vw\in M$, dizemos que $w$ é o \emph{par} de $v$. O emparelhamento é:
+\begin{itemize}
+  \item \textbf{maximal}\index{emparelhamento!maximal} se nenhuma aresta pode ser acrescentada a ele, isto é, toda aresta de $G$ tem algum extremo saturado;
+  \item \textbf{máximo}\index{emparelhamento!maximo@máximo} se nenhum emparelhamento de $G$ tem mais arestas; o seu tamanho é denotado por $\nu(G)$;
+  \item \textbf{perfeito}\index{emparelhamento!perfeito} se satura todos os vértices; nesse caso $|M|=n/2$, e $n$ precisa ser par.
+\end{itemize}
+Todo emparelhamento máximo é maximal, mas a recíproca é falsa: é o mesmo fenômeno das matroides do Capítulo~\ref{cap:gulosos}, onde se viu que os emparelhamentos \emph{não} formam uma matroide e que um guloso pode parar num conjunto maximal pequeno.
+
+\begin{intuicao}
+Pense numa festa em que as arestas ligam pessoas dispostas a dançar juntas. Um emparelhamento é um conjunto de pares dançando ao mesmo tempo. Ele é maximal quando ninguém mais consegue entrar na pista sem desfazer algum par --- mas pode ser que, desfazendo alguns pares e refazendo-os de outro jeito, caibam mais pares do que antes. Os algoritmos deste capítulo dizem exatamente \emph{como} refazer os pares.
+\end{intuicao}
+
+\begin{exemplo}[Maximal não é máximo]\label{ex:empmaximal}
+O grafo da Figura~\ref{fig:empmaximal} é uma grade com 6 vértices e 7 arestas. O emparelhamento $M=\{12,56\}$ é maximal: as arestas restantes, $23$, $45$, $14$, $25$ e $36$, têm todas um extremo já saturado. Mesmo assim, ele não é máximo: $\{14,25,36\}$ tem 3 arestas, satura os 6 vértices e é, portanto, perfeito; $\nu(G)=3$. Os vértices 3 e 4, livres em $M$, ficaram ``sem par'' por causa das escolhas feitas antes, e não por falta de arestas.
+\begin{figura}[Uma grade com 6 vértices. Em azul grosso, as arestas do emparelhamento: (b) um emparelhamento maximal com 2 arestas, que deixa 3 e 4 livres; (c) um emparelhamento perfeito.\label{fig:empmaximal}]
+\begin{tikzpicture}[x=1.15cm,y=1.1cm]
+\foreach \xo/\tit/\emp in {0/{(a) o grafo}/{},3.6/{(b) $M=\{12,56\}$, maximal}/{1/2,5/6},7.2/{(c) $\{14,25,36\}$, perfeito}/{1/4,2/5,3/6}} {
+  \begin{scope}[xshift=\xo cm]
+  \node[vtxs] (g1) at (0,1) {1}; \node[vtxs] (g2) at (1,1) {2}; \node[vtxs] (g3) at (2,1) {3};
+  \node[vtxs] (g4) at (0,0) {4}; \node[vtxs] (g5) at (1,0) {5}; \node[vtxs] (g6) at (2,0) {6};
+  \draw[thick, gray!60] (g1)--(g2)--(g3) (g4)--(g5)--(g6) (g1)--(g4) (g2)--(g5) (g3)--(g6);
+  \foreach \pp/\qq in \emp {\draw[line width=2.4pt, MidnightBlue] (g\pp)--(g\qq);}
+  \node[rot] at (1,-0.65) {\tit};
+  \end{scope}}
+\end{tikzpicture}
+\end{figura}
+\end{exemplo}
+
+% ------------------------------------------------------------------
+\section{Caminhos aumentantes e o teorema de Berge}\label{sec:aumentante}
+Seja $M$ um emparelhamento. Um caminho é \textbf{$M$-alternante}\index{caminho!alternante} se as suas arestas alternam entre arestas fora de $M$ e arestas de $M$. Um caminho $M$-alternante é \textbf{$M$-aumentante}\index{caminho!aumentante} se começa e termina em vértices livres distintos. Um caminho aumentante tem um número ímpar de arestas, $2k+1$, das quais $k$ estão em $M$ e $k+1$ estão fora.
+
+A operação que melhora um emparelhamento é a \textbf{diferença simétrica}\index{diferenca simetrica@diferença simétrica} $M\triangle P=(M\setminus P)\cup(P\setminus M)$: ao longo de um caminho aumentante $P$, as arestas de $M$ saem e as demais entram. Os vértices internos de $P$ continuam saturados (trocam de par) e os dois extremos, antes livres, passam a ser saturados; fora de $P$ nada muda. Logo $M\triangle P$ é um emparelhamento com uma aresta a mais.
+
+\begin{exemplo}[Ampliando por um caminho aumentante]\label{ex:aumentante}
+No emparelhamento maximal $M=\{12,56\}$ do Exemplo~\ref{ex:empmaximal}, os vértices 4 e 3 são livres, e o caminho $4,1,2,3$ alterna uma aresta fora de $M$ ($41$), uma de $M$ ($12$) e outra fora ($23$): é $M$-aumentante. A diferença simétrica troca $12$ por $41$ e $23$, e o resultado, $\{14,23,56\}$, é um emparelhamento perfeito (Figura~\ref{fig:aumentante}). Não foi preciso recomeçar do zero: bastou ``empurrar'' o par de 1 para o lado ao longo do caminho.
+\begin{figura}[À esquerda, o caminho aumentante $4,1,2,3$ (em vermelho) em relação a $M=\{12,56\}$ (azul). À direita, $M\triangle P=\{14,23,56\}$: as arestas do caminho trocaram de papel.\label{fig:aumentante}]
+\begin{tikzpicture}[x=1.15cm,y=1.1cm]
+\foreach \xo/\tit/\emp/\cam in {0/{antes: $M$ e o caminho $P$}/{1/2,5/6}/{4/1,1/2,2/3},4.2/{depois: $M\triangle P$}/{1/4,2/3,5/6}/{}} {
+  \begin{scope}[xshift=\xo cm]
+  \node[vtxs] (g1) at (0,1) {1}; \node[vtxs] (g2) at (1,1) {2}; \node[vtxs] (g3) at (2,1) {3};
+  \node[vtxs] (g4) at (0,0) {4}; \node[vtxs] (g5) at (1,0) {5}; \node[vtxs] (g6) at (2,0) {6};
+  \draw[thick, gray!60] (g1)--(g2)--(g3) (g4)--(g5)--(g6) (g1)--(g4) (g2)--(g5) (g3)--(g6);
+  \foreach \pp/\qq in \cam {\draw[line width=4pt, BrickRed!35] (g\pp)--(g\qq);}
+  \foreach \pp/\qq in \emp {\draw[line width=2pt, MidnightBlue] (g\pp)--(g\qq);}
+  \node[rot] at (1,-0.65) {\tit};
+  \end{scope}}
+\end{tikzpicture}
+\end{figura}
+\end{exemplo}
+
+\begin{teo}[Berge]\label{teo:berge}\index{Berge, teorema de}
+Um emparelhamento $M$ é máximo se e somente se não existe caminho $M$-aumentante.
+\end{teo}
+\begin{proof}
+Se existe um caminho $M$-aumentante $P$, então $M\triangle P$ é maior que $M$, e $M$ não é máximo. Reciprocamente, suponha que $M$ não é máximo e seja $M^*$ um emparelhamento com $|M^*|>|M|$. No subgrafo formado pelas arestas de $M\triangle M^*$, cada vértice tem grau no máximo 2 (no máximo uma aresta de cada emparelhamento), de modo que as suas componentes são caminhos e ciclos, e em cada uma as arestas alternam entre $M$ e $M^*$. Um ciclo alternante tem tantas arestas de $M$ quanto de $M^*$. Como $M^*$ tem mais arestas que $M$ na diferença simétrica, alguma componente é um caminho com mais arestas de $M^*$ que de $M$: ele começa e termina com arestas de $M^*$, e os seus extremos são livres em $M$. Esse caminho é $M$-aumentante.
+\end{proof}
+
+O teorema dá um algoritmo genérico: comece com qualquer emparelhamento e, enquanto houver um caminho aumentante, amplie-o. Como cada ampliação aumenta $|M|$ em 1, são no máximo $n/2$ ampliações. Toda a dificuldade está em \emph{encontrar} um caminho aumentante, ou concluir que não há nenhum, sem testar todos os caminhos do grafo.
+\begin{pseudo}{Esquema geral: ampliar por caminhos aumentantes}
+\begin{algorithmic}
+\Function{EmparelhamentoMáximo}{$G$}
+  \State $M:=\emptyset$ \Comment{ou um emparelhamento maximal guloso, para começar}
+  \While{existe um caminho $M$-aumentante $P$}
+    \State $M:=M\triangle P$ \Comment{$|M|$ aumenta de 1}
+  \EndWhile
+  \State \Return $M$ \Comment{máximo, pelo teorema de Berge}
+\EndFunction
+\end{algorithmic}
+\end{pseudo}
+
+% ------------------------------------------------------------------
+\section{Grafos bipartidos: o método húngaro}\label{sec:hungaro}
+Num grafo bipartido com lados $X$ e $Y$, todo caminho aumentante tem um extremo em $X$ e outro em $Y$, pois tem um número ímpar de arestas. Para procurar um caminho aumentante a partir de um vértice livre $r\in X$, constrói-se uma \textbf{árvore alternante}\index{arvore alternante@árvore alternante} com raiz $r$, por uma busca em largura (Capítulo~\ref{cap:bfs}) em que os níveis alternam os dois lados:
+\begin{itemize}
+  \item a partir de um vértice $x\in X$ da árvore, segue-se qualquer aresta $xy$ para um $y\in Y$ ainda não alcançado;
+  \item se $y$ é livre, o caminho da árvore de $r$ até $y$ é aumentante;
+  \item se $y$ é saturado, a busca continua obrigatoriamente pela aresta de $M$: o par de $y$, que está em $X$, entra na árvore.
+\end{itemize}
+Os vértices de $X$ da árvore são alcançados por arestas de $M$ (exceto a raiz) e os de $Y$, por arestas fora de $M$; por isso todo caminho da raiz até um vértice da árvore é alternante. Se a busca termina sem encontrar um vértice livre em $Y$, a árvore é chamada de \textbf{árvore húngara}\index{arvore hungara@árvore húngara}: pode-se provar que nenhum dos seus vértices volta a estar num caminho aumentante, nem depois de ampliações futuras, e eles podem ser descartados. O algoritmo que repete essa busca a partir de cada vértice livre de $X$ é o \textbf{método húngaro}\index{metodo hungaro@método húngaro}.
+\begin{pseudo}{Método húngaro para emparelhamento máximo em grafos bipartidos}
+\begin{algorithmic}
+\Function{BuscaAumentante}{$r$} \Comment{$r\in X$ livre; busca em largura alternante}
+  \State $pai(r):=\nil$;\ marque $r$;\ $F:=(r)$
+  \While{$F\ne\emptyset$}
+    \State retire $x$ do início de $F$
+    \For{\textbf{cada} $y\in N(x)$ não marcado}
+      \State marque $y$;\ $pai(y):=x$
+      \If{$y$ é livre} \State \Return o caminho de $r$ a $y$ pelos ponteiros $pai$ \Comment{aumentante} \EndIf
+      \State $z:=par(y)$;\ marque $z$;\ $pai(z):=y$;\ insira $z$ no fim de $F$ \Comment{segue a aresta de $M$}
+    \EndFor
+  \EndWhile
+  \State \Return $\nil$ \Comment{árvore húngara: não há caminho aumentante a partir de $r$}
+\EndFunction
+\Function{MétodoHúngaro}{$G$}
+  \State $M:=\emptyset$
+  \For{\textbf{cada} $r\in X$}
+    \State $P:=$ \Call{BuscaAumentante}{$r$} \Comment{com as marcas apagadas a cada busca}
+    \If{$P\ne\nil$} \State $M:=M\triangle P$ \EndIf
+  \EndFor
+  \State \Return $M$
+\EndFunction
+\end{algorithmic}
+\end{pseudo}
+\textbf{Complexidade.} Cada vértice de $X$ é raiz de uma única busca: se ela encontra um caminho, ele passa a ser saturado e nunca mais fica livre; se não encontra, a árvore húngara é descartada. Cada busca custa $O(n+m)$ com listas de adjacência, ou $O(n^2)$ com matriz. São no máximo $n$ buscas: $O(n(n+m))=O(nm)$ num grafo conexo, ou $O(n^3)$ com matriz de adjacência.
+
+\begin{exemplo}[O método húngaro passo a passo]\label{ex:hungaro}
+No grafo bipartido da Figura~\ref{fig:hungaro}, com $X=\{a,b,c,d,e\}$, $Y=\{1,2,3,4\}$ e as arestas $a1$, $a2$, $b1$, $c2$, $c3$, $d3$, $d4$, $e1$ e $e2$, começamos com o emparelhamento guloso $M=\{a1,c2,d3\}$; os vértices livres de $X$ são $b$ e $e$, e o de $Y$ é 4.
+\begin{itemize}
+  \item Busca a partir de $b$: o único vizinho é 1, saturado; segue-se a aresta de $M$ até $a$. De $a$, o vizinho novo é 2, saturado, e a busca vai até $c$; de $c$, até 3 e depois $d$; de $d$, o vizinho 4 é livre. O caminho aumentante é $b,1,a,2,c,3,d,4$, com 7 arestas, e a ampliação dá $M=\{b1,a2,c3,d4\}$: cada um de $a$, $c$ e $d$ ``passou o seu par adiante''.
+  \item Busca a partir de $e$: os vizinhos 1 e 2 estão saturados, com pares $b$ e $a$; $b$ não tem outro vizinho, e o outro vizinho de $a$, o 1, já está na árvore. A busca termina sem encontrar vértice livre: $\{e,1,b,2,a\}$ é uma árvore húngara, e $e$ fica livre.
+\end{itemize}
+O emparelhamento final, $\{b1,a2,c3,d4\}$, tem 4 arestas, e $\nu(G)=4$: como $|Y|=4$, não há como fazer melhor.
+\begin{figura}[O método húngaro no Exemplo~\ref{ex:hungaro}. (a) O emparelhamento inicial (azul) e o caminho aumentante a partir de $b$ (vermelho). (b) Depois da ampliação; a árvore húngara da busca a partir de $e$ está em amarelo.\label{fig:hungaro}]
+\begin{tikzpicture}[x=1.4cm,y=0.75cm]
+\foreach \xo/\tit/\emp/\cam/\arv in {
+  0/{(a) antes da ampliação}/{a/1,c/2,d/3}/{b/1,a/1,a/2,c/2,c/3,d/3,d/4}/{},
+  5/{(b) depois da ampliação}/{b/1,a/2,c/3,d/4}/{}/{e,b,a,1,2}} {
+  \begin{scope}[xshift=\xo cm]
+  \foreach \nome [count=\k] in {a,b,c,d,e} {\node[vtxs] (h\nome) at (0,-\k) {$\nome$};}
+  \foreach \nome [count=\k] in {1,2,3,4} {\node[vtxs] (h\nome) at (2,-\k-0.5) {\nome};}
+  \foreach \nome in \arv {\node[vtxs, fill=destaque] at (h\nome) {\phantom{a}};}
+  \foreach \nome in {a,b,c,d,e} {\node[font=\scriptsize] at (h\nome) {$\nome$};}
+  \foreach \nome in {1,2,3,4} {\node[font=\scriptsize] at (h\nome) {\nome};}
+  \draw[thick, gray!50] (ha)--(h1) (ha)--(h2) (hb)--(h1) (hc)--(h2) (hc)--(h3) (hd)--(h3) (hd)--(h4) (he)--(h1) (he)--(h2);
+  \foreach \pp/\qq in \cam {\draw[line width=4pt, BrickRed!35] (h\pp)--(h\qq);}
+  \foreach \pp/\qq in \emp {\draw[line width=2pt, MidnightBlue] (h\pp)--(h\qq);}
+  \node[rot] at (1,-6.1) {\tit};
+  \end{scope}}
+\end{tikzpicture}
+\end{figura}
+\end{exemplo}
+
+A correção do método depende de o grafo ser bipartido: os vértices da árvore em posição par (a raiz, e os alcançados por arestas de $M$) estão todos em $X$, e os de posição ímpar, em $Y$. Na §\ref{sec:blossom} veremos o que dá errado quando há ciclos ímpares.
+
+% ------------------------------------------------------------------
+\section{Os teoremas de Hall e de König}\label{sec:konig}
+A árvore húngara também \emph{explica} por que um emparelhamento não pode crescer. No Exemplo~\ref{ex:hungaro}, os vértices $a$, $b$ e $e$ só têm vizinhos em $\{1,2\}$: três vértices de $X$ disputam dois de $Y$, e um deles necessariamente sobra. Essa obstrução é a única possível.
+
+\begin{teo}[Hall]\label{teo:hall}\index{Hall, teorema de}
+Num grafo bipartido com lados $X$ e $Y$, existe um emparelhamento que satura todos os vértices de $X$ se e somente se $|N(S)|\ge|S|$ para todo $S\subseteq X$.
+\end{teo}
+\begin{proof}[Ideia]
+A condição é necessária: os vértices de $S$ precisam de pares distintos em $N(S)$. Para a suficiência, tome um emparelhamento máximo e suponha que um vértice $r\in X$ é livre. A busca a partir de $r$ termina numa árvore húngara (senão haveria caminho aumentante). Nela, cada vértice de $Y$ é saturado e o seu par também está na árvore; logo, sendo $S$ o conjunto dos vértices de $X$ da árvore, $N(S)$ é exatamente o conjunto dos vértices de $Y$ da árvore e $|N(S)|=|S|-1$, violando a condição.
+\end{proof}
+
+Uma \textbf{cobertura por vértices}\index{cobertura por vertices@cobertura por vértices} é um conjunto $C$ de vértices que contém pelo menos um extremo de cada aresta; o menor tamanho de uma cobertura é $\tau(G)$. Como as arestas de um emparelhamento não têm extremos em comum, cada uma precisa de um vértice próprio da cobertura, e por isso $\nu(G)\le\tau(G)$ em \emph{qualquer} grafo. Nos bipartidos, vale a igualdade.
+\begin{teo}[König]\label{teo:konig}\index{Konig, teorema de@König, teorema de}
+Num grafo bipartido, $\nu(G)=\tau(G)$.
+\end{teo}
+\begin{proof}[Construção]
+Seja $M$ um emparelhamento máximo e $Z$ o conjunto dos vértices alcançáveis, por caminhos $M$-alternantes, a partir dos vértices livres de $X$ (são os vértices das árvores húngaras). Tome $C=(X\setminus Z)\cup(Y\cap Z)$. Toda aresta $xy$ tem $x\notin Z$ (e então $x\in C$) ou $x\in Z$, e nesse caso $y\in Z$, porque a busca seguiria a aresta $xy$. Cada vértice de $C$ é saturado (um $y\in Z$ livre daria um caminho aumentante), e os extremos de uma aresta de $M$ nunca estão os dois em $C$. Logo $|C|=|M|$, e $C$ é uma cobertura de tamanho $\nu(G)$.
+\end{proof}
+
+\begin{exemplo}[Hall e König no exemplo do método húngaro]\label{ex:hall}
+No grafo da Figura~\ref{fig:hungaro}, o conjunto $S=\{a,b,e\}$ tem $N(S)=\{1,2\}$: $|N(S)|=2<3=|S|$, e pelo teorema de Hall não existe emparelhamento que sature $X$. Para a cobertura de König, o único vértice livre de $X$ é $e$, e $Z=\{e,1,2,b,a\}$ é a árvore húngara. Então $C=(X\setminus Z)\cup(Y\cap Z)=\{c,d\}\cup\{1,2\}$: quatro vértices que tocam todas as arestas (as de $a$, $b$ e $e$ chegam a 1 ou 2; as de $c$ e $d$, a $c$ ou $d$). Como $|C|=4=|M|$, tanto o emparelhamento quanto a cobertura são ótimos, e cada um é a prova de otimalidade do outro.
+\end{exemplo}
+
+\begin{complemento}[Para saber mais: emparelhamentos com pesos]
+No \textbf{problema da atribuição}\index{problema da atribuicao@problema da atribuição}, as arestas de um grafo bipartido completo $K_{n,n}$ têm custos, e queremos um emparelhamento perfeito de custo mínimo --- por exemplo, designar $n$ técnicos a $n$ tarefas. Testar as $n!$ designações é inviável já para $n=20$. O algoritmo de Kuhn e Munkres, também chamado de método húngaro, resolve o problema em $O(n^3)$: ele mantém ``preços'' nos vértices (uma solução do problema dual) e procura caminhos aumentantes só entre as arestas cujo custo é igual à soma dos preços dos extremos, ajustando os preços quando a busca para numa árvore húngara. Os emparelhamentos bipartidos também são a interseção de duas matroides de partição (Capítulo~\ref{cap:gulosos}), e esse ponto de vista generaliza o método.
+\end{complemento}
+
+% ------------------------------------------------------------------
+\section{Grafos gerais: flores, blossoms e o algoritmo de Edmonds}\label{sec:blossom}
+Num grafo qualquer, o teorema de Berge continua valendo, mas a busca alternante do método húngaro pode \emph{não encontrar} um caminho aumentante que existe. O culpado é o ciclo ímpar: num grafo bipartido, cada vértice tem uma posição fixa (par ou ímpar) em relação à raiz, mas num ciclo ímpar um mesmo vértice pode ser alcançado por um caminho alternante de comprimento par e por outro de comprimento ímpar, e a busca, que rotula cada vértice uma única vez, pode escolher o rótulo ``errado''.
+
+\begin{figura}[Um grafo com o emparelhamento $M=\{uv,ab,cd,ef\}$ (azul) e os vértices livres $s$ e $t$. A busca em largura a partir de $s$, com os vizinhos em ordem alfabética, rotula os vértices como pares (P) ou ímpares (I). A aresta $de$ (tracejada) liga dois vértices pares e fecha o ciclo ímpar $v,a,b,c,d,e,f$: a haste $s,u,v$ e esse ciclo formam uma flor.\label{fig:flor}]
+\begin{tikzpicture}[x=1.1cm,y=1.1cm, lab/.style={font=\scriptsize\bfseries, text=BrickRed}]
+\node[vtx] (s) at (0,0) {$s$}; \node[vtx] (u) at (1.3,0) {$u$}; \node[vtx, fill=destaque] (v) at (2.6,0) {$v$};
+\node[vtx] (a) at (3.17,1.17) {$a$}; \node[vtx] (b) at (4.43,1.46) {$b$}; \node[vtx] (c) at (5.45,0.65) {$c$};
+\node[vtx] (d) at (5.45,-0.65) {$d$}; \node[vtx] (e) at (4.43,-1.46) {$e$}; \node[vtx] (f) at (3.17,-1.17) {$f$};
+\node[vtx] (t) at (6.8,0.65) {$t$};
+\draw[aresta, gray] (s)--(u) (v)--(a) (b)--(c) (f)--(v) (c)--(t);
+\draw[aresta, BrickRed, dashed] (d)--(e);
+\draw[line width=2pt, MidnightBlue] (u)--(v) (a)--(b) (c)--(d) (e)--(f);
+\foreach \nome/\rotulo/\pos in {s/P/above,u/I/above,v/P/above left,a/I/above left,b/P/above,c/I/above,d/P/below right,e/P/below,f/I/below left} {\node[lab, \pos=2pt of \nome] {\rotulo};}
+\draw[decorate, decoration={brace, amplitude=4pt, mirror}, gray] (-0.2,-0.55) -- (2.4,-0.55) node[midway, below=5pt, rot] {haste};
+\draw[gray, dashed, rounded corners=12pt] (2.05,-2.25) rectangle (6.05,2.25); \node[rot, anchor=west] at (6.15,-1.9) {blossom};\node[rot, anchor=west] at (6.15,-2.2) {(base $v$)};
+\end{tikzpicture}
+\end{figura}
+
+Na Figura~\ref{fig:flor}, o caminho $s,u,v,f,e,d,c,t$ é aumentante: as suas arestas alternam entre fora de $M$ ($su$, $vf$, $ed$, $ct$) e em $M$ ($uv$, $fe$, $dc$). Mas a busca do método húngaro a partir de $s$ não o encontra. Ela chega a $c$ pelo lado de $a$ e $b$, pela aresta $bc$, fora de $M$, e o rotula como ímpar; a partir de um vértice ímpar, a busca só segue a aresta de $M$, até $d$, e a aresta $ct$ nunca é examinada. Quando $d$ e $e$, ambos pares, são processados, cada um encontra o outro já marcado, e a busca termina sem caminho. A aresta $de$, entre dois vértices pares, denuncia o problema: o vértice $c$ também podia ser alcançado por um caminho de comprimento par, $s,u,v,f,e,d,c$.
+
+\paragraph{Flores e blossoms.} Seja $r$ um vértice livre. Uma \textbf{flor}\index{flor} é formada por uma \textbf{haste}\index{haste}, um caminho $M$-alternante de comprimento par de $r$ até um vértice $b$, chamado \textbf{base}, que termina numa aresta de $M$ (ou é só o vértice $r=b$), e por um \textbf{blossom}\index{blossom}, um ciclo ímpar de comprimento $2k+1$ que passa por $b$ e tem $k$ arestas de $M$, nenhuma delas incidente em $b$. Na figura, a haste é $s,u,v$, a base é $v$ e o blossom é $v,a,b,c,d,e,f$, com 7 vértices e as 3 arestas $ab$, $cd$ e $ef$ de $M$. A propriedade essencial é que \emph{todo} vértice do blossom pode ser alcançado a partir de $r$ por um caminho alternante de comprimento par: basta contornar o ciclo pelo lado certo. É o que acontece com $c$: pelo lado de $a$ e $b$, o caminho de $s$ até ele é ímpar; pelo lado de $f$, $e$ e $d$, é par.
+
+\paragraph{Contração.} \textbf{Contrair}\index{blossom!contracao@contração} o blossom $B$ significa trocar todos os seus vértices por um único vértice novo, $B$, ligado a todos os vizinhos externos deles; o grafo resultante é $G/B$, e $M/B$ é o emparelhamento que sobra (as arestas de $M$ dentro de $B$ desaparecem, e a aresta de $M$ que chega à base passa a chegar em $B$).
+\begin{teo}[Edmonds]\label{teo:edmonds}\index{Edmonds, teorema de}
+Se $B$ é o blossom de uma flor em relação a $M$, então $G$ tem um caminho $M$-aumentante se e somente se $G/B$ tem um caminho $M/B$-aumentante.
+\end{teo}
+\begin{proof}[Ideia]
+Se $G/B$ tem um caminho aumentante que não passa por $B$, ele já serve em $G$. Se passa por $B$, ele chega a $B$ pela aresta de $M$ que entra na base (ou começa em $B$, se a base é livre) e sai de $B$ por alguma aresta $xy$, com $x$ no blossom. Em $G$, liga-se a base a $x$ pelo lado do ciclo que tem comprimento par e termina numa aresta de $M$ em $x$; o caminho continua alternante e aumentante. A recíproca é mais delicada: troca-se $M$ por $M\triangle H$, onde $H$ é a haste, o que não muda o tamanho de $M$ e torna a base livre; aí se mostra que um caminho aumentante em $G$ dá um em $G/B$.
+\end{proof}
+
+\paragraph{O algoritmo de Edmonds.} O \textbf{algoritmo de Edmonds}\index{Edmonds, algoritmo de} (ou \emph{algoritmo dos blossoms}) faz a mesma busca alternante do método húngaro a partir de um vértice livre $r$, rotulando os vértices como pares (a raiz e os alcançados por arestas de $M$) e ímpares, e examinando apenas as arestas que saem de vértices pares. Ao examinar uma aresta $uw$, com $u$ par:
+\begin{itemize}
+  \item se $w$ é livre e não está na árvore, o caminho de $r$ até $u$ seguido de $uw$ é aumentante;
+  \item se $w$ é saturado e não está na árvore, $w$ recebe o rótulo ímpar e o seu par, o rótulo par;
+  \item se $w$ é ímpar, nada a fazer;
+  \item se $w$ é par, a aresta $uw$ fecha um ciclo ímpar: os caminhos da árvore até $u$ e até $w$ se encontram na base de um blossom, que é \textbf{contraído}; o vértice $B$ é par, e a busca continua no grafo contraído.
+\end{itemize}
+Quando um caminho aumentante é encontrado num grafo com blossoms contraídos, ele é \emph{expandido} de volta, blossom a blossom, pelo Teorema~\ref{teo:edmonds}, e $M$ é ampliado. Se a busca termina sem caminho, não há caminho aumentante a partir de $r$.
+\begin{pseudo}{Algoritmo de Edmonds (uma busca a partir do vértice livre $r$)}
+\begin{algorithmic}
+\Function{BuscaEdmonds}{$G,M,r$}
+  \State rotule $r$ como par;\ $F:=(r)$
+  \While{$F\ne\emptyset$}
+    \State retire um vértice par $u$ de $F$
+    \For{\textbf{cada} aresta $uw$ do grafo atual (com os blossoms contraídos)}
+      \If{$w$ é livre e $w\ne r$} \State \Return o caminho de $r$ a $w$, expandindo os blossoms \Comment{aumentante}
+      \ElsIf{$w$ não tem rótulo} \State $w$ é ímpar;\ $par(w)$ é par;\ insira $par(w)$ em $F$
+      \ElsIf{$w$ é par} \State contraia o blossom fechado por $uw$ num vértice par $B$;\ insira $B$ em $F$
+      \EndIf \Comment{se $w$ é ímpar, nada a fazer}
+    \EndFor
+  \EndWhile
+  \State \Return $\nil$
+\EndFunction
+\end{algorithmic}
+\end{pseudo}
+\textbf{Complexidade.} São no máximo $n/2$ ampliações. Numa busca, cada contração reduz o número de vértices em pelo menos 2, e por isso há menos de $n/2$ contrações; feita de modo direto, cada contração custa $O(m)$, e uma busca custa $O(nm)$. Uma implementação simples fica, portanto, em $O(n^2m)$, polinomial. Implementações mais cuidadosas chegam a $O(n^3)$, e o algoritmo de Micali e Vazirani, a $O(m\sqrt n)$.
+
+\begin{exemplo}[O algoritmo de Edmonds passo a passo]\label{ex:blossom}
+No grafo da Figura~\ref{fig:flor}, com $M=\{uv,ab,cd,ef\}$, fazemos a busca a partir de $s$, em largura e com os vizinhos em ordem alfabética.
+\begin{itemize}
+  \item $s$ é par. O vizinho $u$ é saturado: $u$ é ímpar, e o seu par, $v$, é par.
+  \item De $v$: o vizinho $a$ é saturado e sem rótulo, logo $a$ é ímpar e o seu par $b$ é par; o vizinho $f$ também, logo $f$ é ímpar e $e$ é par.
+  \item De $b$: $c$ é saturado e sem rótulo, logo $c$ é ímpar e $d$ é par.
+  \item De $e$: o vizinho $d$ é par. A aresta $de$ fecha um ciclo ímpar: os caminhos da árvore até $d$ ($s,u,v,a,b,c,d$) e até $e$ ($s,u,v,f,e$) se separam em $v$, que é a base. O blossom $v,a,b,c,d,e,f$ é contraído num vértice par $B$ (Figura~\ref{fig:contracao}).
+  \item De $B$: as arestas de $B$ são as que saíam do blossom, $Bu$ (a aresta de $M$ da base) e $Bt$, que vinha de $c$. O vértice $t$ é livre: o caminho $s,u,B,t$ é aumentante em $G/B$.
+\end{itemize}
+Para expandir, o caminho entra no blossom pela base $v$ (vindo de $u$ pela aresta de $M$) e sai por $c$. Dos dois lados do ciclo de $v$ até $c$, o caminho $v,a,b,c$ tem 3 arestas e termina na aresta $bc$, fora de $M$; o caminho $v,f,e,d,c$ tem 4 e termina na aresta $dc$, de $M$. É este, o lado par, que mantém a alternância --- embora seja o mais longo. O caminho aumentante em $G$ é $s,u,v,f,e,d,c,t$, e a ampliação dá $M=\{su,vf,ed,ct,ab\}$, um emparelhamento perfeito dos 10 vértices.
+\begin{figura}[(a) O blossom $v,a,b,c,d,e,f$ contraído no vértice $B$, e o caminho aumentante $s,u,B,t$ em $G/B$ (vermelho). (b) O caminho expandido em $G$, pelo lado par do ciclo, e o novo emparelhamento (azul).\label{fig:contracao}]
+\begin{tikzpicture}[x=1.05cm,y=1.05cm]
+\node[vtx] (s) at (0,0) {$s$}; \node[vtx] (u) at (1.2,0) {$u$}; \node[vtx, fill=destaque, minimum size=9mm] (B) at (2.6,0) {$B$}; \node[vtx] (t) at (4,0) {$t$};
+\draw[line width=4pt, BrickRed!35] (s)--(u)--(B)--(t);
+\draw[aresta, gray] (s)--(u) (B)--(t); \draw[line width=2pt, MidnightBlue] (u)--(B);
+\node[rot] at (2,-1.2) {(a) em $G/B$: $s,u,B,t$};
+\begin{scope}[xshift=5.6cm]
+\node[vtx] (s2) at (0,0) {$s$}; \node[vtx] (u2) at (1.1,0) {$u$}; \node[vtx] (v2) at (2.2,0) {$v$};
+\node[vtx] (a2) at (2.77,1.17) {$a$}; \node[vtx] (b2) at (4.03,1.46) {$b$}; \node[vtx] (c2) at (5.05,0.65) {$c$};
+\node[vtx] (d2) at (5.05,-0.65) {$d$}; \node[vtx] (e2) at (4.03,-1.46) {$e$}; \node[vtx] (f2) at (2.77,-1.17) {$f$};
+\node[vtx] (t2) at (6.3,0.65) {$t$};
+\draw[line width=4pt, BrickRed!35] (s2)--(u2)--(v2)--(f2)--(e2)--(d2)--(c2)--(t2);
+\draw[aresta, gray] (u2)--(v2) (v2)--(a2) (b2)--(c2) (c2)--(d2) (e2)--(f2);
+\draw[line width=2pt, MidnightBlue] (s2)--(u2) (v2)--(f2) (e2)--(d2) (c2)--(t2) (a2)--(b2);
+\node[rot] at (3,-2) {(b) em $G$: $s,u,v,f,e,d,c,t$ e o novo $M$};
+\end{scope}
+\end{tikzpicture}
+\end{figura}
+\end{exemplo}
+
+\begin{cuidado}[Armadilhas de emparelhamentos]
+\begin{itemize}
+  \item Confundir \emph{maximal} com \emph{máximo}: um guloso que nunca desfaz pares para num maximal, que pode ter só metade das arestas de um máximo.
+  \item Esquecer que um caminho aumentante começa \emph{e} termina em vértices livres; um caminho alternante qualquer não amplia nada.
+  \item Usar a busca do método húngaro num grafo com ciclos ímpares: ela pode deixar de encontrar um caminho aumentante que existe. Sem bipartição, é preciso tratar os blossoms.
+  \item Na expansão de um blossom, escolher o lado do ciclo pelo comprimento: é o lado \emph{par}, que chega ao vértice de saída por uma aresta de $M$, e não necessariamente o mais curto.
+  \item Esperar $\nu=\tau$ em qualquer grafo: o teorema de König vale só nos bipartidos.
+\end{itemize}
+\end{cuidado}
+
+\begin{chave}
+Emparelhamento: arestas sem extremos comuns; máximo $\ne$ maximal. Berge: $M$ é máximo $\iff$ não há caminho $M$-aumentante, e $M\triangle P$ amplia $M$ em 1. Bipartidos: método húngaro, com busca alternante a partir de cada vértice livre de $X$, $O(nm)$ com listas ou $O(n^3)$ com matriz; árvores húngaras são descartadas. Hall: satura $X$ $\iff$ $|N(S)|\ge|S|$; König: $\nu=\tau$. Grafos gerais: ciclos ímpares formam blossoms, que são contraídos (Edmonds); o caminho achado no grafo contraído é expandido pelo lado par do ciclo; $O(n^2m)$ de forma direta.
+\end{chave}
+
+% ----------------------------------------------------------------
+\section{Exercícios}
+\excompl
+\begin{exercicio}{em-def}[Complementar]<sec:emp,ex:empmaximal>
+No caminho com os vértices $1,\dots,6$ e as arestas $12$, $23$, $34$, $45$ e $56$, dê um emparelhamento maximal que não seja máximo e um emparelhamento máximo. O caminho tem emparelhamento perfeito? E o caminho com 7 vértices?
+\end{exercicio}
+\begin{exercicio}{em-metade}[Complementar]<sec:emp>
+Mostre que todo emparelhamento maximal $M$ satisfaz $|M|\ge\nu(G)/2$. Dê um grafo em que a igualdade vale.
+\end{exercicio}
+\begin{exercicio}{em-perfeitos}[Complementar]<teo:berge>
+Mostre que, se $M$ e $M'$ são emparelhamentos perfeitos distintos de um grafo, as arestas de $M\triangle M'$ formam ciclos disjuntos de comprimento par, com arestas alternadamente em $M$ e em $M'$. Conclua que uma árvore tem no máximo um emparelhamento perfeito.
+\end{exercicio}
+\begin{exercicio}{em-aumenta}[Complementar]<sec:aumentante,ex:aumentante>
+No grafo com os vértices $1,\dots,6$ e as arestas $12$, $23$, $34$, $45$, $56$ e $25$, seja $M=\{23,45\}$. Encontre um caminho $M$-aumentante $P$ e o emparelhamento $M\triangle P$. Ele é máximo? Por quê?
+\end{exercicio}
+\begin{exercicio}{em-hung}[Complementar]<sec:hungaro,ex:hungaro>
+Execute o método húngaro no grafo bipartido com $X=\{a,b,c,d,e\}$, $Y=\{1,2,3,4,5\}$ e as arestas $a1$, $a2$, $b2$, $b3$, $c3$, $c4$, $d4$, $d5$ e $e1$, começando com $M=\emptyset$ e processando os vértices livres de $X$ na ordem $a,b,c,d,e$, com os vizinhos em ordem crescente. Dê os caminhos aumentantes encontrados e o emparelhamento final.
+\end{exercicio}
+\begin{exercicio}{em-hungtree}[Complementar \estrela]<sec:hungaro>
+Num grafo bipartido, suponha que a busca alternante a partir do vértice livre $r\in X$ termina numa árvore húngara $T$. Prove que nenhum vértice de $T$ pertence a um caminho $M$-aumentante e que isso continua valendo depois de qualquer ampliação de $M$ por caminhos aumentantes que evitem $T$. Conclua que $T$ pode ser removida do grafo.
+\end{exercicio}
+\begin{exercicio}{em-hall}[Complementar]<teo:hall>
+Use o teorema de Hall para provar que todo grafo bipartido $k$-regular, com $k\ge1$, tem um emparelhamento perfeito.
+\end{exercicio}
+\begin{exercicio}{em-hallex}[Complementar]<teo:hall,ex:hall>
+No grafo bipartido com $X=\{a,b,c,d\}$, $Y=\{1,2,3,4\}$ e as arestas $a1$, $a2$, $b2$, $c1$, $c2$, $d3$ e $d4$, existe um emparelhamento que satura $X$? Exiba um conjunto $S\subseteq X$ que viola a condição de Hall e calcule $\nu(G)$.
+\end{exercicio}
+\begin{exercicio}{em-konig}[Complementar]<teo:konig,ex:hall>
+No grafo do exercício anterior, a partir de um emparelhamento máximo, construa pela regra da demonstração do teorema de König uma cobertura por vértices de tamanho mínimo.
+\end{exercicio}
+\begin{exercicio}{em-domino}[Complementar]<sec:emp>
+Retiram-se dois cantos opostos de um tabuleiro de xadrez $8\times8$. Mostre que as 62 casas restantes não podem ser cobertas por 31 dominós, cada um cobrindo duas casas vizinhas. Interprete a pergunta como a existência de um emparelhamento perfeito num grafo bipartido.
+\end{exercicio}
+\begin{exercicio}{em-arvore}[Complementar]<sec:aumentante>
+Mostre que toda árvore com pelo menos uma aresta tem um emparelhamento máximo que contém a aresta entre uma folha e o seu vizinho. Use isso para obter um algoritmo $O(n)$ e aplique-o à árvore com as arestas $12$, $13$, $24$, $25$, $36$ e $67$.
+\end{exercicio}
+\begin{exercicio}{em-conta}[Complementar]<sec:emp>
+Quantos emparelhamentos perfeitos têm o grafo bipartido completo $K_{n,n}$ e o grafo completo $K_{2n}$? Calcule os dois números para $n=3$.
+\end{exercicio}
+\begin{exercicio}{em-ciclo}[Complementar]<sec:emp>
+Calcule $\nu$ para o caminho e para o ciclo com $n$ vértices. Para que valores de $n$ eles têm emparelhamento perfeito?
+\end{exercicio}
+\begin{exercicio}{em-cobertura}[Complementar]<sec:emp>
+Uma \emph{cobertura por arestas} é um conjunto de arestas que toca todos os vértices. Mostre que, num grafo sem vértices isolados, a menor cobertura por arestas tem $n-\nu(G)$ arestas. Calcule-a para o caminho com 6 vértices e para a estrela com 5 vértices (um centro ligado a 4 folhas).
+\end{exercicio}
+\begin{exercicio}{em-triangulo}[Complementar]<sec:konig>
+Mostre que $\nu(G)\le\tau(G)\le2\nu(G)$ em qualquer grafo, e que o teorema de König não vale no triângulo.
+\end{exercicio}
+\begin{exercicio}{em-tutte}[Complementar \estrela]<sec:blossom>
+Seja $\mathrm{imp}(H)$ o número de componentes conexas de $H$ com um número ímpar de vértices. Mostre que, para todo $S\subseteq V$, $\nu(G)\le\frac12\bigl(n+|S|-\mathrm{imp}(G-S)\bigr)$. Use essa cota para mostrar que a estrela com 4 vértices (um centro ligado a 3 folhas) não tem emparelhamento perfeito.
+\end{exercicio}
+\begin{exercicio}{em-flor}[Complementar]<sec:blossom,ex:blossom>
+No grafo com os vértices $r,a,b,c,d,x$ e as arestas $ra$, $ab$, $bc$, $cd$, $dr$ e $cx$, seja $M=\{ab,cd\}$. Faça a busca do algoritmo de Edmonds a partir de $r$, com os vizinhos em ordem alfabética: rotule os vértices, encontre o blossom e a sua base, contraia-o, encontre um caminho aumentante no grafo contraído e expanda-o. Qual é o novo emparelhamento?
+\end{exercicio}
+\begin{exercicio}{em-bipcorreto}[Complementar]<sec:hungaro,sec:blossom>
+Explique por que, num grafo bipartido, a busca alternante nunca encontra uma aresta entre dois vértices pares, e por que isso torna a contração de blossoms desnecessária no método húngaro.
+\end{exercicio}
+\begin{exercicio}{em-atrib}[Complementar]<sec:konig>
+Três técnicos, $T_1$, $T_2$ e $T_3$, devem ser designados a três tarefas, um por tarefa. O custo de $T_i$ fazer a tarefa $j$ é dado pelas linhas $(4,1,3)$, $(2,0,5)$ e $(3,2,2)$. Encontre a designação de menor custo testando as $3!$ possibilidades. Quantas possibilidades haveria com 20 técnicos, e qual algoritmo resolve o problema em $O(n^3)$?
+\end{exercicio}
+\begin{exercicio}{em-modela}[Complementar]<sec:hungaro>
+Cada aluno de uma turma indica os projetos que aceita fazer, e o projeto $j$ tem $c_j$ vagas. Modele o problema de alocar o maior número possível de alunos como um emparelhamento máximo num grafo bipartido e dê a complexidade da solução pelo método húngaro.
+\end{exercicio}
