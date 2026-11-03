@@ -31,12 +31,12 @@ CAPITULOS = {
     "10": "10_revisao", "11": "11_programacao_dinamica", "12": "12_floyd_warshall",
     "13": "13_gulosos_matroides", "14": "14_agm", "15": "15_busca_largura",
     "16": "16_dijkstra", "17": "17_busca_profundidade",
-    "18": "18_profundidade_digrafos", "19": "19_emparelhamentos", "A": "A_hash",
+    "18": "18_profundidade_digrafos", "19": "19_emparelhamentos", "20": "20_fluxos", "A": "A_hash",
 }
 
 # Capítulos criados depois do commit de referência: todos os seus exercícios
 # são "novos"; confere-se só que cada um tem a sua resposta, na mesma ordem.
-NOVOS = {"19"}
+NOVOS = {"19", "20"}
 
 CABECALHO = re.compile(r"(\\begin\{exercicio\}\{([^}]*)\}(?:\[[^\]]*\])?)(<[^>\n]*>)?")
 EXERCICIO = re.compile(r"\\begin\{exercicio\}\{([^}]*)\}.*?\\end\{exercicio\}", re.S)

@@ -1,0 +1,320 @@
+% ================================================================
+\chapter{Fluxos em redes}\label{cap:fluxo}\label{sec:fluxos}
+% ================================================================
+\begin{objetivos}
+\begin{itemize}
+  \item Redes, fluxos e o problema do fluxo máximo; fluxos maximais e máximos.
+  \item Cortes, a sua capacidade e o fluxo que os atravessa.
+  \item Rede residual, caminhos aumentantes e gargalos.
+  \item O teorema do fluxo máximo e corte mínimo e o algoritmo de Ford e Fulkerson.
+  \item Aplicações: emparelhamentos bipartidos, caminhos disjuntos e alocações com capacidades.
+\end{itemize}
+\end{objetivos}
+
+Uma rede de tubulações leva água de uma estação de tratamento até um reservatório; uma rede de computadores leva dados de um servidor até um cliente; uma malha rodoviária leva caminhões de uma fábrica até um porto. Em todos os casos, cada ligação tem uma \emph{capacidade} --- litros, megabits ou caminhões por hora ---, nada se acumula nos pontos intermediários, e a pergunta é: qual a maior quantidade que se consegue enviar da origem ao destino? Este capítulo mostra que a resposta é limitada pelo ``gargalo'' mais estreito da rede, um \emph{corte}, e que o valor máximo é exatamente a capacidade do menor corte. O algoritmo que encontra o fluxo máximo usa a mesma ideia do Capítulo~\ref{cap:emp}: melhorar a solução ao longo de caminhos aumentantes.
+
+% Desenho da rede de exemplo dos slides, usado em várias figuras do capítulo.
+% Argumento: os fluxos das arestas sc,sb,sa,ab,bc,cb,bd,da,ct,dt, nessa ordem
+% (vazio: só as capacidades). Os estilos opcionais esc, esb, ... e vs, va, ...
+% (definidos no tikzpicture) destacam arestas e vértices.
+\tikzset{rreta/.style={}, rcurva/.style={bend left=28}}
+\newcommand{\redeslides}[1]{%
+  \node[vtx, fill=Goldenrod!40, vs/.try] (s) at (0,0) {$s$};
+  \node[vtx, va/.try] (a) at (1.5,-1.5) {$a$};
+  \node[vtx, vb/.try] (b) at (3,0) {$b$};
+  \node[vtx, vc/.try] (c) at (3,2) {$c$};
+  \node[vtx, vd/.try] (d) at (4.9,-1.5) {$d$};
+  \node[vtx, fill=Goldenrod!40, vt/.try] (t) at (6.2,0) {$t$};
+  \foreach \uu/\ww/\cap/\idx/\curva/\pos in {s/c/4/0/rreta/0.45,s/b/2/1/rreta/0.5,s/a/3/2/rreta/0.5,a/b/3/3/rreta/0.5,b/c/1/4/rcurva/0.5,c/b/2/5/rcurva/0.5,b/d/4/6/rreta/0.5,d/a/3/7/rreta/0.5,c/t/3/8/rreta/0.5,d/t/5/9/rreta/0.5} {
+    \if\relax\detokenize{#1}\relax \def\rotulo{\cap}%
+    \else \pgfmathtruncatemacro{\valor}{{#1}[\idx]}\def\rotulo{\valor/\cap}\fi
+    \draw[arco, e\uu\ww/.try] (\uu) to[\curva] node[peso, pos=\pos] {$\rotulo$} (\ww);}}
+
+\section{Redes e fluxos}\label{sec:redes}
+Uma \textbf{rede}\index{rede} é um multidigrafo $D=(V,E)$ em que cada aresta $e$ tem uma \textbf{capacidade}\index{capacidade} real $c(e)>0$. Supomos que há dois vértices especiais: a \textbf{origem}\index{origem (fluxo)@origem (de uma rede)} $s$, uma fonte que alcança todos os demais vértices, e o \textbf{destino}\index{destino (fluxo)@destino (de uma rede)} $t$, um sumidouro alcançado por todos os demais.
+
+\begin{defi}[Fluxo]\index{fluxo}
+Um \textbf{fluxo} é uma função $f:E\to\R_+$ tal que:
+\begin{enumerate}
+  \item $f(e)\le c(e)$ para toda aresta $e$ (\textbf{viabilidade}\index{viabilidade}: o fluxo não ultrapassa as capacidades);
+  \item $\sum_xf(x,v)=\sum_zf(v,z)$ para todo $v\in V\setminus\{s,t\}$ (\textbf{conservação}\index{conservacao de fluxo@conservação de fluxo}: tudo o que entra num vértice intermediário sai dele).
+\end{enumerate}
+\end{defi}
+O \emph{valor do fluxo} num vértice $v\ne s,t$ é o que passa por ele, $\sum_xf(x,v)$ (igual a $\sum_zf(v,z)$); em $s$ é $\sum_zf(s,z)$ e em $t$ é $\sum_xf(x,t)$. O \textbf{valor do fluxo na rede}\index{valor do fluxo} é $f(D)=\sum_zf(s,z)$, o que sai da origem.
+
+\begin{intuicao}
+Pense em água correndo em canos de mão única. A capacidade de um cano é a vazão máxima que ele suporta; a conservação diz que as junções não vazam nem acumulam água. O valor do fluxo é a vazão que sai da estação de tratamento --- e, como nada se perde no caminho, é também a vazão que chega ao reservatório (Exercício~\ref{ex:fl-fluxot}).
+\end{intuicao}
+
+\begin{exemplo}[Um fluxo de valor 4]\label{ex:fluxo4}
+A rede da Figura~\ref{fig:rede4}, a dos slides da disciplina, tem os vértices $s,a,b,c,d,t$ e dez arestas; os rótulos são \emph{fluxo/capacidade}. A conservação vale em todos os vértices intermediários: em $a$ entram $f(s,a)+f(d,a)=0+1$ e sai $f(a,b)=1$; em $b$ entram $2+1+1=4$ (de $s$, $a$ e $c$) e saem $1+3=4$ (para $c$ e $d$); em $c$ entram $2+1=3$ e saem $1+2=3$; em $d$ entram 3 e saem $1+2=3$. O valor do fluxo é $f(D)=f(s,c)+f(s,b)+f(s,a)=2+2+0=4$, e chegam a $t$ exatamente $f(c,t)+f(d,t)=2+2=4$ unidades. Repare que há arestas nos dois sentidos entre $b$ e $c$, ambas com fluxo 1: a rede pode ter ``ida e volta''.
+\begin{figura}[A rede dos slides com um fluxo de valor 4. Cada aresta mostra \emph{fluxo/capacidade}.\label{fig:rede4}]
+\begin{tikzpicture}[x=1.15cm,y=1cm]
+\redeslides{2,2,0,1,1,1,3,1,2,2}
+\end{tikzpicture}
+\end{figura}
+\end{exemplo}
+
+\section{Fluxo máximo, fluxo maximal e arestas saturadas}\label{sec:fluxomax}
+O \textbf{problema do fluxo máximo}\index{fluxo!maximo, problema do@máximo, problema do} é: dada uma rede $D$, encontrar um fluxo $f$ de valor $f(D)$ máximo. Uma aresta está \textbf{saturada}\index{aresta!saturada} quando $f(e)=c(e)$. Um fluxo é \textbf{maximal}\index{fluxo!maximal} quando todo caminho direcionado de $s$ a $t$ contém uma aresta saturada; em outras palavras, quando não é possível aumentar o seu valor \emph{apenas acrescentando} fluxo nas arestas. Todo fluxo máximo é maximal, mas nem todo fluxo maximal é máximo --- a mesma distinção entre maximal e máximo dos emparelhamentos.
+
+\begin{exemplo}[Maximal, mas não máximo]\label{ex:maximal}
+O fluxo de valor 6 da Figura~\ref{fig:maximal}(a) satura as arestas $sb$, $bc$, $bd$ e $ct$ (em vermelho). Todo caminho direcionado de $s$ a $t$ usa uma delas: $s,c,t$ usa $ct$; os que passam por $b$ e seguem para $d$ usam $bd$; os que vão de $b$ a $c$ usam $bc$ e depois $ct$; e $s,b,\dots$ começa por $sb$. Logo, nenhum caminho admite mais fluxo, e o fluxo é maximal. Mesmo assim, ele não é máximo: o fluxo da Figura~\ref{fig:maximal}(b) tem valor 7. A diferença está na aresta $da$: no fluxo de valor 6 passa 1 unidade de $d$ para $a$, e para chegar ao de valor 7 é preciso \emph{retirar} essa unidade --- algo que ``só acrescentar'' não faz.
+\begin{figura}[(a) Um fluxo maximal de valor 6; as arestas saturadas estão em vermelho. (b) Um fluxo máximo, de valor 7.\label{fig:maximal}]
+\begin{tikzpicture}[x=0.92cm,y=0.85cm, esb/.style={BrickRed, very thick}, ebc/.style={BrickRed, very thick}, ebd/.style={BrickRed, very thick}, ect/.style={BrickRed, very thick}]
+\redeslides{3,2,1,2,1,1,4,1,3,3}
+\node[rot] at (3.1,-2.4) {(a) valor 6: maximal};
+\end{tikzpicture}
+\hspace{4mm}
+\begin{tikzpicture}[x=0.92cm,y=0.85cm]
+\redeslides{3,2,2,2,1,1,4,0,3,4}
+\node[rot] at (3.1,-2.4) {(b) valor 7: máximo};
+\end{tikzpicture}
+\end{figura}
+\end{exemplo}
+
+% ------------------------------------------------------------------
+\section{Cortes}\label{sec:cortes}
+Seja $S\subseteq V$ com $s\in S$ e $t\notin S$, e seja $S'=V\setminus S$. O \textbf{corte}\index{corte (fluxo)@corte (numa rede)} $(S,S')$ é o conjunto das arestas com um extremo em $S$ e o outro em $S'$. A ideia é que todo caminho direcionado de $s$ a $t$ precisa passar por alguma aresta do corte. Separamos as arestas do corte pelo sentido:
+\begin{itemize}
+  \item $(S,S')^+$ é o conjunto das arestas que vão de $S$ para $S'$;
+  \item $(S,S')^-$ é o conjunto das arestas que vão de $S'$ para $S$.
+\end{itemize}
+A \textbf{capacidade do corte}\index{corte (fluxo)@corte (numa rede)!capacidade} é a soma das capacidades das arestas de $(S,S')^+$, $c(S,S')=\sum_{e\in(S,S')^+}c(e)$; as arestas que voltam não contam. O \textbf{problema do corte mínimo} é encontrar um corte de capacidade mínima. O \textbf{fluxo no corte}\index{corte (fluxo)@corte (numa rede)!fluxo no} é o que atravessa o corte para a frente menos o que volta:
+\[
+f(S,S')=\sum_{e\in(S,S')^+}f(e)\;-\sum_{e\in(S,S')^-}f(e).
+\]
+
+\begin{exemplo}[Três cortes da rede dos slides]\label{ex:cortes}
+Com o fluxo de valor 6 da Figura~\ref{fig:maximal}(a):
+\begin{itemize}
+  \item $S=\{s,a,b\}$: $(S,S')^+=\{sc,bc,bd\}$ e $(S,S')^-=\{cb,da\}$. A capacidade é $c(s,c)+c(b,c)+c(b,d)=4+1+4=9$, e o fluxo é $3+1+4-1-1=6$.
+  \item $S=\{s,a,b,c,d\}$: $(S,S')^+=\{ct,dt\}$, sem arestas de volta. Capacidade $3+5=8$; fluxo $3+3=6$.
+  \item $S=\{s,a,b,c\}$: $(S,S')^+=\{bd,ct\}$ e $(S,S')^-=\{da\}$. Capacidade $4+3=7$; fluxo $4+3-1=6$.
+\end{itemize}
+As capacidades são 9, 8 e 7, mas o fluxo que atravessa os três cortes é sempre 6, o valor do fluxo na rede. Isso não é coincidência.
+\begin{figura}[O corte $(S,S')$ com $S=\{s,a,b,c\}$ (vértices em azul) e o fluxo máximo de valor 7. As arestas de $(S,S')^+$, $bd$ e $ct$, estão saturadas, e a aresta de volta, $da$, tem fluxo zero: a capacidade do corte, 7, é igual ao valor do fluxo.\label{fig:cortemin}]
+\begin{tikzpicture}[x=1.15cm,y=1cm, va/.style={fill=azul}, vb/.style={fill=azul}, vc/.style={fill=azul}, vs/.style={fill=azul}, ebd/.style={MidnightBlue, very thick}, ect/.style={MidnightBlue, very thick}, eda/.style={BrickRed, very thick, densely dashed}]
+\redeslides{3,2,2,2,1,1,4,0,3,4}
+\draw[dashed, gray, rounded corners=16pt] (-0.55,-2.15) -- (2.3,-2.15) -- (3.9,0.4) -- (3.75,2.6) -- (2.2,2.65) -- (-0.55,0.6) -- cycle;
+\node[rot] at (0.3,-1.6) {$S$};
+\end{tikzpicture}
+\end{figura}
+\end{exemplo}
+
+\begin{teo}\label{teo:fluxocorte}
+Seja $f$ um fluxo numa rede $D$ e $(S,S')$ um corte qualquer. Então $f(S,S')=f(D)$.
+\end{teo}
+\begin{proof}
+Some, para todo $v\in S$, a diferença entre o que sai e o que entra em $v$. Para $v=s$ ela vale $f(D)$ (a origem é uma fonte: nada entra nela); para $v\in S\setminus\{s\}$, vale 0, pela conservação. Na soma, cada aresta com os dois extremos em $S$ aparece uma vez com sinal $+$ (saindo do seu início) e uma vez com sinal $-$ (entrando no seu fim), e se cancela. Sobram as arestas de $(S,S')^+$, com sinal $+$, e as de $(S,S')^-$, com sinal $-$: a soma é $f(S,S')$, e ela vale $f(D)$.
+\end{proof}
+
+\begin{teo}\label{teo:cota}
+Para todo fluxo $f$ e todo corte $(S,S')$, $f(D)\le c(S,S')$.
+\end{teo}
+\begin{proof}
+$f(D)=f(S,S')=\sum_{(S,S')^+}f(e)-\sum_{(S,S')^-}f(e)\le\sum_{(S,S')^+}f(e)\le\sum_{(S,S')^+}c(e)=c(S,S')$.
+\end{proof}
+Assim, \emph{qualquer} corte limita \emph{qualquer} fluxo: na rede dos slides, o fluxo de valor 6 é no máximo 9, 8 e 7, e o de valor 7 também. Quando um fluxo e um corte têm o mesmo valor, como o fluxo de valor 7 e o corte de capacidade 7 da Figura~\ref{fig:cortemin}, os dois são ótimos ao mesmo tempo: um é o certificado do outro. O resto do capítulo mostra que isso sempre acontece.
+
+% ------------------------------------------------------------------
+\section{Rede residual e caminhos aumentantes}\label{sec:residual}
+Para melhorar um fluxo, às vezes é preciso \emph{desviar} fluxo já enviado, como no Exemplo~\ref{ex:maximal}. A rede residual registra todas as mudanças possíveis. Dado um fluxo $f$, uma aresta $e$ de $D$ é \textbf{direta}\index{aresta!direta} se $c(e)-f(e)>0$ (ainda cabe fluxo nela) e \textbf{contrária}\index{aresta!contraria@contrária} se $f(e)>0$ (há fluxo que pode ser retirado); uma aresta pode ser as duas coisas ao mesmo tempo.
+
+\begin{defi}[Rede residual]\index{rede residual}
+Dados $D$ e $f$, a \textbf{rede residual} é o multidigrafo $D'=(V,E')$ em que:
+\begin{itemize}
+  \item cada aresta direta $(x,y)$ dá uma aresta $(x,y)\in E'$ com capacidade $c'(x,y)=c(x,y)-f(x,y)$, uma \textbf{aresta de aumento de fluxo};
+  \item cada aresta contrária $(x,y)$ dá uma aresta $(y,x)\in E'$, no sentido oposto, com capacidade $c'(y,x)=f(x,y)$, uma \textbf{aresta de redução de fluxo}.
+\end{itemize}
+\end{defi}
+A rede residual é um ``mapa'' das variações possíveis: percorrer uma aresta de aumento significa mandar mais fluxo pela aresta correspondente de $D$; percorrer uma de redução significa devolver fluxo. Um \textbf{caminho aumentante}\index{caminho!aumentante (fluxo)} é um caminho de $s$ a $t$ na rede residual, e o seu \textbf{gargalo}\index{gargalo} é a menor capacidade de uma aresta ao longo dele.
+
+\begin{exemplo}[A rede residual do fluxo de valor 4]\label{ex:residual}
+Para o fluxo da Figura~\ref{fig:rede4}, cada aresta de $D$ dá as seguintes arestas residuais:
+\begin{center}\small
+\begin{tabular}{@{}cccc@{\qquad}cccc@{}}
+\toprule
+aresta & $f/c$ & aumento & redução & aresta & $f/c$ & aumento & redução\\
+\midrule
+$sc$ & $2/4$ & $s\to c$: 2 & $c\to s$: 2 & $cb$ & $1/2$ & $c\to b$: 1 & $b\to c$: 1\\
+$sb$ & $2/2$ & --- & $b\to s$: 2 & $bd$ & $3/4$ & $b\to d$: 1 & $d\to b$: 3\\
+$sa$ & $0/3$ & $s\to a$: 3 & --- & $da$ & $1/3$ & $d\to a$: 2 & $a\to d$: 1\\
+$ab$ & $1/3$ & $a\to b$: 2 & $b\to a$: 1 & $ct$ & $2/3$ & $c\to t$: 1 & $t\to c$: 2\\
+$bc$ & $1/1$ & --- & $c\to b$: 1 & $dt$ & $2/5$ & $d\to t$: 3 & $t\to d$: 2\\
+\bottomrule
+\end{tabular}
+\end{center}
+As arestas saturadas ($sb$ e $bc$) só dão arestas de redução, e as sem fluxo ($sa$) só dão arestas de aumento. O caminho $s\to a\to d\to t$ é aumentante: usa a aresta de aumento $s\to a$ (capacidade 3), a de \emph{redução} $a\to d$ (capacidade 1, vinda de $da$) e a de aumento $d\to t$ (capacidade 3). O gargalo é 1. Na rede, isso significa: mandar 1 unidade a mais de $s$ para $a$, deixar de mandar 1 unidade de $d$ para $a$ (a unidade que chegava a $a$ vindo de $d$ agora vem de $s$) e mandar 1 unidade a mais de $d$ para $t$. O novo fluxo tem $f(s,a)=1$, $f(d,a)=0$ e $f(d,t)=3$, e valor 5 (Figura~\ref{fig:aumentofluxo}).
+\begin{figura}[À esquerda, as arestas de $D$ correspondentes ao caminho aumentante $s\to a\to d\to t$: $sa$ e $dt$ ganham 1 unidade (azul) e $da$ perde 1 (vermelho). À direita, o novo fluxo, de valor 5.\label{fig:aumentofluxo}]
+\begin{tikzpicture}[x=0.92cm,y=0.85cm, esa/.style={MidnightBlue, very thick}, edt/.style={MidnightBlue, very thick}, eda/.style={BrickRed, very thick}]
+\redeslides{2,2,0,1,1,1,3,1,2,2}
+\node[rot] at (3.1,-2.4) {antes: valor 4};
+\end{tikzpicture}
+\hspace{4mm}
+\begin{tikzpicture}[x=0.92cm,y=0.85cm]
+\redeslides{2,2,1,1,1,1,3,0,2,3}
+\node[rot] at (3.1,-2.4) {depois: valor 5};
+\end{tikzpicture}
+\end{figura}
+\end{exemplo}
+
+\begin{lema}\label{lema:aumento}
+Dados $D$ e $f$, se a rede residual tem um caminho aumentante com gargalo $g$, então existe um fluxo $f_{novo}$ em $D$ com $f_{novo}(D)=f(D)+g$.
+\end{lema}
+\begin{proof}
+Seja $e'_1e'_2\cdots e'_k$ o caminho aumentante e $e_1,\dots,e_k$ as arestas correspondentes de $D$. Para $j=1,\dots,k$: se $e'_j$ é de aumento, faça $f_{novo}(e_j)=f(e_j)+g$; se é de redução, $f_{novo}(e_j)=f(e_j)-g$; nas demais arestas, $f_{novo}=f$. A viabilidade vale porque $g$ não passa da capacidade residual de nenhuma aresta do caminho: quem ganha $g$ tinha folga $c-f\ge g$, e quem perde $g$ tinha fluxo $f\ge g$. A conservação continua valendo em cada vértice intermediário $v$ do caminho: a aresta residual que chega a $v$ aumenta em $g$ o que entra em $v$ (se é de aumento) ou diminui em $g$ o que sai de $v$ (se é de redução), e a que sai de $v$ faz o efeito oposto; nos quatro casos (aumento ou redução, na chegada e na saída), o saldo ``entra menos sai'' de $v$ continua zero. Por fim, a primeira aresta sai de $s$, onde nada entra; ela só pode ser de aumento, e o valor do fluxo cresce $g$.
+\end{proof}
+
+\begin{teo}[Caminho aumentante]\label{teo:aumentante}
+Dados $D$ e $f$, $f$ é um fluxo máximo se e somente se não há caminho aumentante na rede residual.
+\end{teo}
+\begin{teo}[Fluxo máximo e corte mínimo]\label{teo:maxflowmincut}\index{fluxo maximo e corte minimo@fluxo máximo e corte mínimo, teorema do}
+Se $f$ é um fluxo máximo e $(S,S')$ é um corte mínimo de uma rede $D$, então $f(D)=c(S,S')$.
+\end{teo}
+\begin{proof}[Demonstração dos dois teoremas]
+Se há caminho aumentante, o Lema~\ref{lema:aumento} dá um fluxo maior, e $f$ não é máximo. Suponha agora que não há caminho aumentante, e seja $S$ o conjunto dos vértices alcançáveis a partir de $s$ na rede residual; então $s\in S$ e $t\notin S$. Toda aresta $e\in(S,S')^+$ está saturada: senão ela seria direta, e o seu extremo em $S'$ seria alcançável. Toda aresta $e\in(S,S')^-$ tem fluxo zero: senão seria contrária, e daria uma aresta residual de $S$ para $S'$. Logo $f(D)=f(S,S')=\sum_{(S,S')^+}c(e)-0=c(S,S')$. Pelo Teorema~\ref{teo:cota}, nenhum fluxo vale mais que $c(S,S')$ e nenhum corte vale menos que $f(D)$: $f$ é máximo e $(S,S')$ é mínimo. Isso prova o Teorema~\ref{teo:aumentante} e mostra que existe um par $(f,S)$ com $f(D)=c(S,S')$; como todos os fluxos máximos têm o mesmo valor e todos os cortes mínimos a mesma capacidade, vale o Teorema~\ref{teo:maxflowmincut}.
+\end{proof}
+
+\begin{cor}\label{cor:corte}
+Sejam $f$ um fluxo e $(S,S')$ um corte em $D$. Então $f$ é máximo e $(S,S')$ é mínimo se e somente se toda aresta de $(S,S')^+$ está saturada e toda aresta de $(S,S')^-$ tem fluxo zero.
+\end{cor}
+Na Figura~\ref{fig:cortemin}, as arestas de $(S,S')^+$, $bd$ e $ct$, estão saturadas, e a única de $(S,S')^-$, $da$, tem fluxo zero: o fluxo de valor 7 é máximo e o corte de capacidade 7 é mínimo, e cada um certifica o outro.
+
+% ------------------------------------------------------------------
+\section{O algoritmo de Ford e Fulkerson}\label{sec:fordfulkerson}
+O Teorema~\ref{teo:aumentante} dá o algoritmo: comece com um fluxo qualquer (por exemplo, zero em todas as arestas) e, enquanto houver caminho aumentante na rede residual, aumente o fluxo pelo gargalo. Ele é conhecido como \textbf{algoritmo de Ford e Fulkerson}\index{Ford e Fulkerson, algoritmo de}.
+\begin{pseudo}{Fluxo máximo por caminhos aumentantes (Ford e Fulkerson)}
+\begin{algorithmic}
+\Function{FluxoMáximo}{$D$}
+  \State $f:=$ fluxo inicial qualquer \Comment{por exemplo, $f(e)=0$ para toda aresta}
+  \State $D':=$ rede residual de $D$ em relação a $f$
+  \While{$D'$ tem um caminho aumentante $e'_1e'_2\cdots e'_k$}
+    \State $g:=$ gargalo do caminho
+    \For{$j:=1$ \textbf{até} $k$}
+      \State seja $e_j$ a aresta de $D$ correspondente a $e'_j$
+      \If{$e'_j$ é aresta de aumento} \State $f(e_j):=f(e_j)+g$ \EndIf
+      \If{$e'_j$ é aresta de redução} \State $f(e_j):=f(e_j)-g$ \EndIf
+    \EndFor
+    \State $D':=$ rede residual de $D$ em relação ao novo $f$
+  \EndWhile
+  \State \Return $f$ \Comment{e o corte mínimo: os vértices alcançáveis a partir de $s$ em $D'$}
+\EndFunction
+\end{algorithmic}
+\end{pseudo}
+
+\begin{exemplo}[O algoritmo na rede dos slides]\label{ex:ff}
+Partimos do fluxo zero e escolhemos, a cada passo, um caminho aumentante com o menor número de arestas, por uma busca em largura (Capítulo~\ref{cap:bfs}) na rede residual com os vizinhos em ordem alfabética.
+\begin{itemize}
+  \item Com o fluxo zero, a rede residual é a própria rede, e o caminho mais curto é $s,c,t$, com gargalo $\min\{4,3\}=3$. O valor passa a 3, e $ct$ fica saturada.
+  \item Em seguida, $s,b,d,t$, com gargalo $\min\{2,4,5\}=2$. Valor 5; $sb$ fica saturada.
+  \item O próximo é $s,a,b,d,t$, com gargalo $\min\{3,3,2,3\}=2$ (a aresta $bd$ já tinha 2 das 4 unidades). Valor 7; $bd$ fica saturada.
+  \item Agora, a partir de $s$ só se alcançam $a$, $b$ e $c$ na rede residual: $d$ não é alcançável, pois $bd$ está saturada e a aresta $da$ não tem fluxo para devolver; e $t$ também não, pois $ct$ está saturada. Não há caminho aumentante.
+\end{itemize}
+O fluxo final tem valor 7, e $S=\{s,a,b,c\}$ é o corte mínimo da Figura~\ref{fig:cortemin}, com capacidade 7. Foram três aumentos.
+\end{exemplo}
+
+\textbf{Complexidade.} Com capacidades \emph{inteiras}, cada aumento acrescenta pelo menos 1 ao valor do fluxo, de modo que há no máximo $f^*$ aumentos, sendo $f^*$ o valor do fluxo máximo. Cada aumento custa $O(n+m)$: construir a rede residual e encontrar um caminho por uma busca. O total é $O(m\,f^*)$ (supondo $m\ge n-1$), que é \emph{pseudopolinomial}: depende do valor $f^*$, que pode ser exponencial no tamanho da entrada (Exercício~\ref{ex:fl-pseudo}). Escolhendo sempre um caminho aumentante \emph{mais curto}, por busca em largura, o número de aumentos cai para $O(nm)$, quaisquer que sejam as capacidades, e o total para $O(nm^2)$: é o \textbf{algoritmo de Edmonds e Karp}\index{Edmonds e Karp, algoritmo de}.
+
+\begin{teo}[Integralidade]\label{teo:integral}\index{integralidade, teorema da}
+Se todas as capacidades são inteiras, existe um fluxo máximo em que o fluxo de toda aresta é inteiro.
+\end{teo}
+\begin{proof}[Ideia]
+Partindo do fluxo zero, todas as capacidades residuais e todos os gargalos são inteiros, e cada aumento mantém o fluxo inteiro. O algoritmo para com um fluxo máximo inteiro.
+\end{proof}
+
+\begin{complemento}[Para saber mais: capacidades reais]
+Com capacidades irracionais, uma escolha infeliz de caminhos aumentantes pode fazer o algoritmo de Ford e Fulkerson nunca parar --- e, pior, convergir para um valor menor que o máximo. A escolha de caminhos mais curtos (Edmonds e Karp) elimina o problema: a distância de $s$ a cada vértice na rede residual nunca diminui, e cada aresta só pode ser o gargalo de um caminho $O(n)$ vezes, de onde vem a cota de $O(nm)$ aumentos. Há algoritmos ainda mais rápidos, como o de \emph{push-relabel}, em $O(n^3)$.
+\end{complemento}
+
+% ------------------------------------------------------------------
+\section{Aplicações}\label{sec:fluxoaplic}
+Muitos problemas se resolvem construindo uma rede em que um fluxo inteiro corresponde a uma solução; o teorema da integralidade garante que o algoritmo devolve um fluxo inteiro.
+\begin{itemize}
+  \item \textbf{Emparelhamento bipartido.} Dado um grafo bipartido com lados $X$ e $Y$, crie $s$ e $t$, arestas $s\to x$ para todo $x\in X$, $x\to y$ para toda aresta $xy$ do grafo e $y\to t$ para todo $y\in Y$, todas com capacidade 1. Um fluxo inteiro usa cada vértice no máximo uma vez, e as arestas $x\to y$ com fluxo 1 formam um emparelhamento: o fluxo máximo vale $\nu(G)$ (Capítulo~\ref{cap:emp}).
+  \item \textbf{Caminhos disjuntos.} Com capacidade 1 em todas as arestas, o valor do fluxo máximo de $s$ a $t$ é o maior número de caminhos de $s$ a $t$ sem arestas em comum, e a capacidade do corte mínimo é o menor número de arestas cuja remoção separa $t$ de $s$ (teorema de Menger).
+  \item \textbf{Várias origens e destinos} se tratam com uma superorigem ligada a todas as origens e um superdestino que recebe de todos os destinos; \textbf{capacidades nos vértices}, dividindo cada vértice em dois, ligados por uma aresta com a capacidade do vértice.
+\end{itemize}
+
+\begin{exemplo}[O exemplo do método húngaro como fluxo]\label{ex:fluxoemp}
+No grafo bipartido do Exemplo~\ref{ex:hungaro}, com $X=\{a,b,c,d,e\}$ e $Y=\{1,2,3,4\}$, a rede tem $s$ ligado a $a,\dots,e$, as nove arestas do grafo orientadas de $X$ para $Y$ e $1,\dots,4$ ligados a $t$, tudo com capacidade 1. O corte $S=\{s,a,b,e\}$ tem $(S,S')^+=\{sc,sd,a1,a2,b1,e1,e2\}$, com capacidade 7 --- grande. Já o corte $S=\{s,a,b,e,1,2\}$ tem $(S,S')^+=\{sc,sd,1t,2t\}$, de capacidade 4: é a cobertura $\{c,d,1,2\}$ do Exemplo~\ref{ex:hall}, agora vista como corte. O fluxo máximo vale 4, como o emparelhamento máximo encontrado pelo método húngaro. O teorema do fluxo máximo e corte mínimo, aplicado a essas redes, dá exatamente o teorema de König (Exercício~\ref{ex:fl-konig}).
+\end{exemplo}
+
+\begin{cuidado}[Armadilhas de fluxos]
+\begin{itemize}
+  \item Na capacidade de um corte, somar também as arestas que voltam de $S'$ para $S$: só contam as de $(S,S')^+$. Já no \emph{fluxo} do corte, as que voltam entram com sinal negativo.
+  \item Confundir fluxo \emph{maximal} com \emph{máximo}: o algoritmo guloso que só acrescenta fluxo pode parar num maximal.
+  \item Esquecer as arestas de \emph{redução} na rede residual: sem elas, não há como desviar fluxo, e o algoritmo pode parar antes do máximo.
+  \item Dizer que o Ford e Fulkerson é polinomial: com uma escolha qualquer de caminhos ele é $O(m\,f^*)$, pseudopolinomial; o de Edmonds e Karp é que é $O(nm^2)$.
+\end{itemize}
+\end{cuidado}
+
+\begin{chave}
+Rede: multidigrafo com capacidades, origem $s$ e destino $t$. Fluxo: viabilidade e conservação; valor $f(D)$. Corte $(S,S')$: capacidade é a soma das capacidades de $(S,S')^+$; o fluxo em qualquer corte é $f(D)$, logo $f(D)\le c(S,S')$. Rede residual: arestas de aumento ($c-f$) e de redução ($f$, no sentido oposto). $f$ é máximo $\iff$ não há caminho aumentante; fluxo máximo $=$ corte mínimo, e o corte é dado pelos vértices alcançáveis a partir de $s$ na rede residual. Ford e Fulkerson: $O(m\,f^*)$ com capacidades inteiras; Edmonds e Karp: $O(nm^2)$. Integralidade: capacidades inteiras dão fluxo máximo inteiro, o que permite modelar emparelhamentos e caminhos disjuntos.
+\end{chave}
+
+% ----------------------------------------------------------------
+\section{Exercícios}
+\excurso
+\begin{exercicio}{fl-cortes}[Slides]<sec:cortes,ex:cortes>
+Na rede dos slides, com o fluxo máximo de valor 7 da Figura~\ref{fig:maximal}(b), considere o corte com $S=\{s,c\}$. Determine $(S,S')^+$, $(S,S')^-$, a capacidade $c(S,S')$ e o fluxo $f(S,S')$, e confira os Teoremas~\ref{teo:fluxocorte} e~\ref{teo:cota}.
+\end{exercicio}
+\begin{exercicio}{fl-maximal}[Slides]<sec:residual,ex:maximal>
+Construa a rede residual do fluxo maximal de valor 6 da Figura~\ref{fig:maximal}(a), encontre um caminho aumentante e o seu gargalo, e dê o novo fluxo. Ele é máximo? Justifique com um corte.
+\end{exercicio}
+\begin{exercicio}{fl-corolario}[Slides]<teo:maxflowmincut,cor:corte>
+Prove o Corolário~\ref{cor:corte}: um fluxo $f$ é máximo e um corte $(S,S')$ é mínimo se e somente se toda aresta de $(S,S')^+$ está saturada e toda aresta de $(S,S')^-$ tem fluxo zero.
+\end{exercicio}
+
+\excompl
+\begin{exercicio}{fl-def}[Complementar]<sec:redes>
+Na rede com as arestas $sa$ (capacidade 4), $sb$ (2), $ab$ (1), $at$ (2) e $bt$ (3), diga se cada função abaixo é um fluxo e, se for, dê o seu valor: (a) $f(sa)=3$, $f(sb)=2$, $f(ab)=1$, $f(at)=2$, $f(bt)=3$; (b) $f(sa)=4$, $f(sb)=1$, $f(ab)=1$, $f(at)=2$, $f(bt)=2$. O fluxo do item (a) é máximo?
+\end{exercicio}
+\begin{exercicio}{fl-ff}[Complementar]<sec:fordfulkerson,ex:ff>
+Execute o algoritmo de Ford e Fulkerson, partindo do fluxo zero e escolhendo sempre um caminho aumentante mais curto (busca em largura com os vizinhos em ordem alfabética), na rede com as arestas $sa$ (8), $sb$ (5), $ab$ (2), $ac$ (5), $bd$ (6), $cd$ (2), $ct$ (4) e $dt$ (7). Dê os caminhos aumentantes e os gargalos, o valor do fluxo máximo e um corte mínimo.
+\end{exercicio}
+\begin{exercicio}{fl-corte}[Complementar]<sec:cortes>
+Na rede com as arestas $sa$ (3), $sb$ (2), $ab$ (1), $at$ (2) e $bt$ (3), liste todos os cortes $(S,S')$ e as suas capacidades. Qual é o valor do fluxo máximo? O corte mínimo é único?
+\end{exercicio}
+\begin{exercicio}{fl-aumenta}[Complementar]<teo:maxflowmincut>
+Na rede do exercício anterior, a capacidade da aresta $at$ passa de 2 para 3. O fluxo máximo aumenta? Com capacidades inteiras, diga exatamente quando aumentar em 1 a capacidade de uma aresta aumenta o valor do fluxo máximo.
+\end{exercicio}
+\begin{exercicio}{fl-residualex}[Complementar]<sec:residual,ex:residual>
+Na rede com as arestas $sa$ (2), $sb$ (3), $ab$ (1), $at$ (3) e $bt$ (2), considere o fluxo $f(sa)=2$, $f(sb)=2$, $f(ab)=0$, $f(at)=2$ e $f(bt)=2$. Construa a rede residual, mostre que não há caminho aumentante e dê o corte mínimo obtido pelos vértices alcançáveis a partir de $s$.
+\end{exercicio}
+\begin{exercicio}{fl-integral}[Complementar]<teo:integral>
+Prove o teorema da integralidade com detalhes. O algoritmo devolve sempre um fluxo inteiro, mesmo que existam fluxos máximos não inteiros? Dê uma rede com um fluxo máximo não inteiro.
+\end{exercicio}
+\begin{exercicio}{fl-pseudo}[Complementar]<sec:fordfulkerson>
+Na rede com as arestas $sa$, $sb$, $at$ e $bt$, todas de capacidade $C$, e $ab$, de capacidade 1, mostre que o Ford e Fulkerson pode fazer $2C$ aumentos se escolher mal os caminhos. Quantos aumentos faz o Edmonds e Karp? O que isso diz sobre a complexidade $O(m\,f^*)$?
+\end{exercicio}
+\begin{exercicio}{fl-ek}[Complementar \estrela]<sec:fordfulkerson>
+No algoritmo de Edmonds e Karp, mostre que a distância (em número de arestas) de $s$ a cada vértice na rede residual nunca diminui, e que cada aresta é a aresta de gargalo de um caminho aumentante no máximo $O(n)$ vezes. Conclua que há $O(nm)$ aumentos e que o algoritmo custa $O(nm^2)$.
+\end{exercicio}
+\begin{exercicio}{fl-fluxot}[Complementar]<teo:fluxocorte>
+Mostre que, para todo fluxo, o que sai da origem é igual ao que chega ao destino: $\sum_zf(s,z)=\sum_xf(x,t)$.
+\end{exercicio}
+\begin{exercicio}{fl-emp}[Complementar]<sec:fluxoaplic,ex:fluxoemp>
+Monte a rede de fluxo do grafo bipartido com $X=\{a,b,c\}$, $Y=\{1,2,3\}$ e as arestas $a1$, $a2$, $b1$, $c2$ e $c3$. Qual é o valor do fluxo máximo e qual emparelhamento ele dá?
+\end{exercicio}
+\begin{exercicio}{fl-menger}[Complementar]<sec:fluxoaplic>
+No digrafo com as arestas $sa$, $sb$, $ac$, $bc$, $ct$, $at$, $bd$ e $dt$, encontre o maior número de caminhos de $s$ a $t$ sem arestas em comum e um conjunto mínimo de arestas cuja remoção separa $t$ de $s$, usando fluxos.
+\end{exercicio}
+\begin{exercicio}{fl-vertices}[Complementar]<sec:fluxoaplic>
+Numa rede, cada vértice intermediário $v$ também tem uma capacidade $c(v)$: no máximo $c(v)$ unidades podem passar por ele. Mostre como reduzir esse problema ao fluxo máximo comum.
+\end{exercicio}
+\begin{exercicio}{fl-multi}[Complementar]<sec:fluxoaplic>
+Três fábricas produzem, por dia, até 10, 15 e 20 toneladas, e dois portos recebem até 25 e 30 toneladas; a malha rodoviária tem capacidades nas estradas. Mostre como calcular o total máximo que pode ser escoado com um único fluxo máximo.
+\end{exercicio}
+\begin{exercicio}{fl-nd}[Complementar]<sec:redes>
+Como calcular o fluxo máximo numa rede \emph{não direcionada}, em que cada ligação $\{x,y\}$ de capacidade $c$ pode ser usada em qualquer sentido (mas a soma dos dois sentidos não passa de $c$)?
+\end{exercicio}
+\begin{exercicio}{fl-konig}[Complementar \estrela]<sec:fluxoaplic,teo:konig>
+Deduza o teorema de König do teorema do fluxo máximo e corte mínimo: na rede do emparelhamento bipartido, troque a capacidade das arestas $x\to y$ por $\infty$ e mostre que um corte de capacidade finita corresponde a uma cobertura por vértices de mesmo tamanho.
+\end{exercicio}
+\begin{exercicio}{fl-escala}[Complementar]<sec:fluxoaplic>
+Cada aluno pode cursar até 2 disciplinas optativas, apenas entre as que ele indicou, e cada optativa $j$ tem $c_j$ vagas. Modele como fluxo máximo o problema de fazer o maior número possível de matrículas e explique por que a resposta do algoritmo é uma matrícula válida.
+\end{exercicio}
+\begin{exercicio}{fl-decomp}[Complementar]<sec:redes>
+Mostre que todo fluxo pode ser decomposto numa soma de fluxos ao longo de caminhos de $s$ a $t$ e de ciclos direcionados, com no máximo $m$ parcelas. Decomponha o fluxo máximo de valor 7 da Figura~\ref{fig:maximal}(b).
+\end{exercicio}
