@@ -24,19 +24,30 @@ from pathlib import Path
 REF = "9a09ba5"
 RAIZ = Path(__file__).resolve().parent.parent
 
+# Código atual -> (arquivo atual, código no commit de referência). O capítulo de
+# gulosos e matroides, que era o 13, virou o Apêndice B, e os capítulos 14 a 18
+# passaram a 13 a 17; o código antigo localiza os arquivos no commit de referência.
 CAPITULOS = {
-    "01": "01_complexidade", "02": "02_heaps", "03": "03_heaps_avancados",
-    "04": "04_unionfind", "05": "05_avl", "06": "06_ordenacao_comparacao",
-    "07": "07_ordenacao_linear", "08": "08_selecao", "09": "09_divisao_conquista",
-    "10": "10_revisao", "11": "11_programacao_dinamica", "12": "12_floyd_warshall",
-    "13": "13_gulosos_matroides", "14": "14_agm", "15": "15_busca_largura",
-    "16": "16_dijkstra", "17": "17_busca_profundidade",
-    "18": "18_profundidade_digrafos", "19": "19_emparelhamentos", "20": "20_fluxos", "A": "A_hash",
+    "01": ("01_complexidade", "01"), "02": ("02_heaps", "02"),
+    "03": ("03_heaps_avancados", "03"), "04": ("04_unionfind", "04"),
+    "05": ("05_avl", "05"), "06": ("06_ordenacao_comparacao", "06"),
+    "07": ("07_ordenacao_linear", "07"), "08": ("08_selecao", "08"),
+    "09": ("09_divisao_conquista", "09"), "10": ("10_revisao", "10"),
+    "11": ("11_programacao_dinamica", "11"), "12": ("12_floyd_warshall", "12"),
+    "13": ("13_agm", "14"), "14": ("14_busca_largura", "15"),
+    "15": ("15_dijkstra", "16"), "16": ("16_busca_profundidade", "17"),
+    "17": ("17_profundidade_digrafos", "18"),
+    "18": ("18_emparelhamentos", None), "19": ("19_fluxos", None),
+    "A": ("A_hash", "A"), "B": ("B_gulosos_matroides", "13"),
 }
+ARQ_REF = {"13": "13_gulosos_matroides", "14": "14_agm", "15": "15_busca_largura",
+           "16": "16_dijkstra", "17": "17_busca_profundidade",
+           "18": "18_profundidade_digrafos"}
 
-# Capítulos criados depois do commit de referência: todos os seus exercícios
-# são "novos"; confere-se só que cada um tem a sua resposta, na mesma ordem.
-NOVOS = {"19", "20"}
+# Capítulos criados depois do commit de referência (código antigo None): todos
+# os seus exercícios são "novos"; confere-se só que cada um tem a sua resposta,
+# na mesma ordem.
+
 
 CABECALHO = re.compile(r"(\\begin\{exercicio\}\{([^}]*)\}(?:\[[^\]]*\])?)(<[^>\n]*>)?")
 EXERCICIO = re.compile(r"\\begin\{exercicio\}\{([^}]*)\}.*?\\end\{exercicio\}", re.S)
@@ -63,15 +74,16 @@ def rotulos(secao):
     return [m.group(1) for m in EXERCICIO.finditer(secao)]
 
 
-def compara_capitulo(cod, arq, erros):
+def compara_capitulo(cod, arq, ref, erros):
     caminho = f"capitulos/{arq}.tex"
-    if cod in NOVOS:
+    if ref is None:
         novo = secao_exercicios((RAIZ / caminho).read_text(encoding="utf-8"), caminho)
         novos = rotulos(novo)
         if len(set(novos)) != len(novos):
             erros.append(f"{caminho}: há rótulos de exercício repetidos")
         return [], novos
-    antigo = secao_exercicios(no_commit(caminho), caminho)
+    arq_ref = f"capitulos/{ARQ_REF.get(ref, arq)}.tex"
+    antigo = secao_exercicios(no_commit(arq_ref), arq_ref)
     novo = secao_exercicios((RAIZ / caminho).read_text(encoding="utf-8"), caminho)
 
     # 1. Tira o argumento <...> dos cabeçalhos (a única mudança permitida neles).
@@ -108,15 +120,15 @@ def compara_capitulo(cod, arq, erros):
     return velhos, novos
 
 
-def compara_respostas(cod, velhos, novos, erros):
+def compara_respostas(cod, ref, velhos, novos, erros):
     caminho = f"capitulos/respostas/{cod}.tex"
-    if cod in NOVOS:
+    if ref is None:
         todas = RESP.findall((RAIZ / caminho).read_text(encoding="utf-8"))
         if todas != novos:
             erros.append(f"{caminho}: as respostas {todas} não correspondem, na ordem, "
                          f"aos exercícios {novos}")
         return
-    antigo = no_commit(caminho).rstrip()
+    antigo = no_commit(f"capitulos/respostas/{ref}.tex").rstrip()
     novo = (RAIZ / caminho).read_text(encoding="utf-8")
     if not novo.startswith(antigo):
         k = next((i for i, (a, b) in enumerate(zip(novo, antigo)) if a != b),
@@ -139,9 +151,9 @@ def compara_respostas(cod, velhos, novos, erros):
 def main():
     erros = []
     total_velhos = total_novos = 0
-    for cod, arq in CAPITULOS.items():
-        velhos, novos = compara_capitulo(cod, arq, erros)
-        compara_respostas(cod, velhos, novos, erros)
+    for cod, (arq, ref) in CAPITULOS.items():
+        velhos, novos = compara_capitulo(cod, arq, ref, erros)
+        compara_respostas(cod, ref, velhos, novos, erros)
         total_velhos += len(velhos)
         total_novos += len(novos)
     if erros:

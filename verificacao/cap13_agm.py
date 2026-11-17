@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
-"""Capítulo 14 (árvores geradoras mínimas: Kruskal e Prim)."""
+"""Capítulo 13 (árvores geradoras mínimas: Kruskal e Prim)."""
 from itertools import combinations
 from math import inf, log2
 
 from comum import Verificador
 
-v = Verificador("14_agm.tex", "respostas/14.tex")
-R = "respostas/14.tex"
+v = Verificador("13_agm.tex", "respostas/13.tex")
+R = "respostas/13.tex"
 
 
 class UF:
@@ -83,7 +83,7 @@ def arvores_geradoras(arestas):
             yield [n for n, _ in T], sum(p for _, p in T)
 
 
-# Árvores geradoras do grafo pequeno (Exemplo 14.1)
+# Árvores geradoras do grafo pequeno (Exemplo 13.1)
 peq = [("PQ", 4), ("QR", 2), ("RS", 5), ("SP", 3), ("PR", 1)]
 arv = list(arvores_geradoras(peq))
 pesos = [p for _, p in arv]
@@ -91,7 +91,7 @@ v.igual((len(arv), min(pesos), max(pesos)), (8, 6, 12), "8 árvores, pesos de 6 
 v.igual(sorted(next(t for t, p in arv if p == 6)), ["PR", "QR", "SP"], "a mínima")
 v.igual((peso(peq, ["PQ", "QR", "RS"]), peso(peq, ["PQ", "QR", "SP"])), (11, 9), "pesos citados")
 
-# O grafo da Figura 14.2, com os empates na ordem da tabela do Exemplo 14.3
+# O grafo da Figura 13.2, com os empates na ordem da tabela do Exemplo 13.3
 G = [("hg", 1), ("ic", 2), ("gf", 2), ("ab", 4), ("cf", 4), ("ig", 6), ("cd", 7), ("hi", 7),
      ("ah", 8), ("bc", 8), ("de", 9), ("ef", 10), ("bh", 11), ("df", 14)]
 aceitas, rejeitadas, passos = kruskal(G)

@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
-"""Capítulo 19 (emparelhamentos): método húngaro, Hall e König, blossoms e respostas."""
+"""Capítulo 18 (emparelhamentos): método húngaro, Hall e König, blossoms e respostas."""
 from collections import deque
 from itertools import combinations, permutations
 from math import factorial
 
 from comum import Verificador
 
-v = Verificador("19_emparelhamentos.tex", "respostas/19.tex")
-T = "19_emparelhamentos.tex"
-R = "respostas/19.tex"
+v = Verificador("18_emparelhamentos.tex", "respostas/18.tex")
+T = "18_emparelhamentos.tex"
+R = "respostas/18.tex"
 
 
 def arestas(texto):

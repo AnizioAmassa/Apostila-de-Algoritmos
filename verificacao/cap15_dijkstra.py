@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""Capítulo 16 (Dijkstra)."""
+"""Capítulo 15 (Dijkstra)."""
 from math import inf, log2
 
 from comum import Verificador
 
-v = Verificador("16_dijkstra.tex", "respostas/16.tex")
-R = "respostas/16.tex"
+v = Verificador("15_dijkstra.tex", "respostas/15.tex")
+R = "respostas/15.tex"
 
 
 def dijkstra(arestas, s, nao_direcionado=False):
@@ -116,7 +116,7 @@ v.igual((heap, posicoes), ([("c", 2), ("e", 6), ("d", 4)], {"c": 1, "e": 2, "d":
 v.tem("$(" + ",\\ ".join(f"{y}{{:}}{l}" for y, l in heap) + ")$", "heap depois de remover b")
 v.tem("$pos[c]=1$, $pos[e]=2$ e $pos[d]=3$", "vetor de posições no texto")
 
-# Aresta negativa (Figura 16.3)
+# Aresta negativa (Figura 15.3)
 Ln, _, lin = dijkstra([("s", "a", 1), ("s", "b", 3), ("b", "a", -3), ("a", "c", 1)], "s")
 v.igual(([x for x, _, _ in lin], Ln["a"], Ln["c"]), (["s", "a", "c", "b"], 1, 2), "Dijkstra com aresta negativa")
 v.igual((3 - 3, 3 - 3 + 1), (0, 1), "distâncias corretas de a e c")

@@ -2,9 +2,10 @@
 
 Apostila em LaTeX, em português, da disciplina de Algoritmos do IMPA Tech:
 complexidade, estruturas de dados (heaps, Union-Find, AVL, tabelas hash),
-ordenação e seleção, divisão e conquista, programação dinâmica, algoritmos
-gulosos e matroides e algoritmos em grafos, até emparelhamentos e fluxos em redes. Cada capítulo traz exemplos
-resolvidos, um resumo e uma lista de exercícios com respostas no Apêndice B.
+ordenação e seleção, divisão e conquista, programação dinâmica e algoritmos em
+grafos, até emparelhamentos e fluxos em redes, com um apêndice sobre algoritmos
+gulosos e matroides. Cada capítulo traz exemplos
+resolvidos, um resumo e uma lista de exercícios com respostas no Apêndice C.
 
 **O PDF pronto é o [`apostila.pdf`](apostila.pdf) da raiz do repositório.** Ele é
 recompilado automaticamente pela CI a cada push (veja abaixo), então basta
@@ -15,10 +16,11 @@ baixá-lo daqui.
 | Caminho | Conteúdo |
 |---|---|
 | `apostila.tex` | arquivo principal: preâmbulo com todos os estilos (caixas, figuras, pseudocódigo, exercícios), folha de rosto, prefácio e a lista de `\input` dos capítulos |
-| `capitulos/01_*.tex` … `capitulos/20_*.tex` | os 20 capítulos; cada um termina com `\section{Exercícios}` |
+| `capitulos/01_*.tex` … `capitulos/19_*.tex` | os 19 capítulos; cada um termina com `\section{Exercícios}` |
 | `capitulos/A_hash.tex` | Apêndice A: tabelas hash |
-| `capitulos/B_respostas.tex` | Apêndice B: inclui as respostas de `capitulos/respostas/NN.tex` |
-| `capitulos/respostas/NN.tex` | respostas dos exercícios do capítulo `NN` (e `A.tex`, do Apêndice A) |
+| `capitulos/B_gulosos_matroides.tex` | Apêndice B: algoritmos gulosos e matroides (até nov./2026 era o Capítulo 13; os capítulos 14 a 20 passaram a 13 a 19) |
+| `capitulos/C_respostas.tex` | Apêndice C: inclui as respostas de `capitulos/respostas/NN.tex` |
+| `capitulos/respostas/NN.tex` | respostas dos exercícios do capítulo `NN` (e `A.tex` e `B.tex`, dos Apêndices A e B) |
 | `capitulos/referencias.tex` | referências bibliográficas |
 | `verificacao/` | scripts Python que conferem os exercícios e os números do texto (veja abaixo) |
 | `AI-helper/AImanual.md` | este manual |
@@ -74,7 +76,7 @@ make -C AI-helper limpar      # apaga os arquivos auxiliares; o apostila.pdf é 
 Para compilar um capítulo isolado, monte um `.tex` com as linhas do preâmbulo
 de `apostila.tex` (até antes de `\begin{document}`) seguidas de
 `\begin{document}\mainmatter\setcounter{chapter}{N-1}\input{capitulos/X}\end{document}`.
-O Capítulo 16 usa a macro `\digrafoFW`, definida no Capítulo 12; inclua o 12
+O Capítulo 15 usa a macro `\digrafoFW`, definida no Capítulo 12; inclua o 12
 antes dele.
 
 ### Índice remissivo
@@ -110,10 +112,13 @@ chamado diretamente, da raiz), que executa:
   e os arquivos de `capitulos/respostas/` com o commit de referência `9a09ba5`.
   Enunciados e respostas existentes não podem mudar; só são aceitos o argumento
   `<...>` no cabeçalho de um exercício, exercícios novos no fim da lista e
-  respostas novas no fim do arquivo de respostas, na mesma ordem. Capítulos
-  criados depois desse commit (hoje, o 19 e o 20) ficam no conjunto `NOVOS` do
-  script: para eles, confere-se só que cada exercício tem a sua resposta, na
-  mesma ordem. Ao criar um capítulo, acrescente-o a `CAPITULOS` e a `NOVOS`.
+  respostas novas no fim do arquivo de respostas, na mesma ordem. O dicionário
+  `CAPITULOS` do script associa cada código atual ao arquivo e ao código que o
+  capítulo tinha no commit de referência (a renumeração de nov./2026 fica
+  registrada ali e em `ARQ_REF`). Capítulos criados depois desse commit (hoje,
+  o 18 e o 19) têm código antigo `None`: para eles, confere-se só que cada
+  exercício tem a sua resposta, na mesma ordem. Ao criar um capítulo,
+  acrescente-o a `CAPITULOS` com código antigo `None`.
   O script precisa do histórico do Git (num clone raso, use `git fetch --unshallow`).
 * `verificacao/cap*.py` — recalculam os números dos exemplos e das respostas de
   simulação (heaps, Union-Find, AVL, ordenações, seleção, inversões, programação

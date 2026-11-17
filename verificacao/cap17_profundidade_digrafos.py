@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
-"""Capítulo 18 (busca em profundidade em digrafos, CFC e ordenação topológica)."""
+"""Capítulo 17 (busca em profundidade em digrafos, CFC e ordenação topológica)."""
 from collections import deque
 from itertools import permutations
 
 from comum import Verificador
 
-v = Verificador("18_profundidade_digrafos.tex", "respostas/18.tex")
-R = "respostas/18.tex"
+v = Verificador("17_profundidade_digrafos.tex", "respostas/17.tex")
+R = "respostas/17.tex"
 
 
 def digrafo(arestas, vertices=None):

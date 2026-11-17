@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
-"""Capítulo 20 (fluxos em redes): fluxos, cortes, rede residual, Ford e Fulkerson e respostas."""
+"""Capítulo 19 (fluxos em redes): fluxos, cortes, rede residual, Ford e Fulkerson e respostas."""
 from collections import deque
 from itertools import combinations
 
 from comum import Verificador
 
-v = Verificador("20_fluxos.tex", "respostas/20.tex")
-T = "20_fluxos.tex"
-R = "respostas/20.tex"
+v = Verificador("19_fluxos.tex", "respostas/19.tex")
+T = "19_fluxos.tex"
+R = "respostas/19.tex"
 
 
 def rede(texto):

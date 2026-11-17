@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
-"""Capítulo 13 (algoritmos gulosos e matroides)."""
+"""Apêndice B (algoritmos gulosos e matroides)."""
 import heapq
 from itertools import combinations, permutations
 
 from comum import Verificador
 
-v = Verificador("13_gulosos_matroides.tex", "respostas/13.tex")
-R = "respostas/13.tex"
+v = Verificador("B_gulosos_matroides.tex", "respostas/B.tex")
+R = "respostas/B.tex"
 
 
 def troco_guloso(S, moedas):
@@ -73,7 +73,7 @@ v.igual((len(troco_guloso(6, [4, 3, 1])), troco_otimo(6, [4, 3, 1])), (3, 2), "g
 v.igual((len(troco_guloso(30, [25, 10, 1])), troco_otimo(30, [25, 10, 1])), (6, 3), "{25,10,1} com S=30")
 v.tem("Com $\\{25,10,1\\}$ e $S=30$, ele usa 6 moedas", "{25,10,1} no texto")
 
-# Matroide pequena (Exemplo 13.3)
+# Matroide pequena (Exemplo B.3)
 E = {"a": (1, 2), "b": (2, 3), "c": (1, 3), "d": (3, 4)}
 indep = [set(c) for k in range(5) for c in combinations("abcd", k) if eh_floresta([E[x] for x in c])]
 v.igual(len(indep), 14, "14 independentes na matroide gráfica")
@@ -101,13 +101,13 @@ def posto(vs):
 indep_lin = [set(c) for k in range(5) for c in combinations("abcd", k) if posto([vet[x] for x in c]) == k]
 v.igual(sorted(map(sorted, indep_lin)), sorted(map(sorted, indep)), "a matroide linear é a mesma")
 
-# Axioma de aumento (Figura 13.3)
+# Axioma de aumento (Figura B.3)
 V5 = range(1, 6)
 v.igual((componentes(V5, [(1, 2), (3, 4)]), componentes(V5, [(1, 3), (3, 5), (2, 4)])), (3, 2),
         "componentes de I1 e I2")
 v.igual(eh_floresta([(1, 2), (3, 4), (3, 5)]), True, "I1 + 35 continua sem ciclo")
 
-# Guloso na matroide gráfica (Exemplo 13.6)
+# Guloso na matroide gráfica (Exemplo B.6)
 G = {"AB": 7, "AC": 5, "BC": 8, "BD": 6, "CD": 9, "CE": 4, "DE": 3}
 aceitas, rejeitadas = [], []
 for e in sorted(G, key=lambda e: -G[e]):

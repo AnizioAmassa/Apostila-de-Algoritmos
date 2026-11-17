@@ -1,40 +1,40 @@
-\respcap{cap:dfs}
-\resp{bp-arv} Numa árvore de profundidade de um grafo não direcionado, toda aresta fora de $T$ liga um vértice a um ancestral (Exercício~\ref{ex:bp-cruz}). Reciprocamente, se para alguma raiz $r$ toda aresta de $G$ liga ancestral e descendente em $T$ enraizada em $r$, a busca que, em cada vértice, explora primeiro os filhos que ele tem em $T$ reproduz $T$. Algoritmo: para cada raiz candidata, calcule $PE$ e $PS$ de $T$ e teste, para cada aresta $uv$ de $G$, se um intervalo contém o outro: $O(n+m)$ por raiz.
+\respcap{cap:dfsdig}
+\resp{dd-sorv} Tome um caminho direcionado de comprimento máximo; o seu último vértice $u$ é um sumidouro, pois uma aresta $u\to x$ com $x$ fora do caminho daria um caminho maior, e com $x$ no caminho daria um ciclo. Algoritmo linear: guarde o grau de saída de cada vértice e as listas de \emph{entrada}, e ponha numa fila todos os sumidouros. Ao retirar um sumidouro $u$, coloque-o no início da ordenação e decremente o grau de saída de cada $x$ com $x\to u$; quem chegar a zero entra na fila. Cada aresta é processada uma vez: $O(n+m)$. Se a fila esvaziar antes de todos os vértices saírem, há um ciclo.
 
-\resp{bp-pilha} Empilham-se $ec$, $ca$, $ab$, $bc$ (retorno), $bd$, $dc$ (retorno) e $de$ (retorno). Ao voltar de $c$ para $e$, $back(c)=1\ge PE(e)=1$: desempilha-se até $ec$, e o bloco tem os vértices $\{a,b,c,d,e\}$. Depois empilham-se $ef$, $fg$ e $ge$ (retorno); ao voltar de $f$, $back(f)=1\ge PE(e)$, e o bloco é $\{e,f,g\}$.
+\resp{dd-porque} Num digrafo acíclico não há arestas de retorno. Numa aresta $vw$ de árvore ou de avanço, $w$ é descendente de $v$ e sai antes dele; numa de cruzamento, $w$ já tinha saído quando $v$ começou. Logo $PS(w)<PS(v)$ para toda aresta, e a ordem por $PS$ decrescente põe $v$ antes de $w$. No exemplo, com as raízes em ordem alfabética, obtém-se $i,j,h,e,f,g,b,a,d,c$.
 
-\resp{bp-pontes} Depois da chamada \textsc{P}$(w)$ pela aresta de árvore $vw$: se $v$ não é a raiz e $back(w)\ge PE(v)$, marque $v$ como articulação; se $back(w)>PE(v)$, a aresta $vw$ é ponte. Para a raiz, conte os filhos e marque-a se forem pelo menos dois.
+\resp{dd-papel} Sim. Com as arestas $a\to b$, $a\to c$ e $b\to c$: se a busca a partir de $a$ visita $b$ primeiro, $c$ vira filho de $b$ e $ac$ é de avanço; se visita $c$ primeiro, $c$ termina antes de $b$ começar, e $bc$ passa a ser de cruzamento (e $ac$, de árvore). As componentes são definidas pela existência de caminhos nos dois sentidos, uma propriedade do digrafo, e o algoritmo é correto qualquer que seja a ordem da busca.
 
-\resp{bp-demarc} Sim. Cada bloco é impresso exatamente quando a busca volta de um demarcador $w$ para o seu pai, e cada demarcador imprime um único bloco; há, portanto, uma bijeção entre demarcadores e blocos (contando os filhos da raiz, que são sempre demarcadores).
+\resp{dd-sim} $PE$ dos vértices 1 a 7: $1,2,3,5,6,7,13$; $PS$: $12,11,4,10,9,8,14$. Árvore: $1\to2$, $2\to3$, $2\to4$, $4\to5$ e $5\to6$. Retorno: $3\to1$ e $6\to4$. Avanço: $1\to3$. Cruzamento: $7\to3$ e $7\to6$. $old$: 1 para os vértices 1, 2 e 3; 5 para 4, 5 e 6; 13 para o 7. Componentes, na ordem em que são encontradas: $\{4,5,6\}$ (quando 4 sai), $\{1,2,3\}$ (quando 1 sai) e $\{7\}$.
 
-\resp{bp-apl} (a) Conte as chamadas do laço externo. (b) Execute \textsc{P}$(v)$; se $PE(w)\ne0$, suba de $w$ até $v$ pelos pais. (c) Sem aresta de retorno, é acíclico; uma aresta de retorno $vw$ fecha o ciclo formado pelo caminho de $w$ a $v$ na árvore e pela aresta $vw$. (d) Faça $cor(w):=1-cor(v)$ nas arestas de árvore; uma aresta de retorno com cores iguais revela um ciclo ímpar.
+\resp{dd-roupa} Relógio, meias, cueca, camisa, gravata, calça, sapatos, cinto, paletó. Qualquer outra ordem que respeite as dependências também é válida.
 
-\resp{bp-sim} A busca desce $1,2,\dots,7$ em linha: $PE=1,\dots,7$ e $PS(7),\dots,PS(1)=8,\dots,14$. Retornos: $31$ e $64$. $back$: 1 para os vértices 1, 2 e 3; 4 para 4, 5 e 6; 7 para o 7. Articulações: 3, 4 e 6. Pontes: $34$ e $67$. Blocos: $\{1,2,3\}$, $\{3,4\}$, $\{4,5,6\}$ e $\{6,7\}$.
+\resp{dd-cond} Se houvesse um ciclo $C_1\to C_2\to\cdots\to C_k\to C_1$ com $k\ge2$, de qualquer vértice de $C_1$ se chegaria a qualquer vértice de $C_2$ (seguindo o ciclo de componentes e andando dentro de cada uma) e vice-versa. Então $C_1\cup C_2$ seria fortemente conexo, contradizendo a maximalidade das componentes.
 
-\resp{bp-cruz} Seja $vw$ uma aresta, com $v$ alcançado antes de $w$. Enquanto $v$ está ativo, ele examina a aresta $vw$; se $w$ ainda não tiver sido alcançado nesse momento, ele será alcançado dentro da chamada de $v$. Em ambos os casos, $w$ é alcançado entre $PE(v)$ e $PS(v)$, e é descendente de $v$.
+\resp{dd-unica} Se há um caminho hamiltoniano $v_1\to v_2\to\cdots\to v_n$, toda ordenação topológica precisa pôr $v_i$ antes de $v_{i+1}$, e portanto é única. Se não há, em alguma ordenação topológica dois vértices consecutivos $v_i$ e $v_{i+1}$ não são ligados por aresta, e trocá-los dá outra ordenação válida. Teste: obtenha uma ordenação topológica e verifique se cada par de vértices consecutivos é uma aresta, em $O(n+m)$.
 
-\resp{bp-m} Uma floresta com $n$ vértices tem no máximo $n-1$ arestas; logo $m\ge n$ implica ciclo. Se $m\ge n$, a resposta é ``sim''; senão, $m<n$ e a busca custa $O(n+m)=O(n)$.
+\resp{dd-prereq} Monte o digrafo com uma aresta $a\to b$ se $a$ é pré-requisito de $b$. Se houver ciclo (aresta de retorno numa busca), é impossível. Senão, o menor número de semestres é o número de vértices do caminho mais longo: $sem(v)=1+\max\{sem(u):u\to v\}$ (1 se não há pré-requisitos), calculado em ordem topológica em $O(n+m)$ --- é a programação dinâmica de caminho mais longo num digrafo acíclico do Capítulo~\ref{cap:pd}.
 
-\resp{bp-iter} Empilhe pares (vértice, próximo índice na lista de adjacência). Olhe o topo $(v,i)$: se $i$ passou do grau de $v$, desempilhe e faça $PS(v)$; senão, avance o índice e, se o $i$-ésimo vizinho $w$ não foi alcançado, faça $pai(w):=v$, $PE(w)$ e empilhe $(w,1)$. Os tempos coincidem com os da versão recursiva.
+\resp{dd-classif} $PE$ dos vértices 1 a 6: $1,2,3,4,9,10$; $PS$: $8,7,6,5,12,11$. Árvore: $1\to2$, $2\to3$, $3\to4$ e $5\to6$. Retorno: $4\to2$ e $6\to5$. Avanço: $1\to4$. Cruzamento: $5\to3$.
 
-\resp{bp-trace} $PE$ de 1 a 8: $1,2,8,3,5,9,7,4$; $PS$: $16,15,11,14,6,10,12,13$. Arestas de árvore: $12$, $24$, $48$, $85$, $87$, $73$ e $36$. Retornos: $52$, $31$ e $67$. Não há articulações: todo filho $w$ de um vértice não raiz tem $back(w)<PE(v)$, e a raiz tem um único filho.
+\resp{dd-cfcex} $old$: 1 para o vértice 1; 2 para 2, 3 e 4; 9 para 5 e 6. Componentes, na ordem em que são encontradas: $\{2,3,4\}$ (quando 2 sai), $\{1\}$ e $\{5,6\}$. A aresta $5\to3$ é de cruzamento, mas 3 já saiu da pilha, e não altera $old(5)$.
 
-\resp{bp-parenteses} Suponha $PE(u)<PE(v)$. Se $PE(v)<PS(u)$, então $v$ foi alcançado enquanto $u$ estava ativo e é descendente de $u$; a chamada de $v$ termina antes da de $u$, e $I(v)\subset I(u)$. Senão, $PS(u)<PE(v)$, e os intervalos são disjuntos.
+\resp{dd-kahn} As fontes iniciais são $a$ e $f$; sai $a$, e $b$ vira fonte; sai $b$; sai $f$, e $c$ vira fonte; sai $c$, e $d$ vira fonte; saem $d$ e $e$. Ordem: $a,b,f,c,d,e$.
 
-\resp{bp-branco} Se $v$ é descendente de $u$, o caminho de $u$ a $v$ na árvore só tem vértices alcançados depois de $PE(u)$. Reciprocamente, se no instante $PE(u)$ há um caminho de vértices não alcançados até $v$ e $v$ não fosse descendente, tome o primeiro vértice do caminho que não é descendente de $u$; o anterior a ele é descendente e o examina antes de terminar, tornando-o descendente também, uma contradição.
+\resp{dd-ciclo} Como a aresta é de retorno, $w$ é ancestral de $v$. Suba de $v$ até $w$ pelos ponteiros $pai$, guardando os vértices; o ciclo é $w\to\cdots\to v\to w$, impresso na ordem inversa da subida, seguido de $w$.
 
-\resp{bp-comp} Três componentes: $\{1,2,3\}$, $\{4,5\}$ e $\{6,7,8,9\}$. As raízes são 1, 4 e 6.
+\resp{dd-forte} Se o digrafo é fortemente conexo, de $s$ se alcança todo vértice e todo vértice alcança $s$, o que equivale a alcançar todos a partir de $s$ no digrafo invertido. Reciprocamente, se isso vale, para quaisquer $u$ e $v$ há caminhos $u\leadsto s\leadsto v$ e $v\leadsto s\leadsto u$. O teste faz uma busca no digrafo e outra no digrafo invertido, em $O(n+m)$.
 
-\resp{bp-cicloex} A primeira aresta de retorno é $52$: subindo de 5 por $pai$ até 2 ($5\to8\to4\to2$) e fechando com $52$, obtém-se o ciclo $2,4,8,5,2$.
+\resp{dd-kosaraju} Para duas componentes $C$ e $C'$ com uma aresta de $C$ para $C'$, o maior $PS$ de $C$ é maior que o maior $PS$ de $C'$ (se a busca entra primeiro em $C$, termina $C'$ antes; se entra primeiro em $C'$, termina $C'$ inteira antes de alcançar $C$). No digrafo invertido, as arestas vão de $C'$ para $C$. Começando pelo vértice de maior $PS$, a segunda busca está numa componente da qual, no digrafo invertido, só saem arestas para componentes já visitadas; por isso, cada árvore da segunda busca é exatamente uma componente.
 
-\resp{bp-bipex} A partir de 1: $cor(1)=0$, $cor(2)=1$, $cor(3)=0$, $cor(4)=1$. A aresta de retorno $13$ liga dois vértices de cor 0: o ciclo $1,2,3,1$ é ímpar, e o grafo não é bipartido.
+\resp{dd-conta} São 4: $a,b,c,d,e$; $a,b,c,e,d$; $b,a,c,d,e$; $b,a,c,e,d$.
 
-\resp{bp-arvore} Numa árvore, todas as arestas são pontes, e as articulações são os vértices de grau pelo menos 2. Num ciclo, não há pontes nem articulações. Num caminho com $n\ge3$ vértices, todas as arestas são pontes, e as articulações são os vértices internos.
+\resp{dd-longo} Em ordem topológica $s,a,b,c,t$: $L(s)=0$, $L(a)=3$, $L(b)=2$, $L(c)=\max\{3+4,\ 2+6\}=8$ e $L(t)=\max\{3+2,\ 2+3,\ 8+1\}=9$. O caminho de maior peso é $s\to b\to c\to t$, com peso \textbf{9}.
 
-\resp{bp-blocos} Articulações: 3 e 4. Pontes: $34$ e $47$. Blocos: $\{1,2,3\}$, $\{3,4\}$, $\{4,5,6\}$ e $\{4,7\}$.
+\resp{dd-semestres} São necessários \textbf{3} semestres: no 1º, $C_1$ e $P_1$; no 2º, $C_2$, $A_1$ e $P_2$; no 3º, $C_3$. O caminho mais longo, $C_1\to C_2\to C_3$ (ou $C_1\to A_1\to C_3$), tem 3 vértices.
 
-\resp{bp-biconexo} Faça uma busca em profundidade: o grafo é biconexo se ela alcança todos os vértices e não encontra articulações, em $O(n+m)$. Num grafo biconexo com pelo menos 3 vértices não há pontes, e uma aresta que não é ponte está em algum ciclo.
+\resp{dd-minarestas} Num digrafo fortemente conexo com mais de um vértice, todo vértice tem grau de entrada e de saída positivos. Cada fonte do grafo das componentes precisa receber pelo menos uma nova aresta entrando nela, e cada sumidouro, pelo menos uma saindo dele; uma nova aresta entra em no máximo uma fonte e sai de no máximo um sumidouro. Logo são necessárias pelo menos $\max\{f,s\}$ arestas. (Sabe-se que esse número também é suficiente.)
 
-\resp{bp-labirinto} No ciclo $1,2,3,4$ com a aresta $14$, a busca a partir de 1 com vizinhos em ordem crescente percorre $1\to2\to3\to4$, encontrando o caminho de 1 a 4 com 3 arestas, enquanto a aresta $14$ é um caminho com uma aresta.
+\resp{dd-lex} Use o algoritmo de Kahn com um heap de mínimo no lugar da fila: entre as fontes disponíveis, retire sempre a de menor nome. Custo $O((n+m)\log n)$.
 
-\resp{bp-euler} Algoritmo de Hierholzer: a partir de um vértice, siga arestas ainda não usadas, marcando-as, até não haver saída (como todos os graus são pares, isso só acontece no vértice inicial); ao voltar na recursão, insira cada vértice no início do circuito. Os subciclos encontrados ao retroceder são encaixados automaticamente. Cada aresta é usada uma vez: $O(n+m)$.
+\resp{dd-nd} Num grafo não direcionado, toda aresta $vw$ é examinada a partir dos dois extremos; quando o primeiro dos dois a ser alcançado, digamos $v$, a examina, $w$ ainda não foi alcançado ou está ativo como descendente, e a aresta vira de árvore ou de retorno. Num digrafo, a aresta $v\to w$ só é examinada a partir de $v$, e $w$ pode já ter sido completamente explorado antes, numa outra parte da floresta, o que dá as arestas de cruzamento; ou pode ser um descendente alcançado por outro caminho, o que dá as de avanço.

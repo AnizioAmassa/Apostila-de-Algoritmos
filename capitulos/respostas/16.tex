@@ -1,44 +1,40 @@
-\respcap{cap:dijkstra}
-\resp{dj-bfs} Por indução nos vértices removidos: com pesos 1, os rótulos dos vértices na fila de prioridades assumem, em cada momento, no máximo dois valores consecutivos, $d$ e $d+1$, e os de valor $d$ saem antes, como na fila da busca em largura. Quando $v$ sai com $L(v)=d$, cada vizinho $w$ ainda não alcançado recebe $L(w)=d+1$ e $pai(w)=v$, exatamente como na busca em largura; vizinhos já alcançados têm $L(w)\le d+1$ e não mudam. Logo $L(w)=nivel(w)=\operatorname{dist}(raiz,w)$, e a árvore é de largura (com os empates resolvidos na mesma ordem).
+\respcap{cap:dfs}
+\resp{bp-arv} Numa árvore de profundidade de um grafo não direcionado, toda aresta fora de $T$ liga um vértice a um ancestral (Exercício~\ref{ex:bp-cruz}). Reciprocamente, se para alguma raiz $r$ toda aresta de $G$ liga ancestral e descendente em $T$ enraizada em $r$, a busca que, em cada vértice, explora primeiro os filhos que ele tem em $T$ reproduz $T$. Algoritmo: para cada raiz candidata, calcule $PE$ e $PS$ de $T$ e teste, para cada aresta $uv$ de $G$, se um intervalo contém o outro: $O(n+m)$ por raiz.
 
-\resp{dj-nd} Transforme cada aresta $xy$ de peso $p$ em duas arestas direcionadas, $x\to y$ e $y\to x$, ambas de peso $p$ (e use $\infty$ onde não há aresta), e execute o algoritmo no digrafo resultante.
+\resp{bp-pilha} Empilham-se $ec$, $ca$, $ab$, $bc$ (retorno), $bd$, $dc$ (retorno) e $de$ (retorno). Ao voltar de $c$ para $e$, $back(c)=1\ge PE(e)=1$: desempilha-se até $ec$, e o bloco tem os vértices $\{a,b,c,d,e\}$. Depois empilham-se $ef$, $fg$ e $ge$ (retorno); ao voltar de $f$, $back(f)=1\ge PE(e)$, e o bloco é $\{e,f,g\}$.
 
-\resp{dj-slide} Ver o Exemplo da §\ref{sec:dijkstra}: são removidos $a\,(0)$, $b\,(1)$, $c\,(2)$, $d\,(3)$ e $e\,(5)$, e a árvore é $a\to b\to c\to d\to e$.
+\resp{bp-pontes} Depois da chamada \textsc{P}$(w)$ pela aresta de árvore $vw$: se $v$ não é a raiz e $back(w)\ge PE(v)$, marque $v$ como articulação; se $back(w)>PE(v)$, a aresta $vw$ é ponte. Para a raiz, conte os filhos e marque-a se forem pelo menos dois.
 
-\resp{dj-sim} São removidos $s\,(0)$, $y\,(5)$, $z\,(7)$, $t\,(8)$ e $x\,(9)$. Pais: $y\leftarrow s$, $z\leftarrow y$, $t\leftarrow y$ e $x\leftarrow t$. Por exemplo, o caminho mínimo até $x$ é $s\to y\to t\to x$, com custo $5+3+1$.
+\resp{bp-demarc} Sim. Cada bloco é impresso exatamente quando a busca volta de um demarcador $w$ para o seu pai, e cada demarcador imprime um único bloco; há, portanto, uma bijeção entre demarcadores e blocos (contando os filhos da raiz, que são sempre demarcadores).
 
-\resp{dj-neg} Com $x\to y$ (1), $x\to z$ (2) e $z\to y$ ($-2$), o algoritmo remove $x$, depois $y$ com $L(y)=1$, e o fixa; mas $x\to z\to y$ custa 0. Somar uma constante $c$ a todos os pesos \textbf{não} resolve: um caminho com $k$ arestas ganha $kc$, o que favorece os caminhos com menos arestas. No exemplo, com $c=2$: $x\to y$ passa a valer 3 e $x\to z\to y$ passa a valer $4+0=4$; o caminho ótimo muda.
+\resp{bp-apl} (a) Conte as chamadas do laço externo. (b) Execute \textsc{P}$(v)$; se $PE(w)\ne0$, suba de $w$ até $v$ pelos pais. (c) Sem aresta de retorno, é acíclico; uma aresta de retorno $vw$ fecha o ciclo formado pelo caminho de $w$ a $v$ na árvore e pela aresta $vw$. (d) Faça $cor(w):=1-cor(v)$ nas arestas de árvore; uma aresta de retorno com cores iguais revela um ciclo ímpar.
 
-\resp{dj-conf} A probabilidade de um caminho é o produto $\prod p(e)$; maximizá-la equivale a minimizar $\sum-\log p(e)$. Como $p(e)\in(0,1]$, os pesos $-\log p(e)$ são não negativos, e o algoritmo de Dijkstra se aplica. (Alternativa: um Dijkstra que mantém o maior produto e remove sempre o maior rótulo, o que funciona porque os fatores são no máximo 1.)
+\resp{bp-sim} A busca desce $1,2,\dots,7$ em linha: $PE=1,\dots,7$ e $PS(7),\dots,PS(1)=8,\dots,14$. Retornos: $31$ e $64$. $back$: 1 para os vértices 1, 2 e 3; 4 para 4, 5 e 6; 7 para o 7. Articulações: 3, 4 e 6. Pontes: $34$ e $67$. Blocos: $\{1,2,3\}$, $\{3,4\}$, $\{4,5,6\}$ e $\{6,7\}$.
 
-\resp{dj-fontes} Crie uma \emph{superfonte} $s^*$, com arestas de peso 0 para cada $s_i$, e execute o algoritmo a partir de $s^*$; ou, de forma equivalente, comece com $L(s_i)=0$ para todas as fontes, todas inseridas na fila de prioridades. A árvore resultante também indica qual fonte é a mais próxima de cada vértice.
+\resp{bp-cruz} Seja $vw$ uma aresta, com $v$ alcançado antes de $w$. Enquanto $v$ está ativo, ele examina a aresta $vw$; se $w$ ainda não tiver sido alcançado nesse momento, ele será alcançado dentro da chamada de $v$. Em ambos os casos, $w$ é alcançado entre $PE(v)$ e $PS(v)$, e é descendente de $v$.
 
-\resp{dj-escolha} No primeiro grafo, esparso, use heap binário: $(n+m)\log n\approx4\cdot10^5\cdot17\approx7\cdot10^6$ operações, contra $n^2=10^{10}$ com vetor. No segundo, denso ($m\approx n^2/2$), use vetor: $n^2=10^8$, contra $(n+m)\log n\approx5\cdot10^7\cdot14=7\cdot10^8$ com heap.
+\resp{bp-m} Uma floresta com $n$ vértices tem no máximo $n-1$ arestas; logo $m\ge n$ implica ciclo. Se $m\ge n$, a resposta é ``sim''; senão, $m<n$ e a busca custa $O(n+m)=O(n)$.
 
-\resp{dj-und} São removidos $1\,(0)$, $2\,(7)$, $3\,(9)$, $6\,(11)$, $4\,(20)$ e $5\,(20)$. Pais: $2\leftarrow1$, $3\leftarrow1$, $6\leftarrow3$, $4\leftarrow3$ e $5\leftarrow6$. Por exemplo, o caminho mínimo até 5 é $1,3,6,5$, com custo $9+2+9=20$, mais barato que $1\to6\to5$, que custa 23.
+\resp{bp-iter} Empilhe pares (vértice, próximo índice na lista de adjacência). Olhe o topo $(v,i)$: se $i$ passou do grau de $v$, desempilhe e faça $PS(v)$; senão, avance o índice e, se o $i$-ésimo vizinho $w$ não foi alcançado, faça $pai(w):=v$, $PE(w)$ e empilhe $(w,1)$. Os tempos coincidem com os da versão recursiva.
 
-\resp{dj-zero} Sim. A prova de correção só usa que o trecho de $y$ até $u$ num caminho mínimo custa pelo menos 0, o que continua valendo com pesos nulos.
+\resp{bp-trace} $PE$ de 1 a 8: $1,2,8,3,5,9,7,4$; $PS$: $16,15,11,14,6,10,12,13$. Arestas de árvore: $12$, $24$, $48$, $85$, $87$, $73$ e $36$. Retornos: $52$, $31$ e $67$. Não há articulações: todo filho $w$ de um vértice não raiz tem $back(w)<PE(v)$, e a raiz tem um único filho.
 
-\resp{dj-alvo} Pode parar assim que $t$ for removido da fila de prioridades: pelo teorema de correção, nesse momento $L(t)=\operatorname{dist}(s,t)$, e as iterações seguintes só fixam vértices mais distantes, sem alterar $L(t)$.
+\resp{bp-parenteses} Suponha $PE(u)<PE(v)$. Se $PE(v)<PS(u)$, então $v$ foi alcançado enquanto $u$ estava ativo e é descendente de $u$; a chamada de $v$ termina antes da de $u$, e $I(v)\subset I(u)$. Senão, $PS(u)<PE(v)$, e os intervalos são disjuntos.
 
-\resp{dj-vert} Divida cada vértice $v$ em dois, $v_{in}$ e $v_{out}$, ligados por uma aresta $v_{in}\to v_{out}$ de peso $c(v)$; cada aresta $u\to v$ do grafo original passa a ser $u_{out}\to v_{in}$. Os caminhos mínimos no novo grafo correspondem aos do problema original. (Alternativa: some $c(v)$ ao peso de cada aresta que entra em $v$.)
+\resp{bp-branco} Se $v$ é descendente de $u$, o caminho de $u$ a $v$ na árvore só tem vértices alcançados depois de $PE(u)$. Reciprocamente, se no instante $PE(u)$ há um caminho de vértices não alcançados até $v$ e $v$ não fosse descendente, tome o primeiro vértice do caminho que não é descendente de $u$; o anterior a ele é descendente e o examina antes de terminar, tornando-o descendente também, uma contradição.
 
-\resp{dj-k} O algoritmo de Dijkstra só guarda o melhor custo até cada vértice, sem considerar quantas arestas foram usadas; o caminho mais barato até um vértice intermediário pode usar arestas demais. No grafo de estados, o vértice $(v,j)$ significa ``estou em $v$ depois de usar $j$ arestas'', com arestas $(u,j)\to(v,j+1)$ de peso $W(u,v)$ para $j<k$. A resposta é $\min_{j\le k}\operatorname{dist}((s,0),(t,j))$; como esse grafo é acíclico (o $j$ cresce), basta uma programação dinâmica em $O(k(n+m))$.
+\resp{bp-comp} Três componentes: $\{1,2,3\}$, $\{4,5\}$ e $\{6,7,8,9\}$. As raízes são 1, 4 e 6.
 
-\resp{dj-gargalo} Troque $L(v)+W(v,w)$ por $\min\{L(v),\ cap(v,w)\}$, comece com $L(s)=\infty$ e $L(w)=0$ para os demais, e remova sempre o vértice de \emph{maior} rótulo. A prova de correção é análoga, porque estender um caminho nunca aumenta a sua capacidade (o papel dos pesos não negativos).
+\resp{bp-cicloex} A primeira aresta de retorno é $52$: subindo de 5 por $pai$ até 2 ($5\to8\to4\to2$) e fechando com $52$, obtém-se o ciclo $2,4,8,5,2$.
 
-\resp{dj-conta} Mantenha $cnt(s)=1$ e, ao relaxar a aresta $vw$ ao remover $v$: se $L(v)+W(v,w)<L(w)$, faça $L(w):=L(v)+W(v,w)$ e $cnt(w):=cnt(v)$; se $L(v)+W(v,w)=L(w)$, faça $cnt(w):=cnt(w)+cnt(v)$. Com pesos positivos, quando $v$ é removido, $cnt(v)$ já está completo, pois todos os predecessores de $v$ em caminhos mínimos foram removidos antes dele.
+\resp{bp-bipex} A partir de 1: $cor(1)=0$, $cor(2)=1$, $cor(3)=0$, $cor(4)=1$. A aresta de retorno $13$ liga dois vértices de cor 0: o ciclo $1,2,3,1$ é ímpar, e o grafo não é bipartido.
 
-\resp{dj-dag} Ordene os vértices topologicamente (Capítulo~\ref{cap:dfsdig}) e processe-os nessa ordem, relaxando as arestas que saem de cada um, a partir de $L(s)=0$. Quando um vértice é processado, todos os seus predecessores já foram, e o seu rótulo é definitivo. O custo é $O(n+m)$, e pesos negativos não são problema, pois não há ciclos.
+\resp{bp-arvore} Numa árvore, todas as arestas são pontes, e as articulações são os vértices de grau pelo menos 2. Num ciclo, não há pontes nem articulações. Num caminho com $n\ge3$ vértices, todas as arestas são pontes, e as articulações são os vértices internos.
 
-\resp{dj-longo} A correção do algoritmo depende de que estender um caminho nunca o torne ``melhor''; para caminhos mais longos, estender sempre melhora, e um vértice fixado cedo pode ter um rótulo errado. Além disso, a melhor extensão pode precisar repetir vértices. O problema do caminho simples mais longo é NP-difícil em grafos gerais; só em grafos acíclicos ele é fácil.
+\resp{bp-blocos} Articulações: 3 e 4. Pontes: $34$ e $47$. Blocos: $\{1,2,3\}$, $\{3,4\}$, $\{4,5,6\}$ e $\{4,7\}$.
 
-\resp{dj-dial} Os rótulos finitos estão sempre entre $d$ e $d+C$, onde $d$ é o último rótulo removido. Use um vetor de baldes (listas) indexado pelo rótulo, de tamanho $nC+1$ (ou circular, de tamanho $C+1$). Para remover o mínimo, avance um ponteiro pelos baldes até encontrar um não vazio; o ponteiro só avança, no máximo $nC$ posições no total. Reduzir a chave é mover o vértice de um balde para outro, em $O(1)$. Total $O(m+nC)$.
+\resp{bp-biconexo} Faça uma busca em profundidade: o grafo é biconexo se ela alcança todos os vértices e não encontra articulações, em $O(n+m)$. Num grafo biconexo com pelo menos 3 vértices não há pontes, e uma aresta que não é ponte está em algum ciclo.
 
-\resp{dj-inv} Por indução: no início, $L(s)=0=\operatorname{dist}(s,s)$ e os demais valem $\infty$. Um relaxamento só muda $L(w)$ para $L(v)+W(v,w)\ge\operatorname{dist}(s,v)+W(v,w)\ge\operatorname{dist}(s,w)$, pela hipótese e pela desigualdade triangular; e só muda quando o novo valor é menor, de modo que $L(w)$ nunca aumenta.
+\resp{bp-labirinto} No ciclo $1,2,3,4$ com a aresta $14$, a busca a partir de 1 com vizinhos em ordem crescente percorre $1\to2\to3\to4$, encontrando o caminho de 1 a 4 com 3 arestas, enquanto a aresta $14$ é um caminho com uma aresta.
 
-\resp{dj-fib} No máximo $n$ inserções, $n$ remoções do mínimo e $m$ reduções de chave (no máximo uma por aresta, quando a aresta é relaxada). Com heap de Fibonacci, inserção e redução de chave custam $O(1)$ amortizado e remoção do mínimo $O(\log n)$ amortizado: o total é $O(n+m+n\log n)=O(m+n\log n)$.
-
-\resp{dj-sim3} São removidos, na ordem: $s\,(0)$, que dá $L(a)=4$ e $L(b)=1$; $b\,(1)$, que melhora $L(a)$ para 3 e dá $L(c)=6$; $a\,(3)$, que melhora $L(c)$ para 4 e dá $L(d)=9$; $c\,(4)$, que melhora $L(d)$ para 6 e dá $L(t)=11$; $d\,(6)$, que melhora $L(t)$ para 7; e $t\,(7)$. A árvore é o caminho $s\to b\to a\to c\to d\to t$: cada aresta direta mais cara foi trocada por um desvio mais barato.
-
-\resp{dj-und2} São removidos $A\,(0)$, $B\,(2)$, $C\,(3)$, $D\,(4)$ e $E\,(6)$. Pais: $B\leftarrow A$, $C\leftarrow B$, $D\leftarrow C$ e $E\leftarrow C$. Por exemplo, $L(C)$ começa em 5, pela aresta $AC$, e cai para 3 pelo caminho $A,B,C$; e $E$ fica com o pai $C$ (custo $3+3=6$), e não $D$ ($4+3=7$).
+\resp{bp-euler} Algoritmo de Hierholzer: a partir de um vértice, siga arestas ainda não usadas, marcando-as, até não haver saída (como todos os graus são pares, isso só acontece no vértice inicial); ao voltar na recursão, insira cada vértice no início do circuito. Os subciclos encontrados ao retroceder são encaixados automaticamente. Cada aresta é usada uma vez: $O(n+m)$.

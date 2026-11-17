@@ -298,7 +298,7 @@ A tabela tem uma coluna por item e uma linha por capacidade (Figura~\ref{fig:moc
 \end{figura}
 \end{exemplo}
 \begin{itemize}
-  \item Com $W=6$ e itens $(p,v)=(1,6),(3,15),(4,18)$, o ótimo é $\mathbf{24}$, com os itens 1 e 3. O guloso que escolhe pela razão $v/p$ (que vale $6$; $5$; $4{,}5$) pega os itens 1 e 2, e o item 3 já não cabe: obtém só 21. Assim, o algoritmo guloso \textbf{não} resolve a mochila 0-1, embora resolva a versão fracionária, em que frações de itens são permitidas (Capítulo~\ref{cap:gulosos}).
+  \item Com $W=6$ e itens $(p,v)=(1,6),(3,15),(4,18)$, o ótimo é $\mathbf{24}$, com os itens 1 e 3. O guloso que escolhe pela razão $v/p$ (que vale $6$; $5$; $4{,}5$) pega os itens 1 e 2, e o item 3 já não cabe: obtém só 21. Assim, o algoritmo guloso \textbf{não} resolve a mochila 0-1, embora resolva a versão fracionária, em que frações de itens são permitidas (Apêndice~\ref{cap:gulosos}).
   \item \textbf{Por que pseudopolinomial?} O tempo $\Theta(nW)$ depende do \emph{valor} de $W$, mas a entrada guarda $W$ em apenas $\log_2W$ bits. Com $W=10^9$ (30 bits), o algoritmo faz $10^9$ iterações por item: é exponencial no tamanho da entrada. O problema da mochila é NP-difícil, e não se conhece algoritmo polinomial para ele.
   \item \textbf{Memória $O(W)$.} Um único vetor $K[0..W]$ basta: para cada item, percorra $w$ \textbf{decrescendo} de $W$ até $p_i$ e faça $K[w]:=\max\{K[w],K[w-p_i]+v_i\}$. Com $w$ \emph{crescendo}, o mesmo item poderia ser reaproveitado, e o algoritmo passaria a resolver a mochila \emph{ilimitada}.
 \end{itemize}

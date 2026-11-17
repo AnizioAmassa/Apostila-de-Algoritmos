@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
-"""Capítulo 17 (busca em profundidade em grafos não direcionados)."""
+"""Capítulo 16 (busca em profundidade em grafos não direcionados)."""
 import sys
 
 from comum import Verificador
 
 sys.setrecursionlimit(10000)
-v = Verificador("17_busca_profundidade.tex", "respostas/17.tex")
-R = "respostas/17.tex"
+v = Verificador("16_busca_profundidade.tex", "respostas/16.tex")
+R = "respostas/16.tex"
 
 
 def grafo(arestas):
@@ -72,7 +72,7 @@ def fmt_blocos(blocos):
 G = grafo(["ac", "ab", "bc", "bd", "cd", "ce", "de", "ef", "eg", "fg"])
 r = busca(G, "e")
 for x in "abcdefg":
-    v.tem(f"of {x}] {{{r['PE'][x]}/{r['PS'][x]}}}", f"PE/PS de {x} na Figura 17.1")
+    v.tem(f"of {x}] {{{r['PE'][x]}/{r['PS'][x]}}}", f"PE/PS de {x} na Figura 16.1")
 v.igual(sorted(map("".join, r["retornos"])), ["bc", "dc", "de", "ge"], "arestas de retorno")
 v.igual(sorted(map("".join, r["arvore"])), ["ab", "bd", "ca", "ec", "ef", "fg"], "arestas de árvore")
 v.tem("$(e\\,(c\\,(a\\,(b\\,(d\\ d)\\,b)\\,a)\\,c)\\,(f\\,(g\\ g)\\,f)\\,e)$", "parênteses")
@@ -93,8 +93,8 @@ v.igual(cor["b"] == cor["c"], True, "bc liga dois vértices de cor 1")
 
 A = grafo(["ab", "bc", "cd", "da", "de", "ef", "fg", "ge", "bh"])
 r = busca(A, "a")
-v.igual([r["PE"][x] for x in "abcdefgh"], [1, 2, 3, 4, 5, 6, 7, 13], "PE do Exemplo 17.3")
-v.igual([r["back"][x] for x in "abcdefgh"], [1, 1, 1, 1, 5, 5, 5, 13], "back do Exemplo 17.3")
+v.igual([r["PE"][x] for x in "abcdefgh"], [1, 2, 3, 4, 5, 6, 7, 13], "PE do Exemplo 16.3")
+v.igual([r["back"][x] for x in "abcdefgh"], [1, 1, 1, 1, 5, 5, 5, 13], "back do Exemplo 16.3")
 v.igual((r["artic"], sorted(map("".join, r["pontes"]))), ({"b", "d", "e"}, ["bh", "de"]), "articulações e pontes")
 v.igual(fmt_blocos(r["blocos"]), [list("efg"), list("de"), list("bh"), list("abcd")], "blocos na ordem")
 for x in "abcdefg":

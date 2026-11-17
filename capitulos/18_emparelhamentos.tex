@@ -24,7 +24,7 @@ Um \textbf{emparelhamento}\index{emparelhamento} num grafo $G=(V,E)$ é um conju
   \item \textbf{máximo}\index{emparelhamento!maximo@máximo} se nenhum emparelhamento de $G$ tem mais arestas; o seu tamanho é denotado por $\nu(G)$;
   \item \textbf{perfeito}\index{emparelhamento!perfeito} se satura todos os vértices; nesse caso $|M|=n/2$, e $n$ precisa ser par.
 \end{itemize}
-Todo emparelhamento perfeito é máximo, e todo máximo é maximal; as recíprocas são falsas. Um grafo pode ter muitos emparelhamentos máximos --- até um número exponencial deles ---, e qualquer um serve como resposta. Que maximal não implica máximo é o mesmo fenômeno das matroides do Capítulo~\ref{cap:gulosos}, onde se viu que os emparelhamentos \emph{não} formam uma matroide e que um guloso pode parar num conjunto maximal pequeno.
+Todo emparelhamento perfeito é máximo, e todo máximo é maximal; as recíprocas são falsas. Um grafo pode ter muitos emparelhamentos máximos --- até um número exponencial deles ---, e qualquer um serve como resposta. Que maximal não implica máximo é o mesmo fenômeno das matroides do Apêndice~\ref{cap:gulosos}, onde se viu que os emparelhamentos \emph{não} formam uma matroide e que um guloso pode parar num conjunto maximal pequeno.
 
 \begin{intuicao}
 Pense numa festa em que as arestas ligam pessoas dispostas a dançar juntas. Um emparelhamento é um conjunto de pares dançando ao mesmo tempo. Ele é maximal quando ninguém mais consegue entrar na pista sem desfazer algum par --- mas pode ser que, desfazendo alguns pares e refazendo-os de outro jeito, caibam mais pares do que antes. Os algoritmos deste capítulo dizem exatamente \emph{como} refazer os pares.
@@ -177,7 +177,7 @@ No grafo da Figura~\ref{fig:hungaro}, o conjunto $S=\{a,b,e\}$ tem $N(S)=\{1,2\}
 \end{exemplo}
 
 \begin{complemento}[Para saber mais: emparelhamentos com pesos]
-No \textbf{problema da atribuição}\index{problema da atribuicao@problema da atribuição}, as arestas de um grafo bipartido completo $K_{n,n}$ têm custos, e queremos um emparelhamento perfeito de custo mínimo --- por exemplo, designar $n$ técnicos a $n$ tarefas. Testar as $n!$ designações é inviável já para $n=20$. O algoritmo de Kuhn e Munkres, também chamado de método húngaro, resolve o problema em $O(n^3)$: ele mantém ``preços'' nos vértices (uma solução do problema dual) e procura caminhos aumentantes só entre as arestas cujo custo é igual à soma dos preços dos extremos, ajustando os preços quando a busca para numa árvore húngara. Os emparelhamentos bipartidos também são a interseção de duas matroides de partição (Capítulo~\ref{cap:gulosos}), e esse ponto de vista generaliza o método.
+No \textbf{problema da atribuição}\index{problema da atribuicao@problema da atribuição}, as arestas de um grafo bipartido completo $K_{n,n}$ têm custos, e queremos um emparelhamento perfeito de custo mínimo --- por exemplo, designar $n$ técnicos a $n$ tarefas. Testar as $n!$ designações é inviável já para $n=20$. O algoritmo de Kuhn e Munkres, também chamado de método húngaro, resolve o problema em $O(n^3)$: ele mantém ``preços'' nos vértices (uma solução do problema dual) e procura caminhos aumentantes só entre as arestas cujo custo é igual à soma dos preços dos extremos, ajustando os preços quando a busca para numa árvore húngara. Os emparelhamentos bipartidos também são a interseção de duas matroides de partição (Apêndice~\ref{cap:gulosos}), e esse ponto de vista generaliza o método.
 \end{complemento}
 
 % ------------------------------------------------------------------

@@ -10,7 +10,7 @@
 \end{itemize}
 \end{objetivos}
 
-Um algoritmo guloso constrói a solução escolhendo, a cada passo, o que parece melhor naquele momento, sem nunca voltar atrás. É rápido e simples, mas nem sempre está correto. A teoria das matroides explica exatamente quando o guloso acerta: as matroides são as estruturas em que ele é ótimo para quaisquer pesos. O exemplo mais importante, a matroide gráfica, leva diretamente ao algoritmo de Kruskal do próximo capítulo.
+Um algoritmo guloso constrói a solução escolhendo, a cada passo, o que parece melhor naquele momento, sem nunca voltar atrás. É rápido e simples, mas nem sempre está correto. A teoria das matroides explica exatamente quando o guloso acerta: as matroides são as estruturas em que ele é ótimo para quaisquer pesos. O exemplo mais importante, a matroide gráfica, é o que está por trás do algoritmo de Kruskal do Capítulo~\ref{cap:agm}: este apêndice dá a explicação geral para o fato de aquele guloso, e muitos outros, acertarem.
 
 \section{O método guloso}\label{sec:guloso}\index{algoritmo guloso}
 No esquema geral, queremos um subconjunto $S'\subseteq S$ que satisfaça uma propriedade $P$ e seja máximo (ou mínimo) segundo algum critério. O algoritmo guloso começa com $S'_0=\emptyset$ e, a cada passo, acrescenta o elemento $s$ que mantém a propriedade $P$ e é o \textbf{melhor segundo o critério naquele momento}, sem jamais desfazer uma escolha. Ele para quando nenhum elemento pode mais ser acrescentado.

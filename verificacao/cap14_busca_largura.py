@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""Capítulo 15 (busca em largura)."""
+"""Capítulo 14 (busca em largura)."""
 from collections import deque
 
 from comum import Verificador
 
-v = Verificador("15_busca_largura.tex", "respostas/15.tex")
-R = "respostas/15.tex"
+v = Verificador("14_busca_largura.tex", "respostas/14.tex")
+R = "respostas/14.tex"
 
 
 def grafo(arestas):
@@ -47,7 +47,7 @@ for x in "abcdefgh":
     v.tem(f"of {x}] {{{L[x]}/{nivel[x]}}}", f"rótulo L/nível de {x}")
 v.igual((de_tipo(tipos, "pai"), de_tipo(tipos, "irmão"), de_tipo(tipos, "primo"), de_tipo(tipos, "tio")),
         (["ab", "ac", "bd", "ce", "df", "dg", "eh"], ["bc", "fg"], ["de", "gh"], ["cd", "ef"]),
-        "classificação das arestas da Figura 15.1")
+        "classificação das arestas da Figura 14.1")
 for x, fila in saidas:
     v.tem(f"${x}$ & " if x != "a" else "$a$ & $b$ e $c$", f"tabela da fila: {x}")
     v.tem(",".join(fila) if fila else "vazia", f"fila depois de {x}")
