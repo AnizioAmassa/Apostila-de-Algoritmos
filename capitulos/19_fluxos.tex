@@ -7,6 +7,7 @@
   \item Cortes, a sua capacidade e o fluxo que os atravessa.
   \item Rede residual, caminhos aumentantes e gargalos.
   \item O teorema do fluxo máximo e corte mínimo e o algoritmo de Ford e Fulkerson.
+  \item O algoritmo de Edmonds e Karp: por que caminhos mais curtos dão $O(nm)$ aumentos.
   \item Aplicações: emparelhamentos bipartidos, caminhos disjuntos e alocações com capacidades.
 \end{itemize}
 \end{objetivos}
@@ -214,7 +215,7 @@ Partimos do fluxo zero e escolhemos, a cada passo, um caminho aumentante com o m
 O fluxo final tem valor 7, e $S=\{s,a,b,c\}$ é o corte mínimo da Figura~\ref{fig:cortemin}, com capacidade 7. Foram três aumentos.
 \end{exemplo}
 
-\textbf{Complexidade.} Com capacidades \emph{inteiras}, cada aumento acrescenta pelo menos 1 ao valor do fluxo, de modo que há no máximo $f^*$ aumentos, sendo $f^*$ o valor do fluxo máximo. Cada aumento custa $O(n+m)$: construir a rede residual e encontrar um caminho por uma busca. O total é $O(m\,f^*)$ (supondo $m\ge n-1$), que é \emph{pseudopolinomial}: depende do valor $f^*$, que pode ser exponencial no tamanho da entrada (Exercício~\ref{ex:fl-pseudo}). Escolhendo sempre um caminho aumentante \emph{mais curto}, por busca em largura, o número de aumentos cai para $O(nm)$, quaisquer que sejam as capacidades, e o total para $O(nm^2)$: é o \textbf{algoritmo de Edmonds e Karp}\index{Edmonds e Karp, algoritmo de}.
+\textbf{Complexidade.} Com capacidades \emph{inteiras}, cada aumento acrescenta pelo menos 1 ao valor do fluxo, de modo que há no máximo $f^*$ aumentos, sendo $f^*$ o valor do fluxo máximo. Cada aumento custa $O(n+m)$: construir a rede residual e encontrar um caminho por uma busca. O total é $O(m\,f^*)$ (supondo $m\ge n-1$), que é \emph{pseudopolinomial}: depende do valor $f^*$, que pode ser exponencial no tamanho da entrada (Exercício~\ref{ex:fl-pseudo}). Escolhendo sempre um caminho aumentante \emph{mais curto}, por busca em largura, o número de aumentos cai para $O(nm)$, quaisquer que sejam as capacidades, e o total para $O(nm^2)$: é o algoritmo de Edmonds e Karp, da Seção~\ref{sec:edmondskarp}.
 
 \begin{teo}[Integralidade]\label{teo:integral}\index{integralidade, teorema da}
 Se todas as capacidades são inteiras, existe um fluxo máximo em que o fluxo de toda aresta é inteiro.
@@ -224,8 +225,64 @@ Partindo do fluxo zero, todas as capacidades residuais e todos os gargalos são 
 \end{proof}
 
 \begin{complemento}[Para saber mais: capacidades reais]
-Com capacidades irracionais, uma escolha infeliz de caminhos aumentantes pode fazer o algoritmo de Ford e Fulkerson nunca parar --- e, pior, convergir para um valor menor que o máximo. A escolha de caminhos mais curtos (Edmonds e Karp) elimina o problema: a distância de $s$ a cada vértice na rede residual nunca diminui, e cada aresta só pode ser o gargalo de um caminho $O(n)$ vezes, de onde vem a cota de $O(nm)$ aumentos. Há algoritmos ainda mais rápidos, como o de \emph{push-relabel}, em $O(n^3)$.
+Com capacidades irracionais, uma escolha infeliz de caminhos aumentantes pode fazer o algoritmo de Ford e Fulkerson nunca parar --- e, pior, convergir para um valor menor que o máximo. A escolha de caminhos mais curtos (Edmonds e Karp, Seção~\ref{sec:edmondskarp}) elimina o problema, porque a sua cota de $O(nm)$ aumentos não depende das capacidades. Há algoritmos ainda mais rápidos, como o de \emph{push-relabel}, em $O(n^3)$.
 \end{complemento}
+
+% ------------------------------------------------------------------
+\section{O algoritmo de Edmonds e Karp}\label{sec:edmondskarp}
+O algoritmo de Ford e Fulkerson não diz \emph{qual} caminho aumentante escolher, e a escolha importa: na rede do Exercício~\ref{ex:fl-pseudo}, caminhos mal escolhidos fazem $2C$ aumentos, onde dois bastariam. O \textbf{algoritmo de Edmonds e Karp}\index{Edmonds e Karp, algoritmo de} é o Ford e Fulkerson com uma regra simples: escolher sempre um caminho aumentante com o \emph{menor número de arestas}, encontrado por uma busca em largura (Capítulo~\ref{cap:bfs}) na rede residual. Com essa regra, o número de aumentos passa a depender só de $n$ e $m$, e não das capacidades.
+
+Numeremos os fluxos que o algoritmo produz, $f_0,f_1,f_2,\dots$, com $f_0$ o fluxo zero, e seja $D_k$ a rede residual em relação a $f_k$. Escrevemos $\delta_k(v)$ para a \textbf{distância}, em número de arestas, de $s$ a $v$ em $D_k$ ($\infty$ se $v$ não é alcançável). O $(k+1)$-ésimo aumento usa um caminho mais curto $P_k$ de $s$ a $t$ em $D_k$. Uma aresta de $P_k$ é \textbf{crítica}\index{aresta critica@aresta crítica} se a sua capacidade residual é igual ao gargalo: depois do aumento ela some da rede residual, porque uma aresta de aumento fica saturada, ou uma de redução fica com fluxo zero. Todo aumento tem pelo menos uma aresta crítica.
+
+Dois fatos sobre distâncias serão usados. Se $x\to y$ é uma aresta de $D_k$, então $\delta_k(y)\le\delta_k(x)+1$; e, se ela está num caminho mais curto a partir de $s$, então $\delta_k(y)=\delta_k(x)+1$. Além disso, uma aresta residual $x\to y$ só pode \emph{aparecer} de um passo para o outro se o aumento passou pela aresta oposta $y\to x$, que corresponde à mesma aresta $e$ de $D$: a aresta de aumento $x\to y$ de $e=(x,y)$ só aparece se $f(e)$ diminuiu, o que exige usar a aresta de redução de $e$, que vai de $y$ para $x$; e a aresta de redução $x\to y$ de $e=(y,x)$ só aparece se $f(e)$ aumentou, o que exige usar a aresta de aumento de $e$, de $y$ para $x$.
+
+\begin{lema}[As distâncias não diminuem]\label{lema:distek}
+Para todo vértice $v$ e todo $k$, $\delta_{k+1}(v)\ge\delta_k(v)$.
+\end{lema}
+\begin{proof}
+Suponha que não, e, entre os vértices com $\delta_{k+1}(v)<\delta_k(v)$, escolha $v$ com $\delta_{k+1}(v)$ mínimo. Como $\delta_{k+1}(s)=\delta_k(s)=0$, temos $v\ne s$. Seja $u$ o vértice anterior a $v$ num caminho mais curto de $s$ a $v$ em $D_{k+1}$: então $\delta_{k+1}(u)=\delta_{k+1}(v)-1$ e, pela escolha de $v$, $\delta_{k+1}(u)\ge\delta_k(u)$.
+\begin{itemize}
+  \item Se a aresta $u\to v$ já estava em $D_k$, então $\delta_k(v)\le\delta_k(u)+1\le\delta_{k+1}(u)+1=\delta_{k+1}(v)$, contra a hipótese.
+  \item Se $u\to v$ apareceu em $D_{k+1}$, o aumento passou por $v\to u$; como $P_k$ é um caminho mais curto em $D_k$, $\delta_k(u)=\delta_k(v)+1$. Então $\delta_k(v)=\delta_k(u)-1\le\delta_{k+1}(u)-1=\delta_{k+1}(v)-2$, de novo contra a hipótese.\qedhere
+\end{itemize}
+\end{proof}
+
+\begin{lema}[Arestas críticas]\label{lema:criticaek}
+Cada aresta residual $x\to y$ (isto é, cada aresta $e$ de $D$, num dos dois sentidos) é crítica em no máximo $n/2$ aumentos.
+\end{lema}
+\begin{proof}
+Suponha que $x\to y$ é crítica no aumento por $P_k$. Ela está num caminho mais curto, de modo que $\delta_k(y)=\delta_k(x)+1$, e some de $D_{k+1}$. Para ser crítica de novo, num aumento posterior por $P_l$, ela precisa reaparecer antes, e, pela observação acima, algum aumento intermediário, por $P_j$ com $k<j<l$, passou por $y\to x$. Então, pelo Lema~\ref{lema:distek},
+\[\delta_j(x)=\delta_j(y)+1\ \ge\ \delta_k(y)+1=\delta_k(x)+2, \qquad\text{e}\qquad \delta_l(x)\ge\delta_j(x)\ge\delta_k(x)+2.\]
+Entre duas vezes seguidas em que $x\to y$ é crítica, a distância de $s$ a $x$ cresce pelo menos 2. Ela começa em pelo menos 0 e, como $x$ precede $t$ num caminho de no máximo $n-1$ arestas, nunca passa de $n-2$ enquanto $x\to y$ puder ser crítica. Logo isso acontece no máximo $(n-2)/2+1=n/2$ vezes.
+\end{proof}
+
+\begin{teo}\label{teo:edmondskarp}
+O algoritmo de Edmonds e Karp faz no máximo $nm$ aumentos e termina em tempo $O(nm^2)$, quaisquer que sejam as capacidades.
+\end{teo}
+\begin{proof}
+A rede residual tem no máximo $2m$ arestas (cada aresta de $D$ dá no máximo uma em cada sentido). Todo aumento tem uma aresta crítica, e, pelo Lema~\ref{lema:criticaek}, cada uma é crítica no máximo $n/2$ vezes: há no máximo $2m\cdot n/2=nm$ aumentos. Cada aumento custa $O(n+m)=O(m)$: montar a rede residual, fazer a busca em largura e atualizar o fluxo ao longo do caminho. O total é $O(nm^2)$.
+\end{proof}
+
+\begin{exemplo}[As distâncias no Edmonds e Karp]\label{ex:ekdist}
+O Exemplo~\ref{ex:ff} já escolhia caminhos mais curtos: foi uma execução do Edmonds e Karp. A tabela dá, antes de cada aumento, a distância de $s$ a cada vértice na rede residual, o caminho escolhido, o gargalo e a aresta crítica.
+\begin{center}\small
+\begin{tabular}{@{}cccccclcc@{}}
+\toprule
+aumento & $\delta(a)$ & $\delta(b)$ & $\delta(c)$ & $\delta(d)$ & $\delta(t)$ & caminho & gargalo & crítica\\
+\midrule
+1 & 1 & 1 & 1 & 2 & 2 & $s,c,t$ & 3 & $ct$\\
+2 & 1 & 1 & 1 & 2 & 3 & $s,b,d,t$ & 2 & $sb$\\
+3 & 1 & 2 & 1 & 3 & 4 & $s,a,b,d,t$ & 2 & $bd$\\
+fim & 1 & 2 & 1 & $\infty$ & $\infty$ & --- & --- & ---\\
+\bottomrule
+\end{tabular}
+\end{center}
+Nenhuma distância diminui, como garante o Lema~\ref{lema:distek}. Quando $ct$ fica saturada, $\delta(t)$ passa de 2 a 3; quando $sb$ fica saturada, $b$ passa a ser alcançado só por $s,a,b$, e $\delta(b)$ passa de 1 a 2, levando junto $\delta(d)$ e $\delta(t)$. Os caminhos ficam cada vez mais longos, e é isso que limita o número de aumentos: um caminho tem no máximo $n-1$ arestas.
+\end{exemplo}
+
+\begin{intuicao}[Por que caminhos curtos ajudam]
+Cada aumento por um caminho mais curto ``gasta'' pelo menos uma aresta desse caminho. Para usá-la de novo no mesmo sentido, o algoritmo precisa antes desfazer parte do fluxo, passando por ela no sentido contrário --- e um caminho mais curto só faz isso se a extremidade de onde ela sai ficou mais longe de $s$. Como as distâncias não diminuem e não passam de $n$, cada aresta só pode ser gasta poucas vezes.
+\end{intuicao}
 
 % ------------------------------------------------------------------
 \section{Aplicações}\label{sec:fluxoaplic}
@@ -240,6 +297,38 @@ Muitos problemas se resolvem construindo uma rede em que um fluxo inteiro corres
 No grafo bipartido do Exemplo~\ref{ex:hungaro}, com $X=\{a,b,c,d,e\}$ e $Y=\{1,2,3,4\}$, a rede tem $s$ ligado a $a,\dots,e$, as nove arestas do grafo orientadas de $X$ para $Y$ e $1,\dots,4$ ligados a $t$, tudo com capacidade 1. O corte $S=\{s,a,b,e\}$ tem $(S,S')^+=\{sc,sd,a1,a2,b1,e1,e2\}$, com capacidade 7 --- grande. Já o corte $S=\{s,a,b,e,1,2\}$ tem $(S,S')^+=\{sc,sd,1t,2t\}$, de capacidade 4: é a cobertura $\{c,d,1,2\}$ do Exemplo~\ref{ex:hall}, agora vista como corte. O fluxo máximo vale 4, como o emparelhamento máximo encontrado pelo método húngaro. O teorema do fluxo máximo e corte mínimo, aplicado a essas redes, dá exatamente o teorema de König (Exercício~\ref{ex:fl-konig}).
 \end{exemplo}
 
+\subsection{Alocação de alunos em disciplinas}\label{sec:alocacao}
+Considere um conjunto de alunos e um conjunto de disciplinas. Cada aluno $i$ tem um conjunto $I_i$ de disciplinas que gostaria de cursar e pode cursar no máximo $c_i$ delas; cada disciplina $j$ tem $q_j$ vagas. Queremos fazer o maior número possível de matrículas. A rede tem, além de $s$ e $t$, um vértice para cada aluno e um para cada disciplina, e as arestas
+\begin{itemize}
+  \item $s\to i$ com capacidade $c_i$, para cada aluno $i$;
+  \item $i\to j$ com capacidade 1, para cada disciplina $j\in I_i$;
+  \item $j\to t$ com capacidade $q_j$, para cada disciplina $j$.
+\end{itemize}
+Num fluxo inteiro, as arestas $i\to j$ com fluxo 1 formam uma alocação válida: pela conservação, o aluno $i$ recebe exatamente o fluxo de $s\to i$, que é no máximo $c_i$; a disciplina $j$ recebe no máximo $q_j$ alunos; e a capacidade 1 impede que alguém se matricule duas vezes na mesma disciplina. Reciprocamente, toda alocação válida dá um fluxo inteiro, com o mesmo valor, igual ao número de matrículas. Pelo teorema da integralidade, um fluxo máximo inteiro é, portanto, uma alocação ótima. O emparelhamento bipartido é o caso em que $c_i=q_j=1$.
+
+A rede tem $n=O(a+d)$ vértices e $m=O(a+d+\sum_i|I_i|)$ arestas, sendo $a$ o número de alunos e $d$ o de disciplinas, e o Edmonds e Karp a resolve em tempo $O(nm^2)$, polinomial. Mesmo o Ford e Fulkerson com uma escolha qualquer de caminhos é polinomial aqui, pois o fluxo máximo é no máximo $\sum_i|I_i|\le m$.
+
+\begin{figura}[A rede da alocação do Exemplo~\ref{ex:alocacao}: as arestas do meio têm capacidade 1, e as demais estão marcadas com fluxo/capacidade. Em azul, as matrículas de uma alocação ótima, com 5 matrículas. Os vértices preenchidos formam o corte mínimo $S=\{s,a_3,a_4,d_4\}$, de capacidade 5.\label{fig:alocacao}]
+\begin{tikzpicture}[x=1.45cm,y=0.95cm, sim/.style={arco, MidnightBlue, very thick}, nao/.style={arco, thin, gray}]
+  \node[vtx, fill=azul] (s) at (0,0) {$s$};
+  \node[vtx, fill=Goldenrod!40] (t) at (6,0) {$t$};
+  \foreach \k/\y/\cor in {1/2.25/white, 2/0.75/white, 3/-0.75/azul, 4/-2.25/azul} {
+    \node[vtx, fill=\cor] (a\k) at (2,\y) {$a_\k$};}
+  \foreach \k/\y/\cor in {1/2.25/white, 2/0.75/white, 3/-0.75/white, 4/-2.25/azul} {
+    \node[vtx, fill=\cor] (d\k) at (4,\y) {$d_\k$};}
+  \foreach \k/\rot in {1/{1/1}, 2/{2/2}, 3/{2/2}, 4/{0/1}} {
+    \draw[arco] (s) -- node[peso, pos=0.55] {$\rot$} (a\k);}
+  \foreach \k/\rot in {1/{2/2}, 2/{1/2}, 3/{1/1}, 4/{1/1}} {
+    \draw[arco] (d\k) -- node[peso, pos=0.45] {$\rot$} (t);}
+  \foreach \uu/\ww in {a1/d1, a2/d1, a2/d2, a3/d3, a3/d4} {\draw[sim] (\uu) -- (\ww);}
+  \foreach \uu/\ww in {a1/d2, a2/d3, a4/d4} {\draw[nao] (\uu) -- (\ww);}
+\end{tikzpicture}
+\end{figura}
+
+\begin{exemplo}[Uma alocação ótima e o corte que a certifica]\label{ex:alocacao}
+Quatro alunos têm cotas $c=(1,2,2,1)$ e interesses $I_1=\{d_1,d_2\}$, $I_2=\{d_1,d_2,d_3\}$, $I_3=\{d_3,d_4\}$ e $I_4=\{d_4\}$; as disciplinas têm $q=(2,2,1,1)$ vagas. Os alunos pedem, juntos, $1+2+2+1=6$ matrículas, e há $2+2+1+1=6$ vagas, mas não dá para fazer 6. O fluxo máximo vale 5, com a alocação $a_1d_1$, $a_2d_1$, $a_2d_2$, $a_3d_3$ e $a_3d_4$ da Figura~\ref{fig:alocacao}. O corte $S=\{s,a_3,a_4,d_4\}$ mostra que 5 é o máximo: $(S,S')^+=\{sa_1,sa_2,a_3d_3,d_4t\}$, com capacidade $1+2+1+1=5$. Em palavras: os alunos $a_3$ e $a_4$ querem 3 matrículas, mas só se interessam por $d_3$, que só $a_3$ pode cursar, e por $d_4$, que tem uma vaga; juntos, conseguem no máximo 2, e os outros dois alunos, no máximo $1+2=3$. A alocação ótima não é única --- trocar $a_3d_4$ por $a_4d_4$ também dá 5 ---, e nada nela garante que todos os alunos sejam atendidos: aqui, $a_3$ ou $a_4$ fica com menos do que pediu.
+\end{exemplo}
+
 \begin{cuidado}[Armadilhas de fluxos]
 \begin{itemize}
   \item Na capacidade de um corte, somar também as arestas que voltam de $S'$ para $S$: só contam as de $(S,S')^+$. Já no \emph{fluxo} do corte, as que voltam entram com sinal negativo.
@@ -250,7 +339,7 @@ No grafo bipartido do Exemplo~\ref{ex:hungaro}, com $X=\{a,b,c,d,e\}$ e $Y=\{1,2
 \end{cuidado}
 
 \begin{chave}
-Rede: multidigrafo com capacidades, origem $s$ e destino $t$. Fluxo: viabilidade e conservação; valor $f(D)$. Corte $(S,S')$: capacidade é a soma das capacidades de $(S,S')^+$; o fluxo em qualquer corte é $f(D)$, logo $f(D)\le c(S,S')$. Rede residual: arestas de aumento ($c-f$) e de redução ($f$, no sentido oposto). $f$ é máximo $\iff$ não há caminho aumentante; fluxo máximo $=$ corte mínimo, e o corte é dado pelos vértices alcançáveis a partir de $s$ na rede residual. Ford e Fulkerson: $O(m\,f^*)$ com capacidades inteiras; Edmonds e Karp: $O(nm^2)$. Integralidade: capacidades inteiras dão fluxo máximo inteiro, o que permite modelar emparelhamentos e caminhos disjuntos.
+Rede: multidigrafo com capacidades, origem $s$ e destino $t$. Fluxo: viabilidade e conservação; valor $f(D)$. Corte $(S,S')$: capacidade é a soma das capacidades de $(S,S')^+$; o fluxo em qualquer corte é $f(D)$, logo $f(D)\le c(S,S')$. Rede residual: arestas de aumento ($c-f$) e de redução ($f$, no sentido oposto). $f$ é máximo $\iff$ não há caminho aumentante; fluxo máximo $=$ corte mínimo, e o corte é dado pelos vértices alcançáveis a partir de $s$ na rede residual. Ford e Fulkerson: $O(m\,f^*)$ com capacidades inteiras; Edmonds e Karp (caminhos mais curtos): as distâncias na rede residual não diminuem, cada aresta é crítica no máximo $n/2$ vezes, $O(nm)$ aumentos e tempo $O(nm^2)$. Integralidade: capacidades inteiras dão fluxo máximo inteiro, o que permite modelar emparelhamentos, caminhos disjuntos e alocações com cotas e vagas.
 \end{chave}
 
 % ----------------------------------------------------------------
@@ -266,6 +355,15 @@ Construa a rede residual do fluxo maximal de valor 6 da Figura~\ref{fig:maximal}
 Prove o Corolário~\ref{cor:corte}: um fluxo $f$ é máximo e um corte $(S,S')$ é mínimo se e somente se toda aresta de $(S,S')^+$ está saturada e toda aresta de $(S,S')^-$ tem fluxo zero.
 \end{exercicio}
 
+\begin{exercicio}{fl-a26emp}[Aula]<sec:fluxoaplic,teo:integral>
+Mostre como o fluxo máximo pode ser utilizado para resolver o problema do emparelhamento máximo em grafos bipartidos.
+\end{exercicio}
+\begin{exercicio}{fl-a26cotas}[Aula]<sec:alocacao,ex:alocacao>
+Considere um conjunto de estudantes e um conjunto de disciplinas. Cada estudante possui um subconjunto de disciplinas que tem interesse em cursar; além disso, cada estudante $i$ possui uma cota máxima $c_i$ de disciplinas que pode cursar, e cada disciplina $j$ possui uma quantidade máxima $q_j$ de alunos que podem cursá-la. Mostre que o problema de encontrar a alocação que maximiza o número de matrículas em disciplinas pode ser resolvido em tempo polinomial.
+\end{exercicio}
+\begin{exercicio}{fl-a26enfase}[Aula]<sec:alocacao>
+No problema do exercício anterior, as disciplinas possuem ênfase (cada disciplina pertence a uma ênfase), e cada aluno irá cursar no máximo uma disciplina por ênfase. Adapte a rede de fluxo para levar em conta essa restrição e justifique.
+\end{exercicio}
 \excompl
 \begin{exercicio}{fl-def}[Complementar]<sec:redes>
 Na rede com as arestas $sa$ (capacidade 4), $sb$ (2), $ab$ (1), $at$ (2) e $bt$ (3), diga se cada função abaixo é um fluxo e, se for, dê o seu valor: (a) $f(sa)=3$, $f(sb)=2$, $f(ab)=1$, $f(at)=2$, $f(bt)=3$; (b) $f(sa)=4$, $f(sb)=1$, $f(ab)=1$, $f(at)=2$, $f(bt)=2$. O fluxo do item (a) é máximo?
@@ -288,7 +386,7 @@ Prove o teorema da integralidade com detalhes. O algoritmo devolve sempre um flu
 \begin{exercicio}{fl-pseudo}[Complementar]<sec:fordfulkerson>
 Na rede com as arestas $sa$, $sb$, $at$ e $bt$, todas de capacidade $C$, e $ab$, de capacidade 1, mostre que o Ford e Fulkerson pode fazer $2C$ aumentos se escolher mal os caminhos. Quantos aumentos faz o Edmonds e Karp? O que isso diz sobre a complexidade $O(m\,f^*)$?
 \end{exercicio}
-\begin{exercicio}{fl-ek}[Complementar \estrela]<sec:fordfulkerson>
+\begin{exercicio}{fl-ek}[Complementar \estrela]<sec:edmondskarp>
 No algoritmo de Edmonds e Karp, mostre que a distância (em número de arestas) de $s$ a cada vértice na rede residual nunca diminui, e que cada aresta é a aresta de gargalo de um caminho aumentante no máximo $O(n)$ vezes. Conclua que há $O(nm)$ aumentos e que o algoritmo custa $O(nm^2)$.
 \end{exercicio}
 \begin{exercicio}{fl-fluxot}[Complementar]<teo:fluxocorte>
@@ -317,4 +415,7 @@ Cada aluno pode cursar até 2 disciplinas optativas, apenas entre as que ele ind
 \end{exercicio}
 \begin{exercicio}{fl-decomp}[Complementar]<sec:redes>
 Mostre que todo fluxo pode ser decomposto numa soma de fluxos ao longo de caminhos de $s$ a $t$ e de ciclos direcionados, com no máximo $m$ parcelas. Decomponha o fluxo máximo de valor 7 da Figura~\ref{fig:maximal}(b).
+\end{exercicio}
+\begin{exercicio}{fl-ekdist}[Complementar]<sec:edmondskarp,ex:ekdist>
+Na rede do Exercício~\ref{ex:fl-ff}, dê, antes de cada aumento do algoritmo de Edmonds e Karp, a distância de $s$ a cada vértice na rede residual e a(s) aresta(s) crítica(s) do caminho. Confira que nenhuma distância diminui. Alguma aresta foi crítica duas vezes? Por quê?
 \end{exercicio}

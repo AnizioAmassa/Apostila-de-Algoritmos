@@ -3,7 +3,7 @@
 from collections import deque
 from itertools import combinations
 
-from comum import Verificador
+from comum import Verificador, tupla
 
 v = Verificador("19_fluxos.tex", "respostas/19.tex")
 T = "19_fluxos.tex"
@@ -209,5 +209,75 @@ for cam, q in [("sct", 3), ("sbdt", 2), ("sabdt", 2), ("bcb", 1)]:
     for x, y in zip(cam, cam[1:]):
         resto[(x, y)] -= q
 v.igual(all(q == 0 for q in resto.values()), True, "fl-decomp")
+
+# ---------- Edmonds e Karp: distâncias na rede residual ----------
+def distancias(r, s="s"):
+    V = sorted({x for e in r for x in e} | {s})
+    d = {s: 0}
+    F = deque([s])
+    while F:
+        x = F.popleft()
+        for y in V:
+            if (x, y) in r and y not in d:
+                d[y] = d[x] + 1
+                F.append(y)
+    return d
+
+
+def criticas(r, cam, g):
+    return ["".join(sorted((x, y), key=lambda z: cam.index(z))) for x, y in zip(cam, cam[1:]) if r[(x, y)] == g]
+
+
+def tabela_ek(c, nomes):
+    f, linhas = {}, []
+    while True:
+        r = residual(c, f)
+        d = distancias(r)
+        cam, _ = bfs(r)
+        dd = [d.get(x, "∞") for x in nomes]
+        if cam is None:
+            return linhas, dd
+        g = min(r[(x, y)] for x, y in zip(cam, cam[1:]))
+        linhas.append((dd, cam, g, criticas(r, cam, g)))
+        f = aumenta(c, f, cam, g)
+
+
+linhas, fim = tabela_ek(D, "abcdt")
+for k, (dd, cam, g, cr) in enumerate(linhas, 1):
+    v.tem(f"{k} & " + " & ".join(map(str, dd)) + f" & ${','.join(cam)}$ & {g} & ${cr[0]}$", f"Exemplo ek: aumento {k}", T)
+v.igual(fim, [1, 2, 1, "∞", "∞"], "Exemplo ek: distâncias finais")
+v.igual(all(a <= b for (d1, *_), (d2, *_) in zip(linhas, linhas[1:]) for a, b in zip(d1, d2)), True,
+        "Exemplo ek: distâncias não diminuem")
+
+linhas2, fim2 = tabela_ek(E2, "abcdt")
+for dd, cam, g, cr in linhas2:
+    v.tem(f"${tupla(dd)}$, caminho ${','.join(cam)}$, gargalo {g}", "fl-ekdist", R)
+v.igual([cr for *_, cr in linhas2], [["ct"], ["sb"], ["bd"], ["ac", "dt"]], "fl-ekdist: críticas")
+v.igual(fim2[:2], [1, 2], "fl-ekdist: fim")
+
+# ---------- alocação de alunos em disciplinas ----------
+cotas, vagas = [1, 2, 2, 1], [2, 2, 1, 1]
+interesse = {1: [1, 2], 2: [1, 2, 3], 3: [3, 4], 4: [4]}
+AL = {}
+for i, ci in enumerate(cotas, 1):
+    AL[("s", f"a{i}")] = ci
+for i, js in interesse.items():
+    for j in js:
+        AL[(f"a{i}", f"d{j}")] = 1
+for j, qj in enumerate(vagas, 1):
+    AL[(f"d{j}", "t")] = qj
+fa, _, _ = edmonds_karp(AL)
+v.igual((valor(AL, fa), sum(cotas), sum(vagas)), (5, 6, 6), "Exemplo alocação: valor 5 < 6")
+v.igual(min(k for _, k in cortes(AL)), 5, "Exemplo alocação: corte mínimo")
+v.igual(corte(AL, {"s", "a3", "a4", "d4"})[2], 5, "Exemplo alocação: corte S={s,a3,a4,d4}")
+aloc = {("a1", "d1"): 1, ("a2", "d1"): 1, ("a2", "d2"): 1, ("a3", "d3"): 1, ("a3", "d4"): 1}
+fx = dict(aloc)
+for i in range(1, 5):
+    fx[("s", f"a{i}")] = sum(q for (x, _), q in aloc.items() if x == f"a{i}")
+for j in range(1, 5):
+    fx[(f"d{j}", "t")] = sum(q for (_, y), q in aloc.items() if y == f"d{j}")
+v.igual((eh_fluxo(AL, fx), valor(AL, fx)), (True, 5), "Exemplo alocação: a alocação da figura é um fluxo de valor 5")
+v.tem(r"\foreach \k/\rot in {1/{1/1}, 2/{2/2}, 3/{2/2}, 4/{0/1}}", "figura alocação: arestas de s", T)
+v.tem(r"\foreach \k/\rot in {1/{2/2}, 2/{1/2}, 3/{1/1}, 4/{1/1}}", "figura alocação: arestas para t", T)
 
 v.fim()
